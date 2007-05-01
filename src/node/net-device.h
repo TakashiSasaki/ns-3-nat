@@ -152,6 +152,10 @@ class NetDevice {
    */
   bool Send(Packet& p, const MacAddress& dest, uint16_t protocolNumber);
 
+  bool NeedsArp (void) const;
+
+  void SetReceiveCallback (Callback<bool,NetDevice *,const Packet &,uint16_t> cb);
+
  protected:
   /**
    * Enable broadcast support. This method should be
@@ -201,7 +205,6 @@ class NetDevice {
 
   /**
    * \param p packet sent from below up to Network Device
-   * \param from source mac address of the sender 
    * \returns true if the packet was forwarded successfully,
    *          false otherwise.
    *
@@ -223,7 +226,7 @@ class NetDevice {
    * subclasses to forward packets. Subclasses MUST override this method.
    */
   virtual bool SendTo (Packet& p, const MacAddress& dest) = 0;
-
+  virtual bool DoNeedsArp (void) const = 0;
   virtual TraceResolver *DoCreateTraceResolver (TraceContext const &context) = 0;
   virtual Channel *DoGetChannel (void) const = 0;
   Node*         m_node;
@@ -237,6 +240,7 @@ class NetDevice {
   bool          m_isMulticast;
   bool          m_isPointToPoint;
   Callback<void> m_linkChangeCallback;
+  Callback<bool,NetDevice *,const Packet &,uint16_t> m_receiveCallback;
 };
 
 }; // namespace ns3

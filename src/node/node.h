@@ -88,7 +88,6 @@ namespace ns3 {
 
 class NodeList;
 
-class NetDeviceList;
 class ApplicationList;
 
 // The below five may be encapsulated/abstracted in a Kernel or Stack class
@@ -100,6 +99,7 @@ class Arp;
 
 class TraceContext;
 class TraceResolver;
+class NetDevice;
 
 class Node {
 friend class NodeList;
@@ -118,6 +118,13 @@ public:
   uint32_t GetId (void) const;
   uint32_t GetSystemId (void) const;
   void SetSystemId(uint32_t s);
+
+  uint32_t AddDevice (NetDevice *device);
+  NetDevice *GetDevice (uint32_t index) const;
+  uint32_t GetNDevices (void) const;
+
+private:
+  virtual void DoAddDevice (NetDevice *device) const = 0;
 
 #ifdef REMOVE_FOR_NOW
   // Define a protected delete operator. This will prevent users
@@ -172,7 +179,6 @@ public:
   // null capability exists.
   virtual L3Demux*         GetL3Demux() const;
   virtual Ipv4L4Demux*     GetIpv4L4Demux() const;
-  virtual NetDeviceList*   GetNetDeviceList() const;
   virtual ApplicationList* GetApplicationList() const;
   virtual Ipv4 *           GetIpv4 (void) const;
   virtual Udp *            GetUdp (void) const;
@@ -181,6 +187,7 @@ public:
 private:
   uint32_t    m_id;         // Node id for this node
   uint32_t    m_sid;        // System id for this node
+  std::vector<NetDevice *> m_devices;
 };
 
 } //namespace ns3

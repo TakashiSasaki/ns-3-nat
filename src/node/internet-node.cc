@@ -23,7 +23,6 @@
 
 #include "ns3/composite-trace-resolver.h"
 
-#include "net-device-list.h"
 #include "application-list.h"
 #include "l3-demux.h"
 #include "ipv4-l4-demux.h"
@@ -31,7 +30,7 @@
 #include "udp.h"
 #include "ipv4.h"
 #include "arp.h"
-#include "ipv4-loopback-interface.h"
+#include "net-device.h"
 
 namespace ns3 {
 
@@ -45,41 +44,33 @@ public:
 InternetNode::InternetNode()
 {
   // Instantiate the capabilities
-  m_netDevices = new NetDeviceList();
   m_applicationList = new ApplicationList();
   m_l3Demux = new L3Demux(this);
   m_ipv4L4Demux = new Ipv4L4Demux(this);
   m_l3Demux->Insert (Ipv4 (this));
   m_l3Demux->Insert (Arp (this));
   m_ipv4L4Demux->Insert (Udp (this));
-  SetupLoopback ();
 }
 
 InternetNode::InternetNode (InternetNode const &o)
 {
-  m_netDevices = new NetDeviceList ();
   m_applicationList = new ApplicationList();
   m_l3Demux = o.m_l3Demux->Copy (this);
   m_ipv4L4Demux = o.m_ipv4L4Demux->Copy (this);
-  SetupLoopback ();  
 }
 InternetNode const &
 InternetNode::operator = (InternetNode const &o)
 {
-  delete m_netDevices;
   delete m_applicationList;
   delete m_l3Demux;
   delete m_ipv4L4Demux;
-  m_netDevices = new NetDeviceList ();
   m_l3Demux = o.m_l3Demux->Copy (this);
   m_ipv4L4Demux = o.m_ipv4L4Demux->Copy (this);
-  SetupLoopback ();  
   return *this;
 }
 
 InternetNode::~InternetNode ()
 {
-  delete m_netDevices;
   delete m_applicationList;
   delete m_l3Demux;
   delete m_ipv4L4Demux;
@@ -89,17 +80,6 @@ InternetNode::~InternetNode ()
 InternetNode::SetName (std::string name)
 {
   m_name = name;
-}
-
-void
-InternetNode::SetupLoopback (void)
-{
-  Ipv4LoopbackInterface * interface = new Ipv4LoopbackInterface (this);
-  interface->SetAddress (Ipv4Address::GetLoopback ());
-  interface->SetNetworkMask (Ipv4Mask::GetLoopback ());
-  uint32_t index = GetIpv4 ()->AddInterface (interface);
-  GetIpv4 ()->AddHostRouteTo (Ipv4Address::GetLoopback (), index);
-  interface->SetUp ();
 }
 
 // Copy this node
@@ -126,12 +106,6 @@ InternetNode::CreateTraceResolver (TraceContext const &context)
   return resolver;
 }
 
-
-NetDeviceList*   
-InternetNode::GetNetDeviceList() const
-{
-  return m_netDevices;
-}
 
 ApplicationList* 
 InternetNode::GetApplicationList() const
@@ -166,6 +140,25 @@ Arp *
 InternetNode::GetArp (void) const
 {
   return static_cast<Arp*> (m_l3Demux->Lookup (Arp::PROT_NUMBER));
+}
+
+void 
+InternetNode::DoAddDevice (NetDevice *device) const
+{
+  device->SetReceiveCallback (MakeCallback (&InternetNode::ReceiveFromDevice, this));
+}
+
+bool
+InternetNode::ReceiveFromDevice (NetDevice *device, const Packet &p, uint16_t protocolNumber) const
+{
+  L3Protocol *target = GetL3Demux()->Lookup(protocolNumber);
+  if (target != 0) 
+    {
+      Packet packet = p;
+      target->Receive(packet, *device);
+      return true;
+    }
+  return false;
 }
 
 

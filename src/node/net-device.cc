@@ -23,8 +23,6 @@
 #include "ns3/assert.h"
 
 #include "net-device.h"
-#include "l3-demux.h"
-#include "l3-protocol.h"
 #include "llc-snap-header.h"
 #include "node.h"
 
@@ -179,19 +177,15 @@ NetDevice::GetChannel (void) const
 bool
 NetDevice::ForwardUp (Packet& packet)
 {
+  bool retval = false;
   LlcSnapHeader llc;
   packet.Peek (llc);
   packet.Remove (llc);
-  if (GetNode()->GetL3Demux() != 0)
+  if (!m_receiveCallback.IsNull ())
     {
-      L3Protocol *target = GetNode()->GetL3Demux()->Lookup(llc.GetType ());
-      if (target != 0) 
-        {
-          target->Receive(packet, *this);
-          return true;
-        }
+      retval = m_receiveCallback (this, packet, llc.GetType ());
     }
-  return false;
+  return retval;
 }
 
 void 
@@ -218,6 +212,18 @@ Node *
 NetDevice::GetNode (void) const
 {
   return m_node;
+}
+
+bool
+NetDevice::NeedsArp (void) const
+{
+  return DoNeedsArp ();
+}
+
+void 
+NetDevice::SetReceiveCallback (Callback<bool,NetDevice *,const Packet &,uint16_t> cb)
+{
+  m_receiveCallback = cb;
 }
 
 }; // namespace ns3

@@ -31,6 +31,7 @@
 
 namespace ns3 {
 
+class Packet;
 
 class InternetNode : public Node 
 {
@@ -47,7 +48,6 @@ public:
   virtual InternetNode* Copy() const;
   virtual TraceResolver *CreateTraceResolver (TraceContext const &context);
   // Capability access
-  virtual NetDeviceList*   GetNetDeviceList() const;
   virtual ApplicationList* GetApplicationList() const;
   virtual L3Demux*         GetL3Demux() const;
   virtual Ipv4L4Demux*     GetIpv4L4Demux() const;
@@ -57,9 +57,9 @@ public:
 
   void SetName(std::string name);
 private:
-  void SetupLoopback (void);
+  virtual void DoAddDevice (NetDevice *device) const;
+  bool ReceiveFromDevice (NetDevice *device, const Packet &p, uint16_t protocolNumber) const;
   // Capabilities
-  NetDeviceList*   m_netDevices;
   ApplicationList* m_applicationList;
   L3Demux*         m_l3Demux;
   Ipv4L4Demux*     m_ipv4L4Demux;

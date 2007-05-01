@@ -59,7 +59,7 @@ public:
    *          performed in this object. The caller must
    *          delete the returned object.
    */
-  TraceResolver *CreateTraceResolver (TraceContext const &context);
+  TraceResolver *CreateTraceResolver (TraceContext const &context) const;
 
 
   /**
@@ -82,7 +82,7 @@ public:
    * to forward packets up the stack to the right protocol.
    * It is also called from InternetNode::GetIpv4 for example.
    */
-  ns3::L3Protocol* Lookup(int);
+  ns3::L3Protocol* Lookup(int protocolNumber);
   /**
    * \param protocol protocol to remove from this demux.
    *

@@ -197,7 +197,6 @@ node.add_sources ([
     'ipv4.cc',
     'ipv4-end-point.cc',
     'udp-end-point.cc',
-    'datagram-socket.cc',
     'udp.cc',
     'capability.cc',
     'arp-header.cc',
@@ -210,20 +209,19 @@ node.add_sources ([
     'ipv4-loopback-interface.cc',
     'llc-snap-header.cc',
     'header-utils.cc',
-    'net-device-list.cc',
     'queue.cc',
     'drop-tail.cc',
     'channel.cc',
     'node-list.cc',
     'ascii-trace.cc',
+    'socket.cc',
+    'udp-socket.cc',
     'pcap-trace.cc',
     ])
 node.add_headers ([
     'ipv4-header.h',
     'udp-header.h',
     'ipv4-checksum.h',
-    'udp.h',
-    'ipv4-l4-protocol.h',
     'application.h',
     'application-list.h',
     'onoff-application.h',
@@ -232,20 +230,17 @@ node.add_headers ([
     'arp.h',
     'ipv4-loopback-interface.h',
     'l3-demux.h',
-    'ipv4-l4-demux.h',
-    'net-device-list.h',
     'header-utils.h',
     'protocol.h',
     'queue.h',
+    'arp-ipv4-interface.h',
+    'udp-socket.h',
     ])
 node.add_inst_headers ([
     'node.h',
     'internet-node.h',
-    'datagram-socket.h',
     'ipv4-address.h',
     'net-device.h',
-    'net-device-list.h',
-    'arp-ipv4-interface.h',
     'ipv4-interface.h',
     'mac-address.h',
     'ipv4.h',
@@ -264,6 +259,13 @@ node.add_inst_headers ([
     'application-list.h',
     'onoff-application.h',
     'ascii-trace.h',
+    'socket.h',
+    'udp.h',
+    'ipv4-l4-protocol.h',
+    'ipv4-l4-demux.h',
+    'udp-end-point.h',
+    'ipv4-end-point-demux.h',
+    'ipv4-end-point.h',
     'pcap-trace.h',
     ])
 
@@ -274,7 +276,6 @@ p2p.add_sources ([
     'p2p-net-device.cc',
     'p2p-channel.cc',
     'p2p-topology.cc',
-    'p2p-ipv4-interface.cc',
     ])
 p2p.add_headers ([
     'propagator.h',
@@ -283,7 +284,6 @@ p2p.add_inst_headers ([
     'p2p-net-device.h',
     'p2p-channel.h',
     'p2p-topology.h',
-    'p2p-ipv4-interface.h',
     ])
 
 
