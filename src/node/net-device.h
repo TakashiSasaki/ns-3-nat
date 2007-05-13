@@ -25,7 +25,8 @@
 #include <stdint.h>
 #include "ns3/callback.h"
 #include "ns3/packet.h"
-#include "ns3/object.h"
+#include "ns3/interface.h"
+#include "ns3/ptr.h"
 #include "mac-address.h"
 
 namespace ns3 {
@@ -54,14 +55,15 @@ class Channel;
  * this base class and implement your own version of the
  * NetDevice::SendTo method.
  */
-class NetDevice : public Object 
+class NetDevice : public Interface
 {
 public:
+  static const InterfaceId iid;
   /**
    * \param node base class node pointer of device's node 
    * \param addr MAC address of this device.
    */
-  NetDevice(Node* node, const MacAddress& addr);
+  NetDevice(Ptr<Node> node, const MacAddress& addr);
   virtual ~NetDevice();
 
   /**
@@ -78,7 +80,7 @@ public:
    *         returned can be zero if the NetDevice is not yet connected
    *         to any channel.
    */
-  Channel *GetChannel (void) const;
+  Ptr<Channel> GetChannel (void) const;
 
   /**
    * \return the current MacAddress of this interface.
@@ -109,7 +111,7 @@ public:
   /**
    * \param index ifIndex of the device 
    */
-  void SetIfIndex(const uint32_t);
+  void SetIfIndex(const uint32_t index);
   /**
    * \return index ifIndex of the device 
    */
@@ -169,11 +171,11 @@ public:
    * base class to print the nodeid for example, it can invoke
    * this method.
    */
-  Node* PeekNode (void) const;
+  Ptr<Node> GetNode (void) const;
 
   bool NeedsArp (void) const;
 
-  void SetReceiveCallback (Callback<bool,NetDevice *,const Packet &,uint16_t> cb);
+  void SetReceiveCallback (Callback<bool,Ptr<NetDevice>,const Packet &,uint16_t> cb);
 
  protected:
   /**
@@ -240,8 +242,8 @@ public:
   virtual bool SendTo (Packet& p, const MacAddress& dest) = 0;
   virtual bool DoNeedsArp (void) const = 0;
   virtual TraceResolver *DoCreateTraceResolver (TraceContext const &context) = 0;
-  virtual Channel *DoGetChannel (void) const = 0;
-  Node*         m_node;
+  virtual Ptr<Channel> DoGetChannel (void) const = 0;
+  Ptr<Node>         m_node;
   std::string   m_name;
   uint16_t      m_ifIndex;
   MacAddress    m_address;
@@ -252,7 +254,7 @@ public:
   bool          m_isMulticast;
   bool          m_isPointToPoint;
   Callback<void> m_linkChangeCallback;
-  Callback<bool,NetDevice *,const Packet &,uint16_t> m_receiveCallback;
+  Callback<bool,Ptr<NetDevice>,const Packet &,uint16_t> m_receiveCallback;
 };
 
 }; // namespace ns3

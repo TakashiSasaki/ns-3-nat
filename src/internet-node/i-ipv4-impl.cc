@@ -22,14 +22,13 @@
 #include "ipv4.h"
 #include "ipv4-interface.h"
 #include "ns3/assert.h"
+#include "ns3/net-device.h"
 
 namespace ns3 {
 
-IIpv4Impl::IIpv4Impl (Ipv4 *ipv4)
+IIpv4Impl::IIpv4Impl (Ptr<Ipv4> ipv4)
   : m_ipv4 (ipv4)
-{
-  m_ipv4->Ref ();
-}
+{}
 IIpv4Impl::~IIpv4Impl ()
 {
   NS_ASSERT (m_ipv4 == 0);
@@ -37,7 +36,6 @@ IIpv4Impl::~IIpv4Impl ()
 void 
 IIpv4Impl::DoDispose (void)
 {
-  m_ipv4->Unref ();
   m_ipv4 = 0;
 }
 
@@ -91,7 +89,7 @@ IIpv4Impl::RemoveRoute (uint32_t i)
   return m_ipv4->RemoveRoute (i);
 }
 uint32_t 
-IIpv4Impl::AddInterface (NetDevice *device)
+IIpv4Impl::AddInterface (Ptr<NetDevice> device)
 {
   return m_ipv4->AddInterface (device);
 }
@@ -100,10 +98,10 @@ IIpv4Impl::GetNInterfaces (void)
 {
   return m_ipv4->GetNInterfaces ();
 }
-NetDevice*
-IIpv4Impl::PeekNetDevice (uint32_t i)
+Ptr<NetDevice>
+IIpv4Impl::GetNetDevice (uint32_t i)
 {
-  return m_ipv4->GetInterface (i)-> PeekDevice();
+  return m_ipv4->GetInterface (i)-> GetDevice ();
 }
 
 void 

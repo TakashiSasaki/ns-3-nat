@@ -19,9 +19,10 @@
 //
 // Topology helper for ns3.
 // George F. Riley, Georgia Tech, Spring 2007
-
 #ifndef __POINT_TO_POINT_TOPOLOGY_H__
 #define __POINT_TO_POINT_TOPOLOGY_H__
+
+#include "ns3/ptr.h"
 
 // The topology class consists of only static methods thar are used to
 // create the topology and data flows for an ns3 simulation
@@ -51,8 +52,8 @@ public:
    * and attach PointToPointNetDevices to the resulting
    * PointToPointChannel.  
    */
-  static PointToPointChannel* AddPointToPointLink(
-    Node* n1, Node* n2, const DataRate& rate, const Time& delay);
+  static Ptr<PointToPointChannel> AddPointToPointLink(
+    Ptr<Node> n1, Ptr<Node> n2, const DataRate& dataRate, const Time& delay);
 
   /** 
    * \param chan PointToPointChannel to use
@@ -65,19 +66,19 @@ public:
    * two PointToPointNetDevices on the provided PointToPointChannel
    */
   static void AddIpv4Addresses(
-    const PointToPointChannel* chan,
-    Node* n1, const Ipv4Address& addr1,
-    Node* n2, const Ipv4Address& addr2);
+    Ptr<const PointToPointChannel> chan,
+    Ptr<Node> n1, const Ipv4Address& addr1,
+    Ptr<Node> n2, const Ipv4Address& addr2);
 
   /**
-   * \param chan PointToPointChannel to use
+   * \param channel PointToPointChannel to use
    * \param n1 Node
    * \param n2 Node
    * 
    * For the given PointToPointChannel, for each Node, add an 
    * IPv4 host route to the IPv4 address of the peer node.  
    */
-  static void AddIpv4Routes (Node*, Node*, const PointToPointChannel*);
+  static void AddIpv4Routes (Ptr<Node> n1, Ptr<Node> n2, Ptr<const PointToPointChannel> channel);
 };
 
 } // namespace ns3

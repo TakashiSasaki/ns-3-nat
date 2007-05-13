@@ -27,18 +27,19 @@
 
 #include <vector>
 
-#include "ns3/ns-unknown.h"
+#include "ns3/interface.h"
 
 namespace ns3 {
 
 class TraceContext;
 class TraceResolver;
 class NetDevice;
+class Application;
 
-class Node : public NsUnknown
+class Node : public Interface
 {
 public:
-  static const Iid iid;
+  static const InterfaceId iid;
 
   Node();
   Node(uint32_t); // Specify which system for a distributed simulation
@@ -50,18 +51,23 @@ public:
   uint32_t GetSystemId (void) const;
   void SetSystemId(uint32_t s);
 
-  uint32_t AddDevice (NetDevice *device);
-  NetDevice *GetDevice (uint32_t index) const;
+  uint32_t AddDevice (Ptr<NetDevice> device);
+  Ptr<NetDevice> GetDevice (uint32_t index) const;
   uint32_t GetNDevices (void) const;
+
+  uint32_t AddApplication (Ptr<Application> application);
+  Ptr<Application> GetApplication (uint32_t index) const;
+  uint32_t GetNApplications (void) const;
 
 protected:
   virtual void DoDispose (void);
 private:
-  virtual void DoAddDevice (NetDevice *device) const = 0;
+  virtual void DoAddDevice (Ptr<NetDevice> device) const = 0;
 
   uint32_t    m_id;         // Node id for this node
   uint32_t    m_sid;        // System id for this node
-  std::vector<NetDevice *> m_devices;
+  std::vector<Ptr<NetDevice> > m_devices;
+  std::vector<Ptr<Application> > m_applications;
 };
 
 } //namespace ns3
