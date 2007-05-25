@@ -45,6 +45,7 @@ core.add_sources([
     'command-line.cc',
     'type-name.cc',
     'component-manager.cc',
+    'interface-object.cc',
     ])
 env = Environment()
 if env['PLATFORM'] == 'posix' or env['PLATFORM'] == 'darwin' or env['PLATFORM'] == 'cygwin':
@@ -76,6 +77,7 @@ core.add_inst_headers([
     'command-line.h',
     'type-name.h',
     'component-manager.h',
+    'interface-object.h',
     ])
 
 def config_core (env, config):
@@ -341,6 +343,12 @@ ns3.add(run_tests)
 run_tests.set_executable()
 run_tests.add_deps(['core', 'simulator', 'common'])
 run_tests.add_source('run-tests.cc')
+
+bench_object = build.Ns3Module('bench-object', 'utils')
+ns3.add(bench_object)
+bench_object.set_executable()
+bench_object.add_deps(['core'])
+bench_object.add_source('bench-object.cc')
 
 bench_packets = build.Ns3Module('bench-packets', 'utils')
 #ns3.add(bench_packets)
