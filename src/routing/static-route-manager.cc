@@ -15,6 +15,7 @@
  */
 #include <utility>
 #include <vector>
+#include <queue>
 #include "ns3/assert.h"
 #include "ns3/fatal-error.h"
 #include "ns3/debug.h"
@@ -26,9 +27,26 @@ NS_DEBUG_COMPONENT_DEFINE ("StaticRouteManager");
 
 namespace ns3 {
 
+SPFVertex::SPFVertex () : 
+  m_vertexType(VertexUnknown), 
+  m_vertexId("255.255.255.255"), 
+  m_lsa(0),
+  m_distanceFromRoot(SPF_INFINITY), 
+  m_stat(false)
+{
+}
+
 SPFVertex::~SPFVertex ()
 {
   delete m_lsa;
+}
+
+void
+SPFVertex::Initialize ()
+{
+  m_distanceFromRoot = SPF_INFINITY;
+  m_stat = false;
+  // XXX previous = 0
 }
 
 
@@ -38,13 +56,26 @@ StaticRouteManagerLSDB::~StaticRouteManagerLSDB()
 
   LSDBMap_t::iterator i;
   for (i= m_database.begin(); i!= m_database.end(); i++)
-  {
+    {
       NS_DEBUG("StaticRouteManagerLSDB::~StaticRouteManagerLSDB():free vertex");
       SPFVertex* temp = i->second;
       delete temp;
     }
   NS_DEBUG("StaticRouteManagerLSDB::~StaticRouteManagerLSDB ():  clear map");
   m_database.clear();
+}
+
+void
+StaticRouteManagerLSDB::Initialize()
+{
+  NS_DEBUG("StaticRouteManagerLSDB::Initialize ()");
+
+  LSDBMap_t::iterator i;
+  for (i= m_database.begin(); i!= m_database.end(); i++)
+    {
+      SPFVertex* temp = i->second;
+      temp->Initialize();
+    }
 }
 
 void
@@ -195,32 +226,26 @@ void
 StaticRouteManager::SPFCalculate(Ipv4Address root)
 {
   NS_DEBUG("StaticRouteManager::SPFCalculate ()");
-  /*
- *  struct pqueue* candidate;
- *  struct vertex* v;
- */
+
+  // The SPFVertex objects may have state from a previous computation
+  m_lsdb->Initialize();
+  SPFVertex* v;
+
+  // Make a priority queue of int using a vector container
+  //    priority_queue<int, vector<int>, less<int> > pq;
+  //
+  //priority_queue<SPFVertex*> candidate;
+  //
   // Initialize the shortest-path tree to only the router doing the 
   // calculation.
   //
+  v= m_lsdb->GetVertex(root);
+  // Set LSA position to LSA_SPF_IN_SPFTREE. This vertex is the root of the
+  // spanning tree. 
+  v->m_distanceFromRoot = 0;
+  v->m_stat = true;
   
 #if 0
-  ospf_spf_init (area);
-  v = area->spf;
-
-
-  /* Create a new heap for the candidates. */
-  candidate = pqueue_create();
-  candidate->cmp = cmp;
-  candidate->update = update_stat;
-
-  /* Set LSA position to LSA_SPF_IN_SPFTREE. This vertex is the root of the
- *    * spanning tree. */
-  *(v->stat) = LSA_SPF_IN_SPFTREE;
-
-  /* Set Area A's TransitCapability to FALSE. */
-  area->transit = OSPF_TRANSIT_FALSE;
-  area->shortcut_capability = 1;
-
   for (;;)
     {
       /* RFC2328 16.1. (2). */
@@ -411,19 +436,15 @@ StaticRouteManagerTest::RunTests (void)
   SPFVertex* v0 = new SPFVertex ();
   v0->m_lsa = lsa0;
   v0->m_vertexType = SPFVertex::VertexRouter;
-  v0->m_distanceFromRoot = 0xffffffff;
   SPFVertex* v1 = new SPFVertex ();
   v1->m_lsa = lsa1;
   v0->m_vertexType = SPFVertex::VertexRouter;
-  v0->m_distanceFromRoot = 0xffffffff;
   SPFVertex* v2 = new SPFVertex ();
   v2->m_lsa = lsa2;
   v0->m_vertexType = SPFVertex::VertexRouter;
-  v0->m_distanceFromRoot = 0xffffffff;
   SPFVertex* v3 = new SPFVertex ();
   v3->m_lsa = lsa3;
   v0->m_vertexType = SPFVertex::VertexRouter;
-  v0->m_distanceFromRoot = 0xffffffff;
   
   // Test the database 
   StaticRouteManagerLSDB* srmlsdb = new StaticRouteManagerLSDB();
