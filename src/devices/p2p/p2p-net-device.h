@@ -187,18 +187,11 @@ protected:
   static const DataRate& GetDefaultRate();
 
 private:
-  /**
-   * Adds the necessary headers and trailers to a packet of data in order to
-   * respect the protocol implemented by the agent.
-   */
-  void AddHeader(Packet& p, uint16_t protocolNumber);
-  /**
-   * Removes, from a packet of data, all headers and trailers that
-   * relate to the protocol implemented by the agent
-   * \return Returns true if the packet should be forwarded up the
-   * protocol stack.
-   */
-  bool ProcessHeader(Packet& p, uint16_t& param);
+  // unimplemented methods to make it impossible
+  // to copy these objects.
+  PointToPointNetDevice (const PointToPointNetDevice& nd);
+  PointToPointNetDevice& operator = (const PointToPointNetDevice&o);
+  
   /**
    * Send a Packet Down the Wire.
    *
@@ -209,11 +202,9 @@ private:
    * @see NetDevice
    * @param p a reference to the packet to send
    * @param dest a reference to the Address of the destination device
-   * @param protocolNumber Protocol Number used to find protocol touse
    * @returns true if success, false on failure
    */
-  virtual bool SendTo (Packet& p, const Address& dest, 
-                       uint16_t protocolNumber);
+  virtual bool SendTo (Packet& p, const Address& dest);
   /**
    * Start Sending a Packet Down the Wire.
    *

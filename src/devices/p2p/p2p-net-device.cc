@@ -27,9 +27,8 @@
 #include "ns3/simulator.h"
 #include "ns3/composite-trace-resolver.h"
 #include "ns3/eui48-address.h"
-#include "ns3/llc-snap-header.h"
-#include "point-to-point-net-device.h"
-#include "point-to-point-channel.h"
+#include "p2p-net-device.h"
+#include "p2p-channel.h"
 
 NS_DEBUG_COMPONENT_DEFINE ("PointToPointNetDevice");
 
@@ -67,30 +66,12 @@ PointToPointNetDevice::~PointToPointNetDevice()
   m_queue = 0;
 }
 
-void 
-PointToPointNetDevice::AddHeader(Packet& p, uint16_t protocolNumber)
-{
-  LlcSnapHeader llc;
-  llc.SetType (protocolNumber);
-  p.AddHeader (llc);
-}
-
-bool 
-PointToPointNetDevice::ProcessHeader(Packet& p, uint16_t& param)
-{
-  LlcSnapHeader llc;
-  p.RemoveHeader (llc);
-
-  param = llc.GetType ();
-
-  return true;
-}
-
 void PointToPointNetDevice::DoDispose()
 {
   m_channel = 0;
   NetDevice::DoDispose ();
 }
+
 
 void PointToPointNetDevice::SetDataRate(const DataRate& bps)
 {
@@ -102,8 +83,7 @@ void PointToPointNetDevice::SetInterframeGap(const Time& t)
   m_tInterframeGap = t;
 }
 
-bool PointToPointNetDevice::SendTo (Packet& p, const Address& dest, 
-                                    uint16_t protocolNumber)
+bool PointToPointNetDevice::SendTo (Packet& p, const Address& dest)
 {
   NS_DEBUG ("PointToPointNetDevice::SendTo (" << &p << ", " << &dest << ")");
   NS_DEBUG ("PointToPointNetDevice::SendTo (): UID is " << p.GetUid () << ")");
@@ -112,7 +92,6 @@ bool PointToPointNetDevice::SendTo (Packet& p, const Address& dest,
   // "go down" during the simulation?  Shouldn't we just wait for it
   // to come back up?
   NS_ASSERT (IsLinkUp ());
-  AddHeader(p, protocolNumber);
 
 //
 // This class simulates a point to point device.  In the case of a serial
@@ -121,14 +100,14 @@ bool PointToPointNetDevice::SendTo (Packet& p, const Address& dest,
 //
 // If there's a transmission in progress, we enque the packet for later
 // trnsmission; otherwise we send it now.
-  if (m_txMachineState == READY) 
-    {
-      return TransmitStart (p);
-    }
-  else
-    {
-      return m_queue->Enqueue(p);
-    }
+    if (m_txMachineState == READY) 
+      {
+        return TransmitStart (p);
+      }
+    else
+      {
+        return m_queue->Enqueue(p);
+      }
 }
 
   bool
@@ -220,12 +199,9 @@ void PointToPointNetDevice::AddQueue (Ptr<Queue> q)
 void PointToPointNetDevice::Receive (Packet& p)
 {
   NS_DEBUG ("PointToPointNetDevice::Receive (" << &p << ")");
-  uint16_t param = 0;
-  Packet packet = p;
 
-  ProcessHeader(packet, param);
-  m_rxTrace (packet);
-  ForwardUp (packet, param);
+  m_rxTrace (p);
+  ForwardUp (p);
 }
 
 Ptr<Queue> PointToPointNetDevice::GetQueue(void) const 
