@@ -18,35 +18,34 @@
  *
  * Author: Mathieu Lacage <mathieu.lacage@sophia.inria.fr>
  */
-#ifndef EMPTY_TRACE_RESOLVER_H
-#define EMPTY_TRACE_RESOLVER_H
-
-#include "trace-resolver.h"
+#ifndef TRACE_SOURCE_H
+#define TRACE_SOURCE_H
 
 namespace ns3 {
 
-class TraceContext;
-
 /**
- * \brief a TraceResolver instance which does not resolve anything.
- * \ingroup tracing
+ * \brief the base class for all trace sources
  *
- * Trying to resolve against this class will yield no matches and no
- * connections. Returning an instance of this class from a 
- * CreateTraceResolver method is a hand way of not implementing
- * any Tracing code.
+ * Every trace source which wishes to be connectable and disconnectable with
+ * the TraceResolver system should derive from this base class and implement
+ * all three methods below.
  */
-class EmptyTraceResolver : public TraceResolver
+class TraceSource
 {
 public:
+  virtual ~TraceSource () {}
   /**
-   * \param o necessary context for this class.
-   *
-   * The only constructor exported by this class.
+   * \param callback the callback to connect to this trace source
+   * \param context the context associated to the input callback which should be passed
+   *        back to the user.
    */
-  EmptyTraceResolver (TraceContext const &o);
+  virtual void AddCallback (CallbackBase const & callback, TraceContext const & context) = 0;
+  /**
+   * \param callback the callback to disconnect from this trace source
+   */
+  virtual void RemoveCallback (CallbackBase const & callback) = 0;
 };
 
-}//namespace ns3
+} // namespace ns3
 
-#endif /* EMPTY_TRACE_RESOLVER_H */
+#endif /* TRACE_SOURCE_H */
