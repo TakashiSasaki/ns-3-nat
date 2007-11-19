@@ -18,10 +18,9 @@ public:
   void QueueTx (uint64_t txTime, uint64_t expectedGrantTime);
 private:
   friend class DcfManagerTest;
-  virtual bool NeedsAccess (void) const;
-  virtual void NotifyAccessGranted (void);
-  virtual void NotifyInternalCollision (void);
-  virtual void NotifyCollision (void);
+  virtual void DoNotifyAccessGranted (void);
+  virtual void DoNotifyInternalCollision (void);
+  virtual void DoNotifyCollision (void);
 
   typedef std::pair<uint64_t,uint64_t> ExpectedGrant;
   typedef std::list<ExpectedGrant> ExpectedGrants;
@@ -83,23 +82,18 @@ DcfStateTest::QueueTx (uint64_t txTime, uint64_t expectedGrantTime)
 {
   m_expectedGrants.push_back (std::make_pair (txTime, expectedGrantTime));
 }
-bool 
-DcfStateTest::NeedsAccess (void) const
-{
-  return !m_expectedGrants.empty ();
-}
 void 
-DcfStateTest::NotifyAccessGranted (void)
+DcfStateTest::DoNotifyAccessGranted (void)
 {
   m_test->NotifyAccessGranted (m_i);
 }
 void
-DcfStateTest::NotifyInternalCollision (void)
+DcfStateTest::DoNotifyInternalCollision (void)
 {
   m_test->NotifyInternalCollision (m_i);
 }
 void 
-DcfStateTest::NotifyCollision (void)
+DcfStateTest::DoNotifyCollision (void)
 {
   m_test->NotifyCollision (m_i);
 }
@@ -410,6 +404,22 @@ DcfManagerTest::RunTests (void)
   AddNavReset (71, 2);
   AddAccessRequest (30, 10, 91, 0);
   ExpectCollision (30, 2, 0); // backoff: 2 slot
+  EndTest ();
+
+  
+  StartTest (4, 6, 10);
+  AddDcfState (2);
+  AddRxOkEvt (20, 40);
+  AddAccessRequest (80, 10, 80, 0);
+  EndTest ();
+
+
+  StartTest (4, 6, 10);
+  AddDcfState (2);
+  AddRxOkEvt (20, 40);
+  AddRxOkEvt (78, 8);
+  AddAccessRequest (30, 50, 108, 0);
+  ExpectCollision (30, 3, 0); // backoff: 3 slots
   EndTest ();
  
 
