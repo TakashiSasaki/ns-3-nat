@@ -1,6 +1,6 @@
 /* -*-  Mode: C++; c-file-style: "gnu"; indent-tabs-mode:nil; -*- */
 /*
- * Copyright (c) 2005,2006 INRIA
+ * Copyright (c) 2003,2007 INRIA
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as 
@@ -17,42 +17,38 @@
  *
  * Author: Mathieu Lacage <mathieu.lacage@sophia.inria.fr>
  */
-#ifndef CR_MAC_STATIONS_H
-#define CR_MAC_STATIONS_H
-
-#include <stdint.h>
+#ifndef AMRR_MAC_STATIONS_H
+#define AMRR_MAC_STATIONS_H
 
 #include "mac-stations.h"
+#include "ns3/nstime.h"
 
 namespace ns3 {
 
-/**
- * \brief use constant rates for data and control transmissions
- *
- * This class uses always the same transmission rate for every
- * packet sent.
- */
-class CrMacStations : public MacStations 
+class AmrrMacStations : public MacStations
 {
 public:
-  CrMacStations (WifiMode dataMode, WifiMode ctlMode);
-  virtual ~CrMacStations ();
+  AmrrMacStations (WifiMode defaultTxMode);
 
-  WifiMode GetDataMode (void) const;
-  WifiMode GetCtlMode (void) const;
 private:
-  virtual class MacStation *CreateStation (void);
+  friend class AmrrMacStation;
+  virtual MacStation *CreateStation (void);
 
-  WifiMode m_dataMode;
-  WifiMode m_ctlMode;
+  Time m_updatePeriod;
+  double m_failureRatio;
+  double m_successRatio;
+  uint32_t m_maxSuccessThreshold;
+  uint32_t m_minSuccessThreshold;
 };
 
-
-class CrMacStation : public MacStation
+/**
+ */
+class AmrrMacStation : public MacStation
 {
 public:
-  CrMacStation (CrMacStations *stations);
-  virtual ~CrMacStation ();
+  AmrrMacStation (AmrrMacStations *stations);
+
+  virtual ~AmrrMacStation ();
 
   virtual void ReportRxOk (double rxSnr, WifiMode txMode);
   virtual void ReportRtsFailed (void);
@@ -63,14 +59,33 @@ public:
   virtual void ReportFinalDataFailed (void);
 
 private:
-  virtual CrMacStations *GetStations (void) const;
+  virtual AmrrMacStations *GetStations (void) const;
   virtual WifiMode DoGetDataMode (uint32_t size);
   virtual WifiMode DoGetRtsMode (void);
-  CrMacStations *m_stations;
+
+  void UpdateRetry (void);
+  void UpdateMode (void);
+  void ResetCnt (void);
+  void IncreaseRate (void);
+  void DecreaseRate (void);
+  bool IsMinRate (void) const;
+  bool IsMaxRate (void) const;
+  bool IsSuccess (void) const;
+  bool IsFailure (void) const;
+  bool IsEnough (void) const;
+
+  AmrrMacStations *m_stations;
+  Time m_nextModeUpdate;
+  uint32_t m_tx_ok;
+  uint32_t m_tx_err;
+  uint32_t m_tx_retr;
+  uint32_t m_retry;
+  uint32_t m_txrate;
+  uint32_t m_successThreshold;
+  uint32_t m_success;
+  bool m_recovery;
 };
 
 } // namespace ns3
 
-
-
-#endif /* CR_MAC_STATIONS_H */
+#endif /* AMRR_MAC_STATIONS_H */
