@@ -560,7 +560,7 @@ public:
  *
  * @see Object::QueryInterface ()
  */
-  static const InterfaceId iid;
+  static TypeId GetTypeId (void);
 
 /**
  * @brief Create a Global Router class 
