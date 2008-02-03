@@ -346,6 +346,18 @@ AgentImpl::RecvOlsr (Ptr<Socket> socket,
       DuplicateTuple *duplicated = m_state.FindDuplicateTuple
         (messageHeader.GetOriginatorAddress (),
          messageHeader.GetMessageSequenceNumber ());
+
+      // Get main address of the peer, which may be different from the packet source address
+      const IfaceAssocTuple *ifaceAssoc = m_state.FindIfaceAssocTuple (inetSourceAddr.GetIpv4 ());
+      Ipv4Address peerMainAddress;
+      if (ifaceAssoc != NULL)
+        {
+          peerMainAddress = ifaceAssoc->mainAddr;
+        }
+      else
+        {
+          peerMainAddress = inetSourceAddr.GetIpv4 () ;
+        }
       
       if (duplicated == NULL)
         {
@@ -353,17 +365,17 @@ AgentImpl::RecvOlsr (Ptr<Socket> socket,
             {
             case olsr::MessageHeader::HELLO_MESSAGE:
               NS_LOG_DEBUG ("OLSR node received HELLO message of size " << messageHeader.GetSerializedSize ());
-              ProcessHello (messageHeader, m_mainAddress, inetSourceAddr.GetIpv4 ());
+              ProcessHello (messageHeader, m_mainAddress, peerMainAddress);
               break;
 
             case olsr::MessageHeader::TC_MESSAGE:
               NS_LOG_DEBUG ("OLSR node received TC message of size " << messageHeader.GetSerializedSize ());
-              ProcessTc (messageHeader, inetSourceAddr.GetIpv4 ());
+              ProcessTc (messageHeader, peerMainAddress);
               break;
 
             case olsr::MessageHeader::MID_MESSAGE:
               NS_LOG_DEBUG ("OLSR node received MID message of size " << messageHeader.GetSerializedSize ());
-              ProcessMid (messageHeader, inetSourceAddr.GetIpv4 ());
+              ProcessMid (messageHeader, peerMainAddress);
               break;
 
             default:
@@ -396,7 +408,7 @@ AgentImpl::RecvOlsr (Ptr<Socket> socket,
           // Remaining messages are also forwarded using the default algorithm.
           if (messageHeader.GetMessageType ()  != olsr::MessageHeader::HELLO_MESSAGE)
             ForwardDefault (messageHeader, duplicated,
-                            m_mainAddress, inetSourceAddr.GetIpv4 ());
+                            m_mainAddress, peerMainAddress);
         }
 	
     }
