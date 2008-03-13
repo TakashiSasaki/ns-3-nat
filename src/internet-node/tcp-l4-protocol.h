@@ -26,6 +26,7 @@
 #include "ns3/packet.h"
 #include "ns3/ipv4-address.h"
 #include "ns3/ptr.h"
+#include "ns3/object-factory.h"
 #include "ipv4-end-point-demux.h"
 #include "ipv4-l4-protocol.h"
 #include "ipv4-interface.h"
@@ -36,7 +37,6 @@
 namespace ns3 {
 
 class Node;
-class TraceResolver;
 class TraceContext;
 class Socket;
 class TcpHeader;
@@ -45,13 +45,18 @@ class TcpHeader;
  */
 class TcpL4Protocol : public Ipv4L4Protocol {
 public:
+  static TypeId GetTypeId (void);
   static const uint8_t PROT_NUMBER;
   /**
    * \brief Constructor
-   * \param node The node this protocol is associated with
    */
-  TcpL4Protocol (Ptr<Node> node);
+  TcpL4Protocol ();
   virtual ~TcpL4Protocol ();
+
+  void SetNode (Ptr<Node> node);
+
+  virtual int GetProtocolNumber (void) const;
+  virtual int GetVersion (void) const;
 
   /**
    * \return A smart Socket pointer to a TcpSocket, allocated by this instance
@@ -101,10 +106,12 @@ protected:
 private:
   Ptr<Node> m_node;
   Ipv4EndPointDemux *m_endPoints;
+  ObjectFactory m_rttFactory;
 private:
   friend class TcpSocket;
   void SendPacket (Ptr<Packet>, TcpHeader,
                   Ipv4Address, Ipv4Address);
+  static ObjectFactory GetDefaultRttEstimatorFactory (void);
 };
 
 }; // namespace ns3

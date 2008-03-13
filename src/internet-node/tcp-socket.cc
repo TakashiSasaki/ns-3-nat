@@ -31,7 +31,6 @@
 #include "tcp-typedefs.h"
 #include "ns3/simulator.h"
 #include "ns3/packet.h"
-#include "ns3/default-value.h"
 
 #include <algorithm>
 
@@ -41,12 +40,12 @@ using namespace std;
 
 namespace ns3 {
 
-TcpSocket::TcpSocket (Ptr<Node> node, Ptr<TcpL4Protocol> tcp)
+  TcpSocket::TcpSocket ()
   : m_skipRetxResched (false),
     m_dupAckCount (0),
     m_endPoint (0),
-    m_node (node),
-    m_tcp (tcp),
+    m_node (0),
+    m_tcp (0),
     m_errno (ERROR_NOTERROR),
     m_shutdownSend (false),
     m_shutdownRecv (false),
@@ -62,19 +61,12 @@ TcpSocket::TcpSocket (Ptr<Node> node, Ptr<TcpL4Protocol> tcp)
     m_lastRxAck (0),
     m_nextRxSequence (0),
     m_pendingData (0),
-    m_segmentSize (Tcp::defaultSegSize.GetValue()),
-    m_rxWindowSize (Tcp::defaultAdvWin.GetValue()),
-    m_advertisedWindowSize (Tcp::defaultAdvWin.GetValue()),
-    m_cWnd (Tcp::defaultInitialCWnd.GetValue() * m_segmentSize),
-    m_ssThresh (Tcp::defaultSSThresh.GetValue()),
-    m_initialCWnd (Tcp::defaultInitialCWnd.GetValue()),
-    m_rtt (RttEstimator::CreateDefault()),
-    m_lastMeasuredRtt (Seconds(0.0)),
-    m_cnTimeout (Seconds (Tcp::defaultConnTimeout.GetValue ())),
-    m_cnCount (Tcp::defaultConnCount.GetValue ())
+    m_rtt (0),
+    m_lastMeasuredRtt (Seconds(0.0))
 {
   NS_LOG_FUNCTION;
-  NS_LOG_PARAMS (this<<node<<tcp);
+  NS_LOG_PARAMS (this);
+  
 }
 
 TcpSocket::~TcpSocket ()
@@ -100,6 +92,33 @@ TcpSocket::~TcpSocket ()
   delete m_pendingData; //prevents leak
   m_pendingData = 0;
 }
+
+void
+TcpSocket::SetNode (Ptr<Node> node)
+{
+  m_node = node;
+  Ptr<Tcp> t = node->GetObject<Tcp> ();
+  m_segmentSize = t->GetDefaultSegSize ();
+  m_rxWindowSize = t->GetDefaultAdvWin ();
+  m_advertisedWindowSize = t->GetDefaultAdvWin ();
+  m_cWnd = t->GetDefaultInitialCwnd () * m_segmentSize;
+  m_ssThresh = t->GetDefaultSsThresh ();
+  m_initialCWnd = t->GetDefaultInitialCwnd ();
+  m_cnTimeout = Seconds (t->GetDefaultConnTimeout ());
+  m_cnCount = t->GetDefaultConnCount ();
+}
+
+void 
+TcpSocket::SetTcp (Ptr<TcpL4Protocol> tcp)
+{
+  m_tcp = tcp;
+}
+void 
+TcpSocket::SetRtt (Ptr<RttEstimator> rtt)
+{
+  m_rtt = rtt;
+}
+
 
 enum Socket::SocketErrno
 TcpSocket::GetErrno (void) const

@@ -41,6 +41,8 @@ NS_LOG_COMPONENT_DEFINE ("TcpL4Protocol");
 
 namespace ns3 {
 
+NS_OBJECT_ENSURE_REGISTERED (TcpL4Protocol);
+
 //State Machine things --------------------------------------------------------
 TcpStateMachine::TcpStateMachine() 
   : aT (LAST_STATE, StateActionVec_t(LAST_EVENT)),
@@ -309,20 +311,56 @@ static TcpStateMachine tcpStateMachine; //only instance of a TcpStateMachine
 /* see http://www.iana.org/assignments/protocol-numbers */
 const uint8_t TcpL4Protocol::PROT_NUMBER = 6;
 
-TcpL4Protocol::TcpL4Protocol (Ptr<Node> node)
-  : Ipv4L4Protocol (PROT_NUMBER, 2),
-    m_node (node),
-    m_endPoints (new Ipv4EndPointDemux ())
+ObjectFactory
+TcpL4Protocol::GetDefaultRttEstimatorFactory (void)
+{
+  ObjectFactory factory;
+  factory.SetTypeId (RttMeanDeviation::GetTypeId ());
+  return factory;
+}
+
+TypeId 
+TcpL4Protocol::GetTypeId (void)
+{
+  static TypeId tid = TypeId ("ns3::TcpL4Protocol")
+    .SetParent<Ipv4L4Protocol> ()
+    .AddAttribute ("RttEstimatorFactory",
+                   "How RttEstimator objects are created.",
+                   GetDefaultRttEstimatorFactory (),
+                   MakeObjectFactoryAccessor (&TcpL4Protocol::m_rttFactory),
+                   MakeObjectFactoryChecker ())
+    ;
+  return tid;
+}
+
+TcpL4Protocol::TcpL4Protocol ()
+  : m_endPoints (new Ipv4EndPointDemux ())
 {
   NS_LOG_FUNCTION;
-  NS_LOG_PARAMS (this << node);
   NS_LOG_LOGIC("Made a TcpL4Protocol "<<this);
 }
 
 TcpL4Protocol::~TcpL4Protocol ()
 {
   NS_LOG_FUNCTION;
- }
+}
+
+void 
+TcpL4Protocol::SetNode (Ptr<Node> node)
+{
+  m_node = node;
+}
+
+int 
+TcpL4Protocol::GetProtocolNumber (void) const
+{
+  return PROT_NUMBER;
+}
+int 
+TcpL4Protocol::GetVersion (void) const
+{
+  return 2;
+}
 
 void
 TcpL4Protocol::DoDispose (void)
@@ -341,7 +379,11 @@ Ptr<Socket>
 TcpL4Protocol::CreateSocket (void)
 {
   NS_LOG_FUNCTION;
-  Ptr<Socket> socket = Create<TcpSocket> (m_node, this);
+  Ptr<RttEstimator> rtt = m_rttFactory.Create<RttEstimator> ();
+  Ptr<TcpSocket> socket = CreateObject<TcpSocket> ();
+  socket->SetNode (m_node);
+  socket->SetTcp (this);
+  socket->SetRtt (rtt);
   return socket;
 }
 
