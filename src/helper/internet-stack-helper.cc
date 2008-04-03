@@ -96,7 +96,7 @@ InternetStackHelper::GetStream (uint32_t nodeId, uint32_t interfaceId)
   trace.interfaceId = interfaceId;
   trace.writer = Create<PcapWriter> ();
   std::ostringstream oss;
-  oss << m_pcapBaseFilename << ".pcap-" << nodeId << "-" << interfaceId;
+  oss << m_pcapBaseFilename << "-" << nodeId << "-" << interfaceId << ".pcap";
   trace.writer->Open (oss.str ());
   trace.writer->WriteIpHeader ();
   m_traces.push_back (trace);
