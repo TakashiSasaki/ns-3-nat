@@ -25,6 +25,7 @@
 #include "ns3/ptr.h"
 #include "ns3/pointer.h"
 #include "ns3/assert.h"
+#include "ns3/log.h"
 
 
 #include <math.h>
@@ -48,7 +49,6 @@ std::cout << "SIMU TRACE " << x << std::endl;
 
 
 namespace ns3 {
-
 
 /**
  * \brief private implementation detail of the Simulator API.
@@ -415,12 +415,20 @@ void Simulator::EnableLogTo (char const *filename)
   GetPriv ()->EnableLogTo (filename);
 }
 
+#ifdef NS3_LOG_ENABLE
+static void
+TimePrinter (std::ostream &os)
+{
+  os << Simulator::Now ();
+}
+#endif /* NS3_LOG_ENABLE */
 
 Ptr<SimulatorPrivate>
 Simulator::GetPriv (void)
 {
   if (m_priv == 0) 
     {
+      LogRegisterTimePrinter (&TimePrinter);
       m_priv = CreateObject<SimulatorPrivate> ();
       Ptr<Scheduler> scheduler = CreateObject<MapScheduler> ();
       m_priv->SetScheduler (scheduler);

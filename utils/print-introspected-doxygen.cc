@@ -161,7 +161,7 @@ StaticInformation::Gather (TypeId tid)
 void 
 StaticInformation::DoGather (TypeId tid)
 {
-  NS_LOG_FUNCTION;
+  NS_LOG_FUNCTION (this);
   if (HasAlreadyBeenProcessed (tid))
     {
       return;
