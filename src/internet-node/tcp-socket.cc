@@ -78,7 +78,8 @@ TcpSocket::GetTypeId ()
     m_nextRxSequence (0),
     m_pendingData (0),
     m_rtt (0),
-    m_lastMeasuredRtt (Seconds(0.0))
+    m_lastMeasuredRtt (Seconds(0.0)),
+    m_rxAvailable (0)
 {
   NS_LOG_FUNCTION (this);
   
@@ -122,7 +123,8 @@ TcpSocket::TcpSocket(const TcpSocket& sock)
     m_rtt (0),
     m_lastMeasuredRtt (Seconds(0.0)),
     m_cnTimeout (sock.m_cnTimeout),
-    m_cnCount (sock.m_cnCount)
+    m_cnCount (sock.m_cnCount),
+    m_rxAvailable (0)
 {
   NS_LOG_FUNCTION_NOARGS ();
   NS_LOG_LOGIC("Invoked the copy constructor");
@@ -433,12 +435,75 @@ TcpSocket::SendTo (const Address &address, Ptr<Packet> p)
     }
 }
 
+// XXX Raj to make this functional
+uint32_t
+TcpSocket::GetTxAvailable (void) const
+{
+  // No finite send buffer is modelled
+  return 0xffffffff;
+}
+
 int
 TcpSocket::Listen (uint32_t q)
 {
   NS_LOG_FUNCTION (this << q);
   Actions_t action = ProcessEvent (APP_LISTEN);
   ProcessAction (action);
+  return 0;
+}
+
+Ptr<Packet>
+TcpSocket::Recv (uint32_t maxSize, uint32_t flags)
+{
+  if (m_deliveryQueue.empty() )
+    {
+      return 0;
+    }
+  Ptr<Packet> p = m_deliveryQueue.front ();
+  if (p->GetSize () <= maxSize)
+    {
+      m_deliveryQueue.pop ();
+      m_rxAvailable -= p->GetSize ();
+    }
+  else
+    {
+      p = 0;
+    }
+  return p;
+}
+
+uint32_t
+TcpSocket::GetRxAvailable (void) const
+{
+  // We separately maintain this state to avoid walking the queue 
+  // every time this might be called
+  return m_rxAvailable;
+}
+
+// XXX Raj to finish
+void
+TcpSocket::SetSndBuf (uint32_t size)
+{
+
+}
+
+// XXX Raj to finish
+uint32_t
+TcpSocket::GetSndBuf (void) 
+{
+  return 0;
+}
+
+// XXX Raj to finish
+void
+TcpSocket::SetRcvBuf (uint32_t size)
+{
+}
+
+// XXX Raj to finish
+uint32_t
+TcpSocket::GetRcvBuf (void) 
+{
   return 0;
 }
 
@@ -956,7 +1021,12 @@ void TcpSocket::NewRx (Ptr<Packet> p,
       m_nextRxSequence += s;           // Advance next expected sequence
       //bytesReceived += s;       // Statistics
       NS_LOG_LOGIC("Case 1, advanced nrxs to " << m_nextRxSequence );
-      NotifyDataReceived (p, fromAddress);
+      SocketRxAddressTag tag;
+      tag.SetAddress (fromAddress);
+      p->AddTag (tag);
+      m_deliveryQueue.push (p);
+      m_rxAvailable += p->GetSize ();
+      NotifyDataRecv ();
       if (m_closeNotified)
         {
           NS_LOG_LOGIC ("Tcp " << this << " HuH?  Got data after closeNotif");
@@ -1008,7 +1078,12 @@ void TcpSocket::NewRx (Ptr<Packet> p,
                 }
               s1 = p1->GetSize ();
             }
-          NotifyDataReceived (p1, fromAddress);
+          SocketRxAddressTag tag;
+          tag.SetAddress (fromAddress);
+          p1->AddTag (tag);
+          m_deliveryQueue.push (p1);
+          m_rxAvailable += p->GetSize ();
+          NotifyDataRecv ();
 
           NS_LOG_LOGIC ("TcpSocket " << this << " adv rxseq1 by " << s1 );
           m_nextRxSequence += s1;           // Note data received
