@@ -129,7 +129,6 @@ int main(int argc, char *argv[]) {
   NS_LOG_INFO("Installing WiFi and Internet stack.");
   WifiHelper wifi;
   wifi.SetMac("ns3::AdhocWifiMac");
-  wifi.SetPhy("ns3::WifiPhy");
   NetDeviceContainer nodeDevices = wifi.Install(nodes);
 
   InternetStackHelper internet;

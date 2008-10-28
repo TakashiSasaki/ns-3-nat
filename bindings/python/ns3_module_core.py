@@ -77,6 +77,8 @@ def register_types(module):
     module.add_class('AttributeInfo', outer_class=root_module['ns3::TypeId'])
     ## random-variable.h: ns3::UniformVariable [class]
     module.add_class('UniformVariable', parent=root_module['ns3::RandomVariable'])
+    ## attribute-list.h: ns3::UnsafeAttributeList [class]
+    module.add_class('UnsafeAttributeList')
     ## random-variable.h: ns3::WeibullVariable [class]
     module.add_class('WeibullVariable', parent=root_module['ns3::RandomVariable'])
     ## empty.h: ns3::empty [class]
@@ -236,6 +238,7 @@ def register_methods(root_module):
     register_Ns3TypeId_methods(root_module, root_module['ns3::TypeId'])
     register_Ns3TypeIdAttributeInfo_methods(root_module, root_module['ns3::TypeId::AttributeInfo'])
     register_Ns3UniformVariable_methods(root_module, root_module['ns3::UniformVariable'])
+    register_Ns3UnsafeAttributeList_methods(root_module, root_module['ns3::UnsafeAttributeList'])
     register_Ns3WeibullVariable_methods(root_module, root_module['ns3::WeibullVariable'])
     register_Ns3Empty_methods(root_module, root_module['ns3::empty'])
     register_Ns3AttributeAccessor_methods(root_module, root_module['ns3::AttributeAccessor'])
@@ -537,6 +540,10 @@ def register_Ns3ObjectFactory_methods(root_module, cls):
     cls.add_method('Set', 
                    'void', 
                    [param('std::string', 'name'), param('ns3::AttributeValue const &', 'value')])
+    ## object-factory.h: void ns3::ObjectFactory::Set(ns3::AttributeList const & list) [member function]
+    cls.add_method('Set', 
+                   'void', 
+                   [param('ns3::AttributeList const &', 'list')])
     ## object-factory.h: void ns3::ObjectFactory::SetTypeId(ns3::TypeId tid) [member function]
     cls.add_method('SetTypeId', 
                    'void', 
@@ -1014,6 +1021,22 @@ def register_Ns3UniformVariable_methods(root_module, cls):
                    'double', 
                    [param('double', 's'), param('double', 'l')], 
                    is_static=True)
+    return
+
+def register_Ns3UnsafeAttributeList_methods(root_module, cls):
+    ## attribute-list.h: ns3::UnsafeAttributeList::UnsafeAttributeList() [constructor]
+    cls.add_constructor([])
+    ## attribute-list.h: ns3::UnsafeAttributeList::UnsafeAttributeList(ns3::UnsafeAttributeList const & o) [copy constructor]
+    cls.add_constructor([param('ns3::UnsafeAttributeList const &', 'o')])
+    ## attribute-list.h: void ns3::UnsafeAttributeList::Set(std::string name, ns3::AttributeValue const & param) [member function]
+    cls.add_method('Set', 
+                   'void', 
+                   [param('std::string', 'name'), param('ns3::AttributeValue const &', 'param')])
+    ## attribute-list.h: ns3::AttributeList ns3::UnsafeAttributeList::GetSafe(std::string name) const [member function]
+    cls.add_method('GetSafe', 
+                   'ns3::AttributeList', 
+                   [param('std::string', 'name')], 
+                   is_const=True)
     return
 
 def register_Ns3WeibullVariable_methods(root_module, cls):

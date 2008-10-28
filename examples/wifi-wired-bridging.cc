@@ -17,7 +17,7 @@ using namespace ns3;
 Ptr<WifiChannel>
 CreateChannel (void)
 {
-  Ptr<WifiChannel> channel = CreateObject<WifiChannel> ();
+  Ptr<YansWifiChannel> channel = CreateObject<YansWifiChannel> ();
   channel->SetPropagationDelayModel (CreateObject<ConstantSpeedPropagationDelayModel> ());
   Ptr<LogDistancePropagationLossModel> log = CreateObject<LogDistancePropagationLossModel> ();
   log->SetReferenceModel (CreateObject<FriisPropagationLossModel> ());
@@ -78,7 +78,6 @@ int main (int argc, char *argv[])
       Ptr<WifiChannel> channel;
 
       sta.Create (nStas);
-      wifi.SetPhy ("ns3::WifiPhy");
       channel = CreateChannel ();
       ip.NewNetwork ();
       mobility.SetPositionAllocator ("ns3::GridPositionAllocator",
