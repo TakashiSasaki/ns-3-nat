@@ -61,10 +61,6 @@ public:
    */
   void SetRemoteStationManager (Ptr<WifiRemoteStationManager> manager);
   /**
-   * \param channel the channel to connect to.
-   */
-  void SetChannel (Ptr<WifiChannel> channel);
-  /**
    * \returns the mac we are currently using.
    */
   Ptr<WifiMac> GetMac (void) const;
@@ -113,9 +109,10 @@ private:
   void LinkDown (void);
   void Setup (void);
   Ptr<WifiChannel> DoGetChannel (void) const;
+  void CompleteConfig (void);
+
   Ptr<Node> m_node;
   Ptr<WifiPhy> m_phy;
-  Ptr<WifiChannel> m_channel;
   Ptr<WifiMac> m_mac;
   Ptr<WifiRemoteStationManager> m_stationManager;
   NetDevice::ReceiveCallback m_forwardUp;
@@ -127,6 +124,7 @@ private:
   bool m_linkUp;
   Callback<void> m_linkChange;
   mutable uint16_t m_mtu;
+  bool m_configComplete;
 };
 
 } // namespace ns3
