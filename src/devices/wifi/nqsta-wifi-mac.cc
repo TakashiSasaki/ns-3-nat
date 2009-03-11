@@ -34,6 +34,7 @@
 #include "mac-low.h"
 #include "dcf-manager.h"
 #include "mac-rx-middle.h"
+#include "wifi-mac-trailer.h"
 #include "ns3/trace-source-accessor.h"
 #include "ns3/pointer.h"
 
@@ -321,6 +322,7 @@ void
 NqstaWifiMac::ForwardUp (Ptr<Packet> packet, Mac48Address from, Mac48Address to)
 {
   NS_LOG_FUNCTION (this << packet << from << to);
+  NotifyRx (packet);
   m_forwardUp (packet, from, to);
 }
 void
@@ -457,14 +459,16 @@ NqstaWifiMac::IsAssociated (void)
 void 
 NqstaWifiMac::Enqueue (Ptr<const Packet> packet, Mac48Address to, Mac48Address from)
 {
-  NS_FATAL_ERROR ("Qsta does not support enqueue");
+  NS_FATAL_ERROR ("Qsta does not support SendTo");
 }
+
 void 
 NqstaWifiMac::Enqueue (Ptr<const Packet> packet, Mac48Address to)
 {
   NS_LOG_FUNCTION (this << packet << to);
   if (!IsAssociated ()) 
     {
+      NotifyTxDrop (packet);
       TryToEnsureAssociated ();
       return;
     }
@@ -476,12 +480,19 @@ NqstaWifiMac::Enqueue (Ptr<const Packet> packet, Mac48Address to)
   hdr.SetAddr3 (to);
   hdr.SetDsNotFrom ();
   hdr.SetDsTo ();
+
+  NotifyTx (packet);
   m_dca->Queue (packet, hdr);
 }
+
 bool 
 NqstaWifiMac::SupportsSendFrom (void) const
 {
-  return true;
+  //
+  // The 802.11 MAC protocol has no way to support bridging outside of
+  // infrastructure mode
+  //
+  return false;
 }  
 
 
@@ -498,24 +509,29 @@ NqstaWifiMac::Receive (Ptr<Packet> packet, WifiMacHeader const *hdr)
            !hdr->GetAddr1 ().IsGroup ()) 
     {
       NS_LOG_LOGIC ("packet is not for us");
+      NotifyRxDrop (packet);
     } 
   else if (hdr->IsData ()) 
     {
       if (!IsAssociated ())
         {
           NS_LOG_LOGIC ("Received data frame while not associated: ignore");
+          NotifyRxDrop (packet);
           return;
         }
       if (!(hdr->IsFromDs () && !hdr->IsToDs ()))
         {
           NS_LOG_LOGIC ("Received data frame not from the DS: ignore");
+          NotifyRxDrop (packet);
           return;
         }
       if (hdr->GetAddr2 () != GetBssid ())
         {
           NS_LOG_LOGIC ("Received data frame not from the the BSS we are associated with: ignore");
+          NotifyRxDrop (packet);
           return;
         }
+
       ForwardUp (packet, hdr->GetAddr3 (), hdr->GetAddr1 ());
     } 
   else if (hdr->IsProbeReq () ||
@@ -524,6 +540,7 @@ NqstaWifiMac::Receive (Ptr<Packet> packet, WifiMacHeader const *hdr)
       /* this is a frame aimed at an AP.
        * so we can safely ignore it.
        */
+      NotifyRxDrop (packet);
     } 
   else if (hdr->IsBeacon ()) 
     {
