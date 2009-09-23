@@ -47,6 +47,12 @@
 #define NS_TEST_SOURCEDIR \
   TestCase::GetSourceDir (__FILE__)
 
+#define NS_TEST_RETURN_IF_ERROR \
+  if (GetErrorStatus ()) \
+    {                    \
+      return true;       \
+    } 
+
 // ===========================================================================
 // Test for equality (generic version)
 // ===========================================================================
@@ -64,7 +70,7 @@
         actualStream << actual;                                                                     \
         std::ostringstream limitStream;                                                             \
         limitStream << limit;                                                                       \
-        ReportFailure (std::string (#actual) + " (actual) EQ " + std::string (#limit) + " (limit)", \
+        ReportFailure (std::string (#actual) + " (actual) == " + std::string (#limit) + " (limit)", \
                        actualStream.str (), limitStream.str (), msgStream.str (), file, line);      \
         return true;                                                                                \
       }                                                                                             \
@@ -115,7 +121,7 @@
         actualStream << actual;                                                                     \
         std::ostringstream limitStream;                                                             \
         limitStream << limit;                                                                       \
-        ReportFailure (std::string (#actual) + " (actual) EQ " + std::string (#limit) + " (limit)", \
+        ReportFailure (std::string (#actual) + " (actual) == " + std::string (#limit) + " (limit)", \
                        actualStream.str (), limitStream.str (), msgStream.str (), file, line);      \
       }                                                                                             \
   } while (false)
@@ -168,8 +174,8 @@
         std::ostringstream limitStream;                                                                           \
         limitStream << limit << " +- " << tol;                                                                    \
         std::ostringstream condStream;                                                                            \
-        condStream << #actual << " (actual) LT " << #limit << " (limit) + " << #tol << " (tol) AND " <<           \
-                      #actual << " (actual) GT " << #limit << " (limit) - " << #tol << " (tol)";                  \
+        condStream << #actual << " (actual) < " << #limit << " (limit) + " << #tol << " (tol) && " <<             \
+                      #actual << " (actual) > " << #limit << " (limit) - " << #tol << " (tol)";                   \
         ReportFailure (condStream.str (), actualStream.str (), limitStream.str (), msgStream.str (), file, line); \
         return true;                                                                                              \
       }                                                                                                           \
@@ -243,8 +249,8 @@
         std::ostringstream limitStream;                                                                           \
         limitStream << limit << " +- " << tol;                                                                    \
         std::ostringstream condStream;                                                                            \
-        condStream << #actual << " (actual) LT " << #limit << " (limit) + " << #tol << " (tol) AND " <<           \
-                      #actual << " (actual) GT " << #limit << " (limit) - " << #tol << " (tol)";                  \
+        condStream << #actual << " (actual) < " << #limit << " (limit) + " << #tol << " (tol) && " <<             \
+                      #actual << " (actual) > " << #limit << " (limit) - " << #tol << " (tol)";                   \
         ReportFailure (condStream.str (), actualStream.str (), limitStream.str (), msgStream.str (), file, line); \
       }                                                                                                           \
   } while (false)
@@ -317,7 +323,7 @@
         actualStream << actual;                                                                     \
         std::ostringstream limitStream;                                                             \
         limitStream << limit;                                                                       \
-        ReportFailure (std::string (#actual) + " (actual) NE " + std::string (#limit) + " (limit)", \
+        ReportFailure (std::string (#actual) + " (actual) != " + std::string (#limit) + " (limit)", \
                        actualStream.str (), limitStream.str (), msgStream.str (), file, line);      \
         return true;                                                                                \
       }                                                                                             \
@@ -367,7 +373,7 @@
         actualStream << actual;                                                                     \
         std::ostringstream limitStream;                                                             \
         limitStream << limit;                                                                       \
-        ReportFailure (std::string (#actual) + " (actual) NE " + std::string (#limit) + " (limit)", \
+        ReportFailure (std::string (#actual) + " (actual) != " + std::string (#limit) + " (limit)", \
                        actualStream.str (), limitStream.str (), msgStream.str (), file, line);      \
       }                                                                                             \
   } while (false)
@@ -417,7 +423,7 @@
         actualStream << actual;                                                                      \
         std::ostringstream limitStream;                                                              \
         limitStream << limit;                                                                        \
-        ReportFailure (std::string (#actual) + " (actual) LT " + std::string (#limit) + " (limit)",  \
+        ReportFailure (std::string (#actual) + " (actual) < " + std::string (#limit) + " (limit)",   \
                        actualStream.str (), limitStream.str (), msgStream.str (), file, line);       \
         return true;                                                                                 \
       }                                                                                              \
@@ -457,7 +463,7 @@
         actualStream << actual;                                                                      \
         std::ostringstream limitStream;                                                              \
         limitStream << limit;                                                                        \
-        ReportFailure (std::string (#actual) + " (actual) LT " + std::string (#limit) + " (limit)",  \
+        ReportFailure (std::string (#actual) + " (actual) < " + std::string (#limit) + " (limit)",   \
                        actualStream.str (), limitStream.str (), msgStream.str (), file, line);       \
       }                                                                                              \
   } while (false)
@@ -496,7 +502,7 @@
         actualStream << actual;                                                                      \
         std::ostringstream limitStream;                                                              \
         limitStream << limit;                                                                        \
-        ReportFailure (std::string (#actual) + " (actual) GT " + std::string (#limit) + " (limit)",  \
+        ReportFailure (std::string (#actual) + " (actual) > " + std::string (#limit) + " (limit)",   \
                        actualStream.str (), limitStream.str (), msgStream.str (), file, line);       \
         return true;                                                                                 \
       }                                                                                              \
@@ -536,7 +542,7 @@
         actualStream << actual;                                                                      \
         std::ostringstream limitStream;                                                              \
         limitStream << limit;                                                                        \
-        ReportFailure (std::string (#actual) + " (actual) GT " + std::string (#limit) + " (limit)",  \
+        ReportFailure (std::string (#actual) + " (actual) > " + std::string (#limit) + " (limit)",   \
                        actualStream.str (), limitStream.str (), msgStream.str (), file, line);       \
       }                                                                                              \
   } while (false)
@@ -574,7 +580,7 @@ namespace ns3 {
  * This routine is based on the GNU Scientific Library function gsl_fcmp.
  * 
  * \param a The first of double precision floating point numbers to compare
- * \param a The second of double precision floating point numbers to compare
+ * \param b The second of double precision floating point numbers to compare
  * \param epsilon The second of double precision floating point numberss to compare
  * \returns Returns true if the doubles are equal to a precision defined by epsilon
  */
@@ -591,7 +597,6 @@ public:
 
   /**
    * \brief Run this test case.
-   * \param verbose Turn on any output the test case may provide
    * \returns Boolean sense of "an error has occurred."
    */
   bool Run (void);
@@ -657,6 +662,7 @@ public:
    * around so we need to save it.  Since file streams are not designed to be
    * copied or assigned (what does it mean to have duplicate streams to a file) 
    * we have to stash a pointer to the stream.
+   * \param ofs output file stream
    */
   void SetStream (std::ofstream *ofs);
 
@@ -748,6 +754,10 @@ private:
 class TestSuite
 {
 public:
+  /**
+   * \enum TestType
+   * \brief Type of test.
+   */
   enum TestType {
     BVT = 1,    /**< This test suite implements a Build Verification Test */
     UNIT,       /**< This test suite implements a Unit Test */
@@ -772,7 +782,6 @@ public:
   /**
    * \brief Run this test suite.
    *
-   * \param verbose Turn on any output the test case may provide
    * \returns Boolean sense of "an error has occurred."
    */
   bool Run (void);
@@ -838,6 +847,7 @@ public:
    * around so we need to save it.  Since file streams are not designed to be
    * copied or assigned (what does it mean to have duplicate streams to a file) 
    * we have to stash a pointer to the stream.
+   * \param ofs output file stream
    */
   void SetStream (std::ofstream *ofs);
 
