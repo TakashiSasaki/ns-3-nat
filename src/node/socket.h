@@ -546,6 +546,41 @@ public:
    * \returns Pointer to interface.
    */
   Ptr<NetDevice> GetBoundNetDevice (); 
+
+
+  /**
+   * \brief Configure whether broadcast datagram transmissions are allowed
+   *
+   * This method corresponds to using setsockopt() SO_BROADCAST of
+   * real network or BSD sockets.  If set on a socket, this option
+   * will enable or disable packets to be transmitted to broadcast
+   * destination addresses.
+   *
+   * \param allowBroadcast Whether broadcast is allowed
+   * \return true if operation succeeds
+   */
+  virtual bool SetAllowBroadcast (bool allowBroadcast) = 0;
+
+  /**
+   * \brief Query whether broadcast datagram transmissions are allowed
+   *
+   * This method corresponds to using getsockopt() SO_BROADCAST of
+   * real network or BSD sockets.
+   *
+   * \returns true if broadcast is allowed, false otherwise
+   */
+  virtual bool GetAllowBroadcast () const = 0;
+
+  /**
+   * \brief Enable/Disable receive packet information to socket.
+   *
+   * For IP_PKTINFO/IP6_PKTINFO. This method is only usable for 
+   * Raw socket and Datagram Socket. Not supported for Stream socket.
+   *
+   * \param flag Enable/Disable receive information
+   * \returns nothing
+   */
+  void SetRecvPktInfo (bool flag);
  
 protected:
   void NotifyConnectionSucceeded (void);
@@ -559,6 +594,7 @@ protected:
   void NotifyDataRecv (void);
   virtual void DoDispose (void);
   Ptr<NetDevice> m_boundnetdevice;
+  bool m_recvpktinfo;
 private:
   Callback<void, Ptr<Socket> >                   m_connectionSucceeded;
   Callback<void, Ptr<Socket> >                   m_connectionFailed;

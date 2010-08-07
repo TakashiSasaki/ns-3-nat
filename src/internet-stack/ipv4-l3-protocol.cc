@@ -480,7 +480,7 @@ Ipv4L3Protocol::Receive( Ptr<NetDevice> device, Ptr<const Packet> p, uint16_t pr
     {
       NS_LOG_LOGIC ("Forwarding to raw socket"); 
       Ptr<Ipv4RawSocketImpl> socket = *i;
-      socket->ForwardUp (packet, ipHeader, device);
+      socket->ForwardUp (packet, ipHeader, ipv4Interface);
     }
 
   NS_ASSERT_MSG (m_routingProtocol != 0, "Need a routing protocol object to process packets");
@@ -618,10 +618,10 @@ Ipv4L3Protocol::Send (Ptr<Packet> packet,
       // returned to the transport protocol with a source address but
       // there was no next hop available yet (since a route may need
       // to be queried).  
-      NS_FATAL_ERROR ("This case not yet implemented");
+      NS_FATAL_ERROR ("Ipv4L3Protocol::Send case 4: This case not yet implemented");
     }
   // 5) packet is not broadcast, and route is NULL (e.g., a raw socket call)
-  NS_LOG_LOGIC ("Ipv4L3Protocol::Send case 4:  passed in with no route " << destination);
+  NS_LOG_LOGIC ("Ipv4L3Protocol::Send case 5:  passed in with no route " << destination);
   Socket::SocketErrno errno_; 
   Ptr<NetDevice> oif (0); // unused for now
   ipHeader = BuildHeader (source, destination, protocol, packet->GetSize (), ttl, mayFragment);
@@ -818,7 +818,7 @@ Ipv4L3Protocol::LocalDeliver (Ptr<const Packet> packet, Ipv4Header const&ip, uin
       // RX_ENDPOINT_UNREACH codepath
       Ptr<Packet> copy = p->Copy ();
       enum Ipv4L4Protocol::RxStatus status = 
-        protocol->Receive (p, ip.GetSource (), ip.GetDestination (), GetInterface (iif));
+        protocol->Receive (p, ip, GetInterface (iif));
       switch (status) {
       case Ipv4L4Protocol::RX_OK:
         // fall through

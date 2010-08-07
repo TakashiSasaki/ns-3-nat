@@ -23,6 +23,7 @@
 #include "ns3/packet.h"
 #include "ns3/node.h"
 #include "ns3/boolean.h"
+#include "ns3/object-vector.h"
 #include "ns3/ipv4-route.h"
 
 #include "udp-l4-protocol.h"
@@ -48,6 +49,10 @@ UdpL4Protocol::GetTypeId (void)
   static TypeId tid = TypeId ("ns3::UdpL4Protocol")
     .SetParent<Ipv4L4Protocol> ()
     .AddConstructor<UdpL4Protocol> ()
+    .AddAttribute ("SocketList", "The list of sockets associated to this protocol.",
+                   ObjectVectorValue (),
+                   MakeObjectVectorAccessor (&UdpL4Protocol::m_sockets),
+                   MakeObjectVectorChecker<UdpSocketImpl> ())
     ;
   return tid;
 }
@@ -107,6 +112,12 @@ void
 UdpL4Protocol::DoDispose (void)
 {
   NS_LOG_FUNCTION_NOARGS ();
+  for (std::vector<Ptr<UdpSocketImpl> >::iterator i = m_sockets.begin (); i != m_sockets.end (); i++)
+    {
+      *i = 0;
+    }
+  m_sockets.clear ();
+
   if (m_endPoints != 0)
     {
       delete m_endPoints;
@@ -123,6 +134,7 @@ UdpL4Protocol::CreateSocket (void)
   Ptr<UdpSocketImpl> socket = CreateObject<UdpSocketImpl> ();
   socket->SetNode (m_node);
   socket->SetUdp (this);
+  m_sockets.push_back (socket);
   return socket;
 }
 
@@ -198,18 +210,17 @@ UdpL4Protocol::ReceiveIcmp (Ipv4Address icmpSource, uint8_t icmpTtl,
 
 enum Ipv4L4Protocol::RxStatus
 UdpL4Protocol::Receive(Ptr<Packet> packet, 
-                       Ipv4Address const &source,
-                       Ipv4Address const &destination,
+                       Ipv4Header const &header,
                        Ptr<Ipv4Interface> interface)
 {
-  NS_LOG_FUNCTION (this << packet << source << destination);
+  NS_LOG_FUNCTION (this << packet << header);
   UdpHeader udpHeader;
   if(Node::ChecksumEnabled ())
   {
     udpHeader.EnableChecksums();
   }
 
-  udpHeader.InitializeChecksum (source, destination, PROT_NUMBER);
+  udpHeader.InitializeChecksum (header.GetSource (), header.GetDestination (), PROT_NUMBER);
 
   packet->RemoveHeader (udpHeader);
 
@@ -219,9 +230,10 @@ UdpL4Protocol::Receive(Ptr<Packet> packet,
     return Ipv4L4Protocol::RX_CSUM_FAILED;
   }
 
+  NS_LOG_DEBUG ("Looking up dst " << header.GetDestination () << " port " << udpHeader.GetDestinationPort ()); 
   Ipv4EndPointDemux::EndPoints endPoints =
-    m_endPoints->Lookup (destination, udpHeader.GetDestinationPort (),
-                         source, udpHeader.GetSourcePort (), interface);
+    m_endPoints->Lookup (header.GetDestination (), udpHeader.GetDestinationPort (),
+                         header.GetSource (), udpHeader.GetSourcePort (), interface);
   if (endPoints.empty ())
     {
       NS_LOG_LOGIC ("RX_ENDPOINT_UNREACH");
@@ -230,7 +242,8 @@ UdpL4Protocol::Receive(Ptr<Packet> packet,
   for (Ipv4EndPointDemux::EndPointsI endPoint = endPoints.begin ();
        endPoint != endPoints.end (); endPoint++)
     {
-      (*endPoint)->ForwardUp (packet->Copy (), source, destination, udpHeader.GetSourcePort ());
+      (*endPoint)->ForwardUp (packet->Copy (), header, udpHeader.GetSourcePort (), 
+                              interface);
     }
   return Ipv4L4Protocol::RX_OK;
 }

@@ -487,7 +487,7 @@ public:
    * \param symmetric   If true (default), both a->b and b->a paths will be affected
    */ 
   void SetLoss (Ptr<Node> a, Ptr<Node> b, double loss, bool symmetric = true);
-  /// Set default loss (in dB, positive) to be used, \infty if not set
+  /// Set default loss (in dB, positive) to be used, infinity if not set
   void SetDefaultLoss (double);
   
 private:
@@ -501,6 +501,29 @@ private:
   typedef std::pair< Ptr<MobilityModel>, Ptr<MobilityModel> > MobilityPair; 
   /// Fixed loss between pair of nodes
   std::map<MobilityPair, double> m_loss;
+};
+
+/**
+ * \brief The propagation loss depends only on the distance (range) between transmitter and receiver.
+ *
+ * The single MaxRange attribute (units of meters) determines path loss.
+ * Receivers at or within MaxRange meters receive the transmission at the
+ * transmit power level. Receivers beyond MaxRange receive at power
+ * -1000 dBm (effectively zero).
+*/
+class RangePropagationLossModel : public PropagationLossModel
+{
+public:
+  static TypeId GetTypeId (void);
+  RangePropagationLossModel ();
+private:
+  RangePropagationLossModel (const RangePropagationLossModel& o);
+  RangePropagationLossModel& operator= (const RangePropagationLossModel& o);
+  virtual double DoCalcRxPower (double txPowerDbm,
+                                Ptr<MobilityModel> a,
+                                Ptr<MobilityModel> b) const;
+private:
+  double m_range;
 };
 
 } // namespace ns3

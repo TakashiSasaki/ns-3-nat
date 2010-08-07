@@ -463,4 +463,20 @@ PacketSocket::GetSockName (Address &address) const
   return 0;
 }
 
+bool
+PacketSocket::SetAllowBroadcast (bool allowBroadcast)
+{
+  if (allowBroadcast)
+    {
+      return false;
+    }
+  return true;
+}
+
+bool
+PacketSocket::GetAllowBroadcast () const
+{
+  return false;
+}
+
 }//namespace ns3

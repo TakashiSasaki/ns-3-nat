@@ -19,14 +19,13 @@
  */
 
 #include "ns3/log.h"
+#include "ns3/fatal-error.h"
 
 #include "nix-vector.h"
 
 NS_LOG_COMPONENT_DEFINE ("NixVector");
 
 namespace ns3 {
-
-NS_OBJECT_ENSURE_REGISTERED (NixVector);
 
 typedef std::vector<uint32_t> NixBits_t;
 
@@ -44,15 +43,6 @@ NixVector::NixVector ()
 NixVector::~NixVector ()
 {
   NS_LOG_FUNCTION_NOARGS ();
-}
-
-Ptr<NixVector>
-NixVector::Copy (void) const
-{
-  // we need to invoke the copy constructor directly
-  // rather than calling Create because the copy constructor
-  // is private.
-  return Ptr<NixVector> (new NixVector (*this), false);
 }
 
 NixVector::NixVector (const NixVector &o)
@@ -76,15 +66,13 @@ NixVector::operator = (const NixVector &o)
   return *this;
 }
 
-TypeId
-NixVector::GetTypeId(void)
+Ptr<NixVector>
+NixVector::Copy (void) const
 {
-  static TypeId tid = TypeId ("ns3::NixVector")
-   .SetParent<Object> ()
-   .AddConstructor<NixVector> ()
-    ;
-
-  return tid;
+  // we need to invoke the copy constructor directly
+  // rather than calling Create because the copy constructor
+  // is private.
+  return Ptr<NixVector> (new NixVector (*this), false);
 }
 
 std::ostream & operator << (std::ostream &os, const NixVector &nix)

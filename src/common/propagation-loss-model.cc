@@ -720,7 +720,7 @@ NS_OBJECT_ENSURE_REGISTERED (MatrixPropagationLossModel);
 TypeId 
 MatrixPropagationLossModel::GetTypeId (void)
 {
-  static TypeId tid = TypeId ("ns3::TopologicalPropagationLossModel")
+  static TypeId tid = TypeId ("ns3::MatrixPropagationLossModel")
     .SetParent<PropagationLossModel> ()
     .AddConstructor<MatrixPropagationLossModel> ()
     .AddAttribute ("DefaultLoss", "The default value for propagation loss, dB.",
@@ -785,6 +785,45 @@ MatrixPropagationLossModel::DoCalcRxPower (double txPowerDbm,
   else
     {
       return txPowerDbm - m_default;
+    }
+}
+
+// ------------------------------------------------------------------------- //
+
+NS_OBJECT_ENSURE_REGISTERED (RangePropagationLossModel);
+
+TypeId
+RangePropagationLossModel::GetTypeId (void)
+{
+  static TypeId tid = TypeId ("ns3::RangePropagationLossModel")
+    .SetParent<PropagationLossModel> ()
+    .AddConstructor<RangePropagationLossModel> ()
+    .AddAttribute ("MaxRange",
+                   "Maximum Transmission Range (meters)",
+                   DoubleValue (250),
+                   MakeDoubleAccessor (&RangePropagationLossModel::m_range),
+                   MakeDoubleChecker<double> ())
+  ;
+  return tid;
+}
+
+RangePropagationLossModel::RangePropagationLossModel ()
+{
+}
+
+double
+RangePropagationLossModel::DoCalcRxPower (double txPowerDbm,
+                                          Ptr<MobilityModel> a,
+                                          Ptr<MobilityModel> b) const
+{
+  double distance = a->GetDistanceFrom (b);
+  if (distance <= m_range)
+    {
+      return txPowerDbm;
+    }
+  else
+    {
+      return -1000;
     }
 }
 

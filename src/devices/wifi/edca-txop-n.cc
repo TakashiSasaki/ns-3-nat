@@ -33,7 +33,6 @@
 #include "msdu-aggregator.h"
 #include "mgt-headers.h"
 #include "qos-blocked-destinations.h"
-#include "block-ack-manager.h"
 
 NS_LOG_COMPONENT_DEFINE ("EdcaTxopN");
 
@@ -124,7 +123,7 @@ TypeId
 EdcaTxopN::GetTypeId (void)
 {
   static TypeId tid = TypeId ("ns3::EdcaTxopN")
-    .SetParent<Object> ()
+    .SetParent (ns3::Dcf::GetTypeId ())
     .AddConstructor<EdcaTxopN> ()
     .AddAttribute ("BlockAckThreshold", "If number of packets in this queue reaches this value,\
                                          block ack mechanism is used. If this value is 0, block ack is never used.",
@@ -320,10 +319,9 @@ EdcaTxopN::NotifyAccessGranted (void)
           NS_LOG_DEBUG ("queue is empty");
           return; 
         }
-      struct Bar bar;
-      if (m_baManager->HasBar (bar))
+      if (m_baManager->HasBar (m_currentBar))
         {
-          SendBlockAckRequest (bar);
+          SendBlockAckRequest (m_currentBar);
           return;
         }
       /* check if packets need retransmission are stored in BlockAckManager */
@@ -377,6 +375,10 @@ EdcaTxopN::NotifyAccessGranted (void)
       m_dcf->StartBackoffNow (m_rng->GetNext (0, m_dcf->GetCw ()));
       StartAccessIfNeeded ();
       NS_LOG_DEBUG ("tx broadcast");
+    }
+  else if (m_currentHdr.GetType() == WIFI_MAC_CTL_BACKREQ)
+    {
+      SendBlockAckRequest (m_currentBar);
     }
   else
     {

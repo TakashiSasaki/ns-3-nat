@@ -466,7 +466,8 @@ NscTcpSocketImpl::GetRxAvailable (void) const
 }
 
 void
-NscTcpSocketImpl::ForwardUp (Ptr<Packet> packet, Ipv4Address saddr, Ipv4Address daddr, uint16_t port)
+NscTcpSocketImpl::ForwardUp (Ptr<Packet> packet, Ipv4Header header, uint16_t port,
+                             Ptr<Ipv4Interface> incomingInterface)
 {
   NSCWakeup();
 }
@@ -816,6 +817,22 @@ NscTcpSocketImpl::GetNativeNs3Errno(int error) const
     }
   NS_ASSERT_MSG(0, "Unknown NSC error");
   return ERROR_INVAL;
+}
+
+bool
+NscTcpSocketImpl::SetAllowBroadcast (bool allowBroadcast)
+{
+  if (allowBroadcast)
+    {
+      return false;
+    }
+  return true;
+}
+
+bool
+NscTcpSocketImpl::GetAllowBroadcast () const
+{
+  return false;
 }
 
 }//namespace ns3

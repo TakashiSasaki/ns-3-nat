@@ -26,6 +26,7 @@
 #include "ns3/log.h"
 #include "ns3/ipv6-route.h"
 #include "ns3/ipv6-routing-protocol.h"
+#include "ns3/ipv6-packet-info-tag.h"
 
 #include "ipv6-l3-protocol.h"
 #include "ipv6-raw-socket-impl.h"
@@ -325,6 +326,15 @@ bool Ipv6RawSocketImpl::ForwardUp (Ptr<const Packet> p, Ipv6Header hdr, Ptr<NetD
             }
         }
 
+      // Should check via getsockopt ()..
+      if (this->m_recvpktinfo)
+        {
+          Ipv6PacketInfoTag tag;
+          copy->RemovePacketTag (tag);
+          tag.SetRecvIf (device->GetIfIndex ());
+          copy->AddPacketTag (tag);
+        }
+
       copy->AddHeader (hdr);
       struct Data data;
       data.packet = copy;
@@ -335,6 +345,22 @@ bool Ipv6RawSocketImpl::ForwardUp (Ptr<const Packet> p, Ipv6Header hdr, Ptr<NetD
       return true;
     }
   return false;
+}
+
+bool
+Ipv6RawSocketImpl::SetAllowBroadcast (bool allowBroadcast)
+{
+  if (!allowBroadcast)
+    {
+      return false;
+    }
+  return true;
+}
+
+bool
+Ipv6RawSocketImpl::GetAllowBroadcast () const
+{
+  return true;
 }
 
 } /* namespace ns3 */
