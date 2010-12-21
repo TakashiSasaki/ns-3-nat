@@ -119,6 +119,7 @@ Simulator version:
 * Packets::
 * Helpers::
 * Python::
+* LTE Module::
 @end menu
 
 @setchapternewpage off
@@ -161,6 +162,7 @@ Simulator version:
 @include wifi.texi
 @include mesh.texi
 @include bridge.texi
+@include lte.texi
 @include wimax.texi
 @raisesections
 
