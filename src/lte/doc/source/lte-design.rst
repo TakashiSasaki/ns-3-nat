@@ -70,8 +70,7 @@ have been considered:
 
 
 
-Module Architecture
-~~~~~~~~~~~~~~~~~~~
+The overall architecture of the LTE module is represented in the following figures.
 
 The overall architecture of the LTE module is represented in the
 figures :ref:`fig-lte-enb-architecture` and :ref:`fig-lte-ue-architecture`, which
@@ -79,6 +78,8 @@ deal respectively with the eNB and the UE. A detailed description of the most
 important components are provided in the following sections.
 
 
+.. figure:: figures/lte-ue-architecture.*
+   :align: right
 
 .. _fig-lte-enb-architecture:
    
@@ -94,10 +95,16 @@ important components are provided in the following sections.
 
    Architecture of the LTE UE
 
+Design
+++++++
+
+The MAC Scheduler interface is **specified** or defined as **abstract classes**. The MAC Scheduler interface is **implemented** as **derived classes** from the abstract classes. We have splitted the MAC Scheduler interface into 4 abstract classes:
 
 
-
-.. _ff-mac-sched-api:
+  * Provider Side is specified in the ``FfMacSchedSapProvider`` class
+  * User Side is specified in the ``FfMacSchedSapUser`` class
+  
+* CSCHED SAP API
 
 The FemtoForum MAC Scheduler Interface
 ++++++++++++++++++++++++++++++++++++++
@@ -320,6 +327,10 @@ where :math:`|\cdot|` indicates the cardinality of the set; finally,
    \right)}{\tau}
    
 
+Every time that the ``LteSpectrumPHY::StartRx ()`` function is called, the 
+``SpectrumInterferenceModel`` is used to computed the SINR, as proposed in [3]_. Then, 
+the network device uses the AMC module to map the SINR to a proper CQI and to send it 
+to the eNB using the ideal control channel.
 
 
 RRC and RLC Models
@@ -348,6 +359,8 @@ example the spectrum licensing policies that are
 discussed in [Ofcom2.6GHz]_.
 
 
+.. [4] 3GPP R1-081483 (available on 
+       http://www.3gpp.org/ftp/tsg_ran/WG1_RL1/TSGR1_52b/Docs/R1-081483.zip )
 
 
 Physical layer
