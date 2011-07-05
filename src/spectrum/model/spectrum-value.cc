@@ -32,6 +32,7 @@ namespace ns3 {
 
 
 SpectrumValue::SpectrumValue ()
+  : m_values (0)
 {
 }
 
@@ -405,7 +406,6 @@ operator << (std::ostream& os, const SpectrumValue& pvf)
       os << *it1 << " ";
       ++it1;
     }
-  os << std::endl;
   return os;
 }
 
