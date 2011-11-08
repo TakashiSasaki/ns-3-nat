@@ -31,6 +31,7 @@
 #include <ns3/eps-bearer.h>
 #include <ns3/mac-stats-calculator.h>
 #include <ns3/rlc-stats-calculator.h>
+#include <ns3/trace-fading-loss-model.h>
 
 namespace ns3 {
 
@@ -145,6 +146,18 @@ public:
    * set an attribute for the propagation model to be created
    */
   void SetPropagationModelAttribute (std::string n, const AttributeValue &v);
+  
+  /** 
+   * 
+   * 
+   * \param type the fading modul to be used
+   */
+  void SetFadingModel (std::string model);
+
+  /**
+   * set an attribute of the fading model
+   */
+  void SetFadingModelAttribute (std::string n, const AttributeValue &v);
 
 
   /**
@@ -211,6 +224,11 @@ private:
   ObjectFactory m_dlPropagationModelFactory;
   ObjectFactory m_ulPropagationModelFactory;
 
+  std::string m_fadingModelType;
+  ObjectFactory m_fadingModelFactory;
+  
+  Ptr<TraceFadingLossModel> m_fadingModule;
+  
   Ptr<MacStatsCalculator> m_macStats;
   Ptr<RlcStatsCalculator> m_rlcStats;
 };

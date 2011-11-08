@@ -29,8 +29,8 @@
 #include "ns3/buildings-mobility-model.h"
 #include "ns3/enum.h"
 
-#include <ns3/shadowing-loss-model.h>
-#include <ns3/jakes-fading-loss-model.h>
+//#include <ns3/shadowing-loss-model.h>
+//#include <ns3/jakes-fading-loss-model.h>
 
 
 NS_LOG_COMPONENT_DEFINE ("BuildingsPropagationLossModel");
@@ -98,7 +98,7 @@ BuildingsPropagationLossModel::GetTypeId (void)
     .AddAttribute ("Frequency",
                    "The Frequency  (default is 2.106 GHz).",
                    DoubleValue (2160e6),
-                   MakeDoubleAccessor (&BuildingsPropagationLossModel::m_frequency),
+                   MakeDoubleAccessor (&BuildingsPropagationLossModel::SetFrequency),
                    MakeDoubleChecker<double> ())
                    
      .AddAttribute ("ShadowSigmaOutdoor",
@@ -148,16 +148,16 @@ BuildingsPropagationLossModel::GetTypeId (void)
                      MakeEnumAccessor (&BuildingsPropagationLossModel::SetEnvironment,
                      &BuildingsPropagationLossModel::GetEnvironment),
                     MakeEnumChecker (BuildingsPropagationLossModel::Urban, "Urban",
-                                      BuildingsPropagationLossModel::SubUrban, "SubUrban",
-                                      BuildingsPropagationLossModel::OpenAreas, "OpenAreas"))
+                    BuildingsPropagationLossModel::SubUrban, "SubUrban",
+                    BuildingsPropagationLossModel::OpenAreas, "OpenAreas"))
 
       .AddAttribute ("CitySize", 
                       "Dimension of the city",
                       EnumValue (BuildingsPropagationLossModel::Large),
                      MakeEnumAccessor (&BuildingsPropagationLossModel::SetCitySize),
                       MakeEnumChecker (BuildingsPropagationLossModel::Small, "Small",
-                                      BuildingsPropagationLossModel::Medium, "Medium",
-                                      BuildingsPropagationLossModel::Large, "Large"));
+                     BuildingsPropagationLossModel::Medium, "Medium",
+                     BuildingsPropagationLossModel::Large, "Large"));
 
     
   return tid;
@@ -205,10 +205,23 @@ BuildingsPropagationLossModel::SetLambda (double lambda)
   m_frequency = 300000000 / lambda;
 }
 
+void
+BuildingsPropagationLossModel::SetFrequency (double freq)
+{
+  m_frequency = freq;
+  m_lambda = 300000000 / m_frequency;
+}
+
 double
 BuildingsPropagationLossModel::GetLambda (void) const
 {
   return m_lambda;
+}
+
+double
+BuildingsPropagationLossModel::GetFrequency (void) const
+{
+  return m_frequency;
 }
 
 void

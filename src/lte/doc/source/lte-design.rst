@@ -357,6 +357,8 @@ example the spectrum licensing policies that are
 discussed in [Ofcom2.6GHz]_.
 
 
+
+
 .. [4] 3GPP R1-081483 (available on 
        http://www.3gpp.org/ftp/tsg_ran/WG1_RL1/TSGR1_52b/Docs/R1-081483.zip )
 

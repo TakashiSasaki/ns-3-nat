@@ -92,12 +92,20 @@ LenaHelper::DoStart (void)
       NS_LOG_LOGIC (this << " using a SpectrumPropagationLossModel in UL");
       m_uplinkChannel->AddSpectrumPropagationLossModel (ulSplm);
     }
-  else
+    else
     {
       NS_LOG_LOGIC (this << " using a PropagationLossModel in UL");
       Ptr<PropagationLossModel> ulPlm = m_uplinkPropagationModel->GetObject<PropagationLossModel> ();            
       NS_ASSERT_MSG (ulPlm != 0, " " << m_uplinkPropagationModel << " is neither PropagationLossModel nor SpectrumPropagationLossModel");       
       m_uplinkChannel->AddPropagationLossModel (ulPlm);
+    }
+    
+  //if (m_fadingModelFactory.GetTypeId ().GetName ().compare ( "ns3::TraceFadingLossModel") == 0)
+  if (m_fadingModelType.compare ( "ns3::TraceFadingLossModel") == 0)
+    {
+      m_fadingModule = m_fadingModelFactory.Create<TraceFadingLossModel> ();
+      m_downlinkChannel->AddSpectrumPropagationLossModel (m_fadingModule);
+      m_uplinkChannel->AddSpectrumPropagationLossModel (m_fadingModule);
     }
 
   m_macStats = CreateObject<MacStatsCalculator> ();
@@ -141,6 +149,11 @@ TypeId LenaHelper::GetTypeId (void)
                    StringValue ("ns3::BuildingsPropagationLossModel"),
                    MakeStringAccessor (&LenaHelper::SetPropagationModelType),
                    MakeStringChecker ())
+     .AddAttribute ("FadingModel",
+                   "The type of fading model to be used",
+                   StringValue (""), // fake module -> no fading 
+                   MakeStringAccessor (&LenaHelper::SetFadingModel),
+                   MakeStringChecker ())
   ;
   return tid;
 }
@@ -177,6 +190,25 @@ LenaHelper::SetPropagationModelAttribute (std::string n, const AttributeValue &v
   NS_LOG_FUNCTION (this << n);
   m_dlPropagationModelFactory.Set (n, v);
   m_ulPropagationModelFactory.Set (n, v);
+}
+
+
+void 
+LenaHelper::SetFadingModel (std::string type) 
+{
+  NS_LOG_FUNCTION (this << type);
+  m_fadingModelType = type;
+  if (!type.empty ())
+    {
+      m_fadingModelFactory = ObjectFactory ();
+      m_fadingModelFactory.SetTypeId (type);
+    }
+}
+
+void 
+LenaHelper::SetFadingModelAttribute (std::string n, const AttributeValue &v)
+{
+  m_fadingModelFactory.Set (n, v);
 }
 
 
@@ -284,7 +316,6 @@ LenaHelper::InstallSingleEnbDevice (Ptr<Node> n)
       double dlFreq = LteSpectrumValueHelper::GetCarrierFrequency (dev->GetDlEarfcn ());
       NS_LOG_LOGIC ("DL freq: " << dlFreq);
       m_downlinkPropagationModel->SetAttribute ("Frequency", DoubleValue (dlFreq));
-      m_downlinkPropagationModel->SetAttribute ("Lambda", DoubleValue (300000000.0 /dlFreq));
     }
   else
     {
@@ -295,7 +326,6 @@ LenaHelper::InstallSingleEnbDevice (Ptr<Node> n)
       double ulFreq = LteSpectrumValueHelper::GetCarrierFrequency (dev->GetUlEarfcn ());
       NS_LOG_LOGIC ("UL freq: " << ulFreq);
       m_uplinkPropagationModel->SetAttribute ("Frequency", DoubleValue (ulFreq));
-      m_uplinkPropagationModel->SetAttribute ("Lambda", DoubleValue (300000000.0 /ulFreq));
     }
   
   dev->Start ();
@@ -371,6 +401,19 @@ LenaHelper::Attach (Ptr<NetDevice> ueDevice, Ptr<NetDevice> enbDevice)
   Ptr<LteEnbPhy> enbPhy = enbDevice->GetObject<LteEnbNetDevice> ()->GetPhy ();
   Ptr<LteUePhy> uePhy = ueDevice->GetObject<LteUeNetDevice> ()->GetPhy ();
   enbPhy->AddUePhy (rnti, uePhy);
+  
+  //if (m_fadingModelFactory.GetTypeId ().GetName ().compare ( "ns3::TraceFadingLossModel") == 0)
+  if (m_fadingModelType.compare ( "ns3::TraceFadingLossModel") == 0)
+    {
+       Ptr<MobilityModel> mm_enb_dl = enbPhy->GetDownlinkSpectrumPhy ()->GetMobility ()->GetObject<MobilityModel> ();
+       Ptr<MobilityModel> mm_ue_ul = uePhy->GetUplinkSpectrumPhy ()->GetMobility ()->GetObject<MobilityModel> ();
+       Ptr<MobilityModel> mm_enb_ul = enbPhy->GetUplinkSpectrumPhy ()->GetMobility ()->GetObject<MobilityModel> ();
+       Ptr<MobilityModel> mm_ue_dl = uePhy->GetDownlinkSpectrumPhy ()->GetMobility ()->GetObject<MobilityModel> ();
+ 
+       m_fadingModule->CreateFadingChannelRealization (mm_enb_dl, mm_ue_dl); //downlink eNB -> UE
+       m_fadingModule->CreateFadingChannelRealization (mm_ue_ul, mm_enb_ul); //uplink UE -> eNB
+       
+    }
  
   // WILD HACK - should be done through PHY SAP, probably passing by RRC
   uePhy->SetRnti (rnti);
