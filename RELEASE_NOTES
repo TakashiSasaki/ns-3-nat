@@ -9,6 +9,34 @@ http://www.nsnam.org including tutorials: http://www.nsnam.org/tutorials.html
 Consult the file CHANGES.html for more detailed information about changed
 API and behavior across ns-3 releases.
 
+Release 3-dev
+==============
+
+Availability
+------------
+This release is available from: 
+
+Supported platforms
+-------------------
+
+New user-visible features
+-------------------------
+- Dual-stacked IPv6 sockets are implemented. An IPv6 socket can accept an IPv4 
+  connection, returning the senders address as an IPv4-mapped address 
+  (IPV6_V6ONLY socket option is not implemented).
+
+Bugs fixed
+----------
+ - bug 1319 - Fix Ipv6RawSocketImpl Icmpv6 filter
+ - bug 1318 - Asserts for IPv6 malformed packets
+ - bug 1357 - IPv6 fragmentation fails due to checks about malformed extensions
+ - bug 1378 - UdpEchoClient::SetFill () does not set packet size correctly
+
+Known issues
+------------
+In general, known issues are tracked on the project tracker available
+at http://www.nsnam.org/bugzilla/
+
 Release 3.13
 ==============
 
