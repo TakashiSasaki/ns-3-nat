@@ -32,10 +32,21 @@ New user-visible features
   i.e., enable/disable the ICMPv6 Redirect sending.
 - An antenna module is now included, which includes different
   radiation pattern models. See the corresponding new section of the
-  ns-3 models library documentation for details. 
-   
+  ns-3 models library documentation for details.
+- Longer and more descriptive names are used for error units in RateErrorModel
+  class and queue mode in Queue class. Attributs in those classes are also
+  changed for consistency. See API documentation for details.
+- A new buildings module is introduced which allows to model the
+  presence of buildings in a wireless network topology.  
+- New propagation models (OkumuraHata, ITU-R P.1411, ITU-R P.1238)
+  have been added
+- The LTE code from the LENA project has been merged, bringin in a
+  significant redesign of the LTE module as well as many new features.
+
+
 Bugs fixed
 ----------
+ - bug 962  - list of paths to reach objects contains bogus entries
  - bug 1313 - Stddev (average.h) returning NaN
  - bug 1319 - Fix Ipv6RawSocketImpl Icmpv6 filter
  - bug 1318 - Asserts for IPv6 malformed packets
@@ -47,6 +58,8 @@ Bugs fixed
  - bug 1391 - .ns3rc does not allow comments as expected
  - bug 1392 - Modules built report does not clarify C++ or Python
  - bug 1395 - AODV DeferredRouteOutputTag missing constructor
+ - bug 1352 - Fixed MapAttributes, previously was mapped to a vector in ObjectPtrContainer
+              and (and key information was dropped). Now the container is a map.
  
 Known issues
 ------------
