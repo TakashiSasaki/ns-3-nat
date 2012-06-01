@@ -53,6 +53,7 @@ SOURCES = \
 	$(SRC)/internet/doc/ipv4.rst \
 	$(SRC)/internet/doc/ipv6.rst \
 	$(SRC)/internet/doc/routing-overview.rst \
+	$(SRC)/internet/doc/netfilter.rst \
 	$(SRC)/internet/doc/tcp.rst \
 	$(SRC)/mobility/doc/mobility.rst \
 	$(SRC)/olsr/doc/olsr.rst \
