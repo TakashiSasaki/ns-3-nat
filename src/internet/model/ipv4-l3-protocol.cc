@@ -442,6 +442,8 @@ Ipv4L3Protocol::Receive ( Ptr<NetDevice> device, Ptr<const Packet> p, uint16_t p
   uint32_t interface = 0;
   Ptr<Packet> packet = p->Copy ();
 
+  NS_LOG_DEBUG ("NF_INET_PRE_ROUTING Hook");
+
   Ptr<Ipv4Interface> ipv4Interface;
   for (Ipv4InterfaceList::const_iterator i = m_interfaces.begin (); 
        i != m_interfaces.end (); 
@@ -574,7 +576,7 @@ Ipv4L3Protocol::Send (Ptr<Packet> packet,
           Ptr<Packet> packetCopy = packet->Copy ();
 
           NS_ASSERT (packetCopy->GetSize () <= outInterface->GetDevice ()->GetMtu ());
-
+          NS_LOG_DEBUG ("NF_INET_POST_ROUTING Hook");
           m_sendOutgoingTrace (ipHeader, packetCopy, ifaceIndex);
           packetCopy->AddHeader (ipHeader);
           m_txTrace (packetCopy, m_node->GetObject<Ipv4> (), ifaceIndex);
@@ -601,6 +603,7 @@ Ipv4L3Protocol::Send (Ptr<Packet> packet,
               Ptr<Packet> packetCopy = packet->Copy ();
               m_sendOutgoingTrace (ipHeader, packetCopy, ifaceIndex);
               packetCopy->AddHeader (ipHeader);
+              NS_LOG_DEBUG ("NF_INET_POST_ROUTING Hook");
               m_txTrace (packetCopy, m_node->GetObject<Ipv4> (), ifaceIndex);
               outInterface->Send (packetCopy, destination);
               return;
@@ -613,7 +616,8 @@ Ipv4L3Protocol::Send (Ptr<Packet> packet,
   if (route && route->GetGateway () != Ipv4Address ())
     {
       NS_LOG_LOGIC ("Ipv4L3Protocol::Send case 3:  passed in with route");
-      ipHeader = BuildHeader (source, destination, protocol, packet->GetSize (), ttl, mayFragment);
+      NS_LOG_DEBUG ("NF_INET_LOCAL_OUT Hook");
+      ipHeader = BuildHeader (source, destination, protocol, packet->GetSize (), ttl, mayFragment); 
       int32_t interface = GetInterfaceForDevice (route->GetOutputDevice ());
       m_sendOutgoingTrace (ipHeader, packet, interface);
       SendRealOut (route, packet->Copy (), ipHeader);
@@ -634,6 +638,7 @@ Ipv4L3Protocol::Send (Ptr<Packet> packet,
   Ptr<NetDevice> oif (0); // unused for now
   ipHeader = BuildHeader (source, destination, protocol, packet->GetSize (), ttl, mayFragment);
   Ptr<Ipv4Route> newRoute;
+  NS_LOG_DEBUG ("NF_INET_LOCAL_OUT Hook");
   if (m_routingProtocol != 0)
     {
       newRoute = m_routingProtocol->RouteOutput (packet, ipHeader, oif, errno_);
@@ -700,7 +705,7 @@ Ipv4L3Protocol::SendRealOut (Ptr<Ipv4Route> route,
                              Ipv4Header const &ipHeader)
 {
   NS_LOG_FUNCTION (this << packet << &ipHeader);
-
+  NS_LOG_DEBUG("NF_INET_POST_ROUTING Hook");
   if (route == 0)
     {
       NS_LOG_WARN ("No route to host.  Drop.");
@@ -713,7 +718,7 @@ Ipv4L3Protocol::SendRealOut (Ptr<Ipv4Route> route,
   NS_ASSERT (interface >= 0);
   Ptr<Ipv4Interface> outInterface = GetInterface (interface);
   NS_LOG_LOGIC ("Send via NetDevice ifIndex " << outDev->GetIfIndex () << " ipv4InterfaceIndex " << interface);
-
+  
   if (!route->GetGateway ().IsEqual (Ipv4Address ("0.0.0.0")))
     {
       if (outInterface->IsUp ())
@@ -836,6 +841,7 @@ Ipv4L3Protocol::IpForward (Ptr<Ipv4Route> rtentry, Ptr<const Packet> p, const Ip
       return;
     }
   m_unicastForwardTrace (ipHeader, packet, interface);
+NS_LOG_DEBUG ("NF_INET_FORWARD Hook");
   SendRealOut (rtentry, packet, ipHeader);
 }
 
@@ -843,6 +849,7 @@ void
 Ipv4L3Protocol::LocalDeliver (Ptr<const Packet> packet, Ipv4Header const&ip, uint32_t iif)
 {
   NS_LOG_FUNCTION (this << packet << &ip);
+  NS_LOG_DEBUG("NF_INET_LOCAL_IN Hook");
   Ptr<Packet> p = packet->Copy (); // need to pass a non-const packet up
   Ipv4Header ipHeader = ip;
 
