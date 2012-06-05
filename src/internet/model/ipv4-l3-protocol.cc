@@ -39,6 +39,7 @@
 #include "icmpv4-l4-protocol.h"
 #include "ipv4-interface.h"
 #include "ipv4-raw-socket-impl.h"
+#include "ipv4-netfilter.h"
 
 NS_LOG_COMPONENT_DEFINE ("Ipv4L3Protocol");
 
@@ -86,7 +87,7 @@ Ipv4L3Protocol::GetTypeId (void)
 }
 
 Ipv4L3Protocol::Ipv4L3Protocol()
-  : m_identification (0)
+  : m_identification (0), m_netfilter (0)
 {
   NS_LOG_FUNCTION (this);
 }
@@ -183,6 +184,20 @@ Ptr<Ipv4RoutingProtocol>
 Ipv4L3Protocol::GetRoutingProtocol (void) const
 {
   return m_routingProtocol;
+}
+
+void 
+Ipv4L3Protocol::SetNetfilter (Ptr<Ipv4Netfilter> netfilter)
+{
+  NS_LOG_FUNCTION (this << netfilter);
+  m_netfilter = netfilter;
+}
+
+
+Ptr<Ipv4Netfilter> 
+Ipv4L3Protocol::GetNetfilter (void) const
+{
+  return m_netfilter;
 }
 
 void 
@@ -442,7 +457,11 @@ Ipv4L3Protocol::Receive ( Ptr<NetDevice> device, Ptr<const Packet> p, uint16_t p
   uint32_t interface = 0;
   Ptr<Packet> packet = p->Copy ();
 
-  NS_LOG_DEBUG ("NF_INET_PRE_ROUTING Hook");
+  if (m_netfilter != 0)
+    {
+      NS_LOG_DEBUG ("NF_INET_PRE_ROUTING Hook");
+      m_netfilter->ProcessHook (PF_INET, NF_INET_PRE_ROUTING, packet);
+    }
 
   Ptr<Ipv4Interface> ipv4Interface;
   for (Ipv4InterfaceList::const_iterator i = m_interfaces.begin (); 
