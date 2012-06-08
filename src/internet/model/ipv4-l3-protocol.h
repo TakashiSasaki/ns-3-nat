@@ -20,7 +20,6 @@
 
 #ifndef IPV4_L3_PROTOCOL_H
 #define IPV4_L3_PROTOCOL_H
-#define PF_INET 2
 
 #include <list>
 #include <map>

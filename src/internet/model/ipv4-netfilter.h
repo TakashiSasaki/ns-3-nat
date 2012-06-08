@@ -23,6 +23,7 @@
 
 #include <stdint.h>
 #include <limits.h>
+#include <sys/socket.h>
 #include "ns3/ptr.h"
 #include "ns3/net-device.h"
 #include "ns3/packet.h"

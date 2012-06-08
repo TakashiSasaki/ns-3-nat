@@ -7,3 +7,8 @@ def build(bld):
     obj = bld.create_ns3_program('main-simple',
                                  ['network', 'internet', 'applications'])
     obj.source = 'main-simple.cc'
+
+    obj = bld.create_ns3_program('netfilter-example-1',
+                                 ['network', 'internet', 'applications','point-to-point'])
+    obj.source = 'netfilter-example-1.cc'
+
