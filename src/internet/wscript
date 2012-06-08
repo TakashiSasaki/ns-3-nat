@@ -183,6 +183,9 @@ def build(bld):
         'helper/ipv6-interface-container.cc',
         'helper/ipv6-routing-helper.cc',
         'model/ipv6-address-generator.cc',
+        'model/ipv4-netfilter-hook.cc',
+        'model/ipv4-netfilter.cc',
+        'model/netfilter-callback-chain.cc',
         ]
 
     internet_test = bld.create_ns3_module_test_library('internet')
@@ -271,6 +274,9 @@ def build(bld):
         'model/global-route-manager-impl.h',
         'model/candidate-queue.h',
         'model/ipv4-global-routing.h',
+        'model/ipv4-netfilter.h',
+        'model/ipv4-netfilter-hook.h',
+        'model/netfilter-callback-chain.h',
         'helper/ipv4-global-routing-helper.h',
         'helper/internet-stack-helper.h',
         'helper/internet-trace-helper.h',
