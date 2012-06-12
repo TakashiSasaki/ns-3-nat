@@ -122,12 +122,8 @@ Ipv4Netfilter::UnRegisterNetfilterHook (Ipv4NetfilterHook& hook)
 }
 
 #endif
-uint32_t 
-Ipv4Netfilter::ProcessHook(uint8_t protocolFamily, Hooks_t hook, Ptr<Packet> p) 
-#if 0
-                           Ptr<NetDevice> in, Ptr<NetDevice> out, 
-                           ContinueCallback ccb)
-#endif
+uint32_t  
+Ipv4Netfilter::ProcessHook(uint8_t protocolFamily, Hooks_t hookNumber, Ptr<Packet> p,Ptr<NetDevice> in, Ptr<NetDevice> out,ContinueCallback ccb)
 {
 /*
   return m_netfilterHooks[(uint32_t)hook].IterateAndCallHook (hook, p, in, out, ccb);

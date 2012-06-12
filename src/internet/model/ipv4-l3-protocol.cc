@@ -460,7 +460,7 @@ Ipv4L3Protocol::Receive ( Ptr<NetDevice> device, Ptr<const Packet> p, uint16_t p
   if (m_netfilter != 0)
     {
       NS_LOG_DEBUG ("NF_INET_PRE_ROUTING Hook");
-      m_netfilter->ProcessHook (PF_INET, NF_INET_PRE_ROUTING, packet);
+      m_netfilter->ProcessHook (PF_INET, NF_INET_PRE_ROUTING, packet,device,device);
     }
 
   Ptr<Ipv4Interface> ipv4Interface;

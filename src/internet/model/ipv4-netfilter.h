@@ -126,12 +126,8 @@ class Ipv4Netfilter  : public Object {
       * ns-3 IP stack. When a packet "traverses" a hook, it is handed over to the
       * callback chain for that hook by this method.
       */
-    uint32_t ProcessHook (uint8_t protocolFamily, Hooks_t hook, Ptr<Packet> p); 
-#if 0
-                          Ptr<NetDevice> in, Ptr<NetDevice> out ,
-                          ContinueCallback ccb = defaultContinueCallback);
-                          //ContinueCallback ccb = MakeNullCallback <uint32_t, Ptr<Packet> ());
-#endif
+    uint32_t ProcessHook (uint8_t protocolFamily, Hooks_t hookNumber, Ptr<Packet> p,Ptr<NetDevice> in, Ptr<NetDevice> out , ContinueCallback cc = MakeNullCallback <uint32_t, Ptr<Packet> > ());    //ContinueCallback ccb = defaultContinueCallback);
+//#endif
 
 #ifdef NOTYET
     /**
