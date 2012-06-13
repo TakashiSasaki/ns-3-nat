@@ -125,11 +125,9 @@ Ipv4Netfilter::UnRegisterNetfilterHook (Ipv4NetfilterHook& hook)
 uint32_t  
 Ipv4Netfilter::ProcessHook(uint8_t protocolFamily, Hooks_t hookNumber, Ptr<Packet> p,Ptr<NetDevice> in, Ptr<NetDevice> out,ContinueCallback ccb)
 {
-/*
-  return m_netfilterHooks[(uint32_t)hook].IterateAndCallHook (hook, p, in, out, ccb);
-*/
-  NS_LOG_UNCOND ("XXX Processing hook");
-  return 1;
+  NS_LOG_UNCOND ("XXX Processing hook"); 	
+  return m_netfilterHooks[(uint32_t)hookNumber].IterateAndCallHook (hookNumber, p, in, out, ccb);
+  //return 1;
 }
 
 #if 0
