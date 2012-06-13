@@ -129,7 +129,7 @@ Ipv4Netfilter::ProcessHook(uint8_t protocolFamily, Hooks_t hookNumber, Ptr<Packe
   return m_netfilterHooks[(uint32_t)hook].IterateAndCallHook (hook, p, in, out, ccb);
 */
   NS_LOG_UNCOND ("XXX Processing hook");
-  return 0;
+  return 1;
 }
 
 #if 0
