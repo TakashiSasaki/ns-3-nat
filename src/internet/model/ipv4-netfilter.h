@@ -27,21 +27,21 @@
 #include "ns3/ptr.h"
 #include "ns3/net-device.h"
 #include "ns3/packet.h"
-#ifdef NOTYET
-#include "ns3/conntrack-tag.h"
-#endif
+//#include "ns3/conntrack-tag.h"
 #include "ns3/ipv4-header.h"
 #include "ns3/object.h"
+
 #include "ipv4-netfilter-hook.h"
 #include "netfilter-callback-chain.h"
-#ifdef NOTYET
+
 #include "netfilter-tuple-hash.h"
 #include "netfilter-conntrack-tuple.h"
 #include "netfilter-conntrack-l3-protocol.h"
 #include "netfilter-conntrack-l4-protocol.h"
 #include "ip-conntrack-info.h"
-#include "nat-rule.h"
 
+#ifdef NOTYET
+#include "nat-rule.h"
 #endif
 //#include "network-address-translation.h"
 
@@ -128,9 +128,16 @@ class Ipv4Netfilter  : public Object {
       * callback chain for that hook by this method.
       */
     uint32_t ProcessHook (uint8_t protocolFamily, Hooks_t hookNumber, Ptr<Packet> p,Ptr<NetDevice> in, Ptr<NetDevice> out , ContinueCallback cc = MakeNullCallback <uint32_t, Ptr<Packet> > ());    //ContinueCallback ccb = defaultContinueCallback);
-//#endif
 
-#ifdef NOTYET
+#if 0    
+    //Adding void methods for Hooking on specific nodes - sender,forwarder and receiver
+    void EnableSender();
+    void EnableForwarder();
+    void EnableReceiver();
+    uint32_t HookRegistered(void);
+
+#endif
+
     /**
       * \param l3Protocol Layer 3 protocol
       * \returns 0 on success
@@ -224,8 +231,7 @@ class Ipv4Netfilter  : public Object {
 
     uint32_t NetfilterConntrackConfirm (Ptr<Packet> p);
     
-    uint32_t NetfilterDoNat (Hooks_t hookNumber, Ptr<Packet> p, 
-                             Ptr<NetDevice> in, Ptr<NetDevice> out, ContinueCallback& ccb);
+
 
     /**
       * \param inverse The inverse of the tuple should be stored here
@@ -242,7 +248,13 @@ class Ipv4Netfilter  : public Object {
 
     TupleHash& GetHash ();
 
+#ifdef NOTYET
+
     void AddNatRule (NatRule natRule);
+     
+    uint32_t NetfilterDoNat (Hooks_t hookNumber, Ptr<Packet> p, 
+                             Ptr<NetDevice> in, Ptr<NetDevice> out, ContinueCallback& ccb);
+
 
     std::vector<NatRule>::iterator FindNatRule (NatRule natRule);
 
@@ -250,14 +262,13 @@ class Ipv4Netfilter  : public Object {
     //static NetfilterConntrackTuple currentTuple[IP_CT_DIR_MAX];
 
     void EnableNat ();
-
+    
     uint32_t NetfilterNatPacket (Hooks_t hookNumber, Ptr<Packet> p);
 #endif
 
   private:
     NetfilterCallbackChain m_netfilterHooks[NF_INET_NUMHOOKS];
     //std::vector<Ptr<NetfilterConntrackL3Protocol> > m_netfilterConntrackL3Protocols;
-#ifdef NOTYET
     TupleHash m_netfilterTupleHash[IP_CT_DIR_MAX];
     TupleHash m_unconfirmed;
     TupleHash m_hash;
@@ -271,11 +282,15 @@ class Ipv4Netfilter  : public Object {
     NetfilterConntrackTuple currentOriginalTuple;
     NetfilterConntrackTuple currentReplyTuple;
 
+#ifdef NOTYET
+
     uint8_t m_enableNat;
     std::vector <NatRule> m_natRules;
+#endif
 
     uint16_t nextAvailablePort;
 
+#ifdef NOTYET
     TranslationMap m_natReplyLookup;
 #endif
 };

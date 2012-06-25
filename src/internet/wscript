@@ -186,6 +186,12 @@ def build(bld):
         'model/ipv4-netfilter-hook.cc',
         'model/ipv4-netfilter.cc',
         'model/netfilter-callback-chain.cc',
+        'model/netfilter-conntrack-tuple.cc',
+        'model/ip-conntrack-info.cc',
+        'model/ipv4-conntrack-l3-protocol.cc',
+        'model/tcp-conntrack-l4-protocol.cc',
+        'model/udp-conntrack-l4-protocol.cc',
+        'model/icmpv4-conntrack-l4-protocol.cc',
       ]
 
     internet_test = bld.create_ns3_module_test_library('internet')
@@ -286,6 +292,16 @@ def build(bld):
         'helper/ipv6-address-helper.h',
         'helper/ipv6-interface-container.h',
         'helper/ipv6-routing-helper.h',
+        'model/netfilter-conntrack-l3-protocol.h',
+        'model/netfilter-conntrack-l4-protocol.h',
+        'model/netfilter-conntrack-tuple.h',
+        'model/netfilter-tuple-hash.h',
+        'model/ip-conntrack-info.h',
+        'model/ipv4-conntrack-l3-protocol.h',
+        'model/tcp-conntrack-l4-protocol.h',
+        'model/udp-conntrack-l4-protocol.h',
+        'model/icmpv4-conntrack-l4-protocol.h',
+        'model/sgi-hashmap.h',
 # 'model/ipv6-address-generator.h',
        ]
 

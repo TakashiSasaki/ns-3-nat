@@ -65,6 +65,28 @@ main (int argc, char *argv[])
   Ipv4InterfaceContainer firstInterfaces = address1.Assign (devices1);
   Ipv4InterfaceContainer secondInterfaces = address2.Assign (devices2);
 
+/*  Ptr <Ipv4> ipv4 = first.Get (0)->GetObject<Ipv4> ();
+  std::cout << "==============Number of interfaces on node " << first.Get (0)->GetId() << ": " << ipv4->GetNInterfaces () << std::endl;
+  
+ Ptr <Ipv4L3Protocol> ipv4L3 = DynamicCast <Ipv4L3Protocol>(first.Get (0)->GetObject<Ipv4> ());
+ Ptr <Ipv4Netfilter>  netfilter = ipv4L3->GetNetfilter ();
+ netfilter->EnableSender();
+
+  ipv4=first.Get (1)->GetObject<Ipv4> ();
+  std::cout << "==============Number of interfaces on node " << first.Get (1)->GetId() << ": " << ipv4->GetNInterfaces () << std::endl;
+  
+  Ptr <Ipv4L3Protocol> ipv4L3 = DynamicCast <Ipv4L3Protocol>(first.Get (1)->GetObject<Ipv4> ());
+  netfilter = ipv4L3->GetNetfilter ();
+  netfilter->EnableForwarder ();
+
+  ipv4=second.Get(1)->GetObject<Ipv4> ();
+  std::cout << "==============Number of interfaces on node " << second.Get (1)->GetId() << ": " << ipv4->GetNInterfaces () << std::endl;
+  
+  Ptr <Ipv4L3Protocol> ipv4L3 = DynamicCast <Ipv4L3Protocol>(second.Get (1)->GetObject<Ipv4> ());
+  *netfilter = ipv4L3->GetNetfilter ();
+  netfilter->EnableReceiver ();
+*/ 
+   
   UdpEchoServerHelper echoServer (port);
 
   ApplicationContainer serverApps = echoServer.Install (second.Get (1));

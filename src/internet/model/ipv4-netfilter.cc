@@ -20,13 +20,13 @@
 #include "ns3/log.h"
 #include "ns3/uinteger.h"
 #include "ipv4-netfilter.h"
-#ifdef NOTYET
+
 #include "ip-conntrack-info.h"
 #include "ipv4-conntrack-l3-protocol.h"
 #include "tcp-conntrack-l4-protocol.h"
 #include "udp-conntrack-l4-protocol.h"
 #include "icmpv4-conntrack-l4-protocol.h"
-#endif
+
 #include "tcp-header.h"
 #include "udp-header.h"
 
@@ -63,7 +63,6 @@ Ipv4Netfilter::Ipv4Netfilter ()
   for (int i=0; i < NF_INET_NUMHOOKS; i++)
     m_netfilterHooks[i] = NetfilterCallbackChain ();
 
-#ifdef NOTYET
   /* Create and register Ipv4 connection tracking module */
   Ptr<Ipv4ConntrackL3Protocol> ipv4 = Create<Ipv4ConntrackL3Protocol> ();
   this->RegisterL3Protocol (ipv4);
@@ -82,7 +81,7 @@ Ipv4Netfilter::Ipv4Netfilter ()
   
   //Ptr <NetworkAddressTranslation> networkAddressTranslation = Create<NetworkAddressTranslation> (this);
 
-  /* Create and register hook callbacks */
+ // Create and register hook callbacks for conntrack
   NetfilterHookCallback preRouting = MakeCallback (&Ipv4Netfilter::NetfilterConntrackIn, this);
   NetfilterHookCallback localIn = MakeCallback (&Ipv4ConntrackL3Protocol::Ipv4Confirm, PeekPointer (ipv4));
 
@@ -95,8 +94,6 @@ Ipv4Netfilter::Ipv4Netfilter ()
   this->RegisterNetfilterHook (nfh1);
   this->RegisterNetfilterHook (nfh2);
   this->RegisterNetfilterHook (nfh3);
-
-#endif
 #ifdef NOTYET
   if (m_enableNat)
     EnableNat ();
@@ -125,12 +122,69 @@ Ipv4Netfilter::UnRegisterNetfilterHook (Ipv4NetfilterHook& hook)
 uint32_t  
 Ipv4Netfilter::ProcessHook(uint8_t protocolFamily, Hooks_t hookNumber, Ptr<Packet> p,Ptr<NetDevice> in, Ptr<NetDevice> out,ContinueCallback ccb)
 {
-  NS_LOG_UNCOND ("XXX Processing hook"); 	
   return m_netfilterHooks[(uint32_t)hookNumber].IterateAndCallHook (hookNumber, p, in, out, ccb);
   //return 1;
 }
 
 #if 0
+//Adding the void methods for registering hooks on specific nodes -sender,forwarder and receiver.
+void 
+Ipv4Netfilter::EnableSender()
+{
+  NS_LOG_DEBUG (":: Registering Hooks Sender Node ::");
+
+  NetfilterHookCallback regHook = MakeCallback (&Ipv4Netfilter::HookRegistered, this);
+
+  Ipv4NetfilterHook hookregCallback1 = Ipv4NetfilterHook (1, NF_INET_LOCAL_OUT,  NF_IP_PRI_FILTER, regHook); 
+  Ipv4NetfilterHook hookregCallback2 = Ipv4NetfilterHook (1, NF_INET_POST_ROUTING,  NF_IP_PRI_FILTER, regHook); 
+  
+
+  this->RegisterNetfilterHook (hookregCallback1);
+  this->RegisterNetfilterHook (hookregCallback2);
+}
+
+void 
+Ipv4Netfilter::EnableForwarder()
+{
+  NS_LOG_DEBUG (":: Registering Hooks Forwarder Node ::");
+
+  NetfilterHookCallback regHook = MakeCallback (&Ipv4Netfilter::HookRegistered, this);
+
+  Ipv4NetfilterHook hookregCallback1 = Ipv4NetfilterHook (1, NF_INET_PRE_ROUTING,  NF_IP_PRI_FILTER, regHook); 
+  Ipv4NetfilterHook hookregCallback2 = Ipv4NetfilterHook (1, NF_INET_FORWARD,  NF_IP_PRI_FILTER, regHook); 
+  Ipv4NetfilterHook hookregCallback3 = Ipv4NetfilterHook (1, NF_INET_POST_ROUTING,  NF_IP_PRI_FILTER, regHook); 
+
+
+  this->RegisterNetfilterHook (hookregCallback1);
+  this->RegisterNetfilterHook (hookregCallback2);
+  this->RegisterNetfilterHook (hookregCallback3);
+}
+
+void 
+Ipv4Netfilter::EnableReceiver()
+{
+  NS_LOG_DEBUG (":: Registering Hooks Receiver Node ::");
+
+  NetfilterHookCallback regHook = MakeCallback (&Ipv4Netfilter::HookRegistered, this);
+
+  Ipv4NetfilterHook hookregCallback1 = Ipv4NetfilterHook (1, NF_INET_PRE_ROUTING,  NF_IP_PRI_FILTER, regHook); 
+  Ipv4NetfilterHook hookregCallback2 = Ipv4NetfilterHook (1, NF_INET_LOCAL_IN,  NF_IP_PRI_FILTER, regHook); 
+  
+
+  this->RegisterNetfilterHook (hookregCallback1);
+  this->RegisterNetfilterHook (hookregCallback2);
+}
+
+uint32_t
+Ipv4Netfilter::HookRegistered()
+{
+  std::cout<<"**************Hook Callback Registered****************"<<std::endl;
+  return 0;
+}
+
+#endif
+
+
 uint32_t 
 Ipv4Netfilter::RegisterL3Protocol(Ptr<NetfilterConntrackL3Protocol> l3Protocol)
 {
@@ -433,7 +487,30 @@ Ipv4Netfilter::NetfilterConntrackConfirm (Ptr<Packet> packet)
 
   return 0;
 }
+
+bool 
+Ipv4Netfilter::InvertTuple (NetfilterConntrackTuple& inverse, NetfilterConntrackTuple& orig,
+                    Ptr<NetfilterConntrackL3Protocol> l3Protocol,
+                    Ptr<NetfilterConntrackL4Protocol> l4Protocol)
+{
+  inverse.SetProtocol (orig.GetProtocol ());
+
+  if (!l3Protocol->InvertTuple (inverse, orig))
+    return false;
+
+  inverse.SetDirection (orig.GetDirection () == IP_CT_DIR_ORIGINAL ? IP_CT_DIR_REPLY : IP_CT_DIR_ORIGINAL);
+  
+  return l4Protocol->InvertTuple (inverse, orig);
+
+}
     
+TupleHash&
+Ipv4Netfilter::GetHash ()
+{
+  return m_hash;
+}
+
+#if 0
 uint32_t 
 Ipv4Netfilter::NetfilterDoNat (Hooks_t hookNumber, Ptr<Packet> p, 
                                Ptr<NetDevice> in, Ptr<NetDevice> out, ContinueCallback& ccb)
@@ -538,27 +615,6 @@ Ipv4Netfilter::NetfilterDoNat (Hooks_t hookNumber, Ptr<Packet> p,
   return NF_ACCEPT;
 }
     
-bool 
-Ipv4Netfilter::InvertTuple (NetfilterConntrackTuple& inverse, NetfilterConntrackTuple& orig,
-                    Ptr<NetfilterConntrackL3Protocol> l3Protocol,
-                    Ptr<NetfilterConntrackL4Protocol> l4Protocol)
-{
-  inverse.SetProtocol (orig.GetProtocol ());
-
-  if (!l3Protocol->InvertTuple (inverse, orig))
-    return false;
-
-  inverse.SetDirection (orig.GetDirection () == IP_CT_DIR_ORIGINAL ? IP_CT_DIR_REPLY : IP_CT_DIR_ORIGINAL);
-  
-  return l4Protocol->InvertTuple (inverse, orig);
-
-}
-    
-TupleHash&
-Ipv4Netfilter::GetHash ()
-{
-  return m_hash;
-}
     
 void 
 Ipv4Netfilter::AddNatRule (NatRule natRule)
