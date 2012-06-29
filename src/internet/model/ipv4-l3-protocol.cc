@@ -585,7 +585,7 @@ Ipv4L3Protocol::Send (Ptr<Packet> packet,
 
   Ptr<NetDevice> device;
 
-  if (!route)
+  if (route)
     {
       std::cout<< "Route: " << *route << std::endl;
       device = route->GetOutputDevice ();

@@ -80,7 +80,7 @@ Ipv4Netfilter::Ipv4Netfilter ()
   this->RegisterL4Protocol (icmpv4);
   
   //Ptr <NetworkAddressTranslation> networkAddressTranslation = Create<NetworkAddressTranslation> (this);
-
+#ifdef NOTYET
  // Create and register hook callbacks for conntrack
   NetfilterHookCallback preRouting = MakeCallback (&Ipv4Netfilter::NetfilterConntrackIn, this);
   NetfilterHookCallback localIn = MakeCallback (&Ipv4ConntrackL3Protocol::Ipv4Confirm, PeekPointer (ipv4));
@@ -94,7 +94,7 @@ Ipv4Netfilter::Ipv4Netfilter ()
   this->RegisterNetfilterHook (nfh1);
   this->RegisterNetfilterHook (nfh2);
   this->RegisterNetfilterHook (nfh3);
-#ifdef NOTYET
+
   if (m_enableNat)
     EnableNat ();
 

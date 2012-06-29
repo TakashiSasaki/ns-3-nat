@@ -290,6 +290,7 @@ def build(bld):
         'helper/ipv4-interface-container.h',
         'helper/ipv4-routing-helper.h',
         'helper/ipv6-address-helper.h',
+        'model/ipv6-address-generator.h',
         'helper/ipv6-interface-container.h',
         'helper/ipv6-routing-helper.h',
         'model/netfilter-conntrack-l3-protocol.h',
