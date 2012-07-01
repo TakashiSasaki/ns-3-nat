@@ -80,7 +80,6 @@ Ipv4Netfilter::Ipv4Netfilter ()
   this->RegisterL4Protocol (icmpv4);
   
   //Ptr <NetworkAddressTranslation> networkAddressTranslation = Create<NetworkAddressTranslation> (this);
-#ifdef NOTYET
  // Create and register hook callbacks for conntrack
   NetfilterHookCallback preRouting = MakeCallback (&Ipv4Netfilter::NetfilterConntrackIn, this);
   NetfilterHookCallback localIn = MakeCallback (&Ipv4ConntrackL3Protocol::Ipv4Confirm, PeekPointer (ipv4));
@@ -89,12 +88,14 @@ Ipv4Netfilter::Ipv4Netfilter ()
   Ipv4NetfilterHook nfh1 = Ipv4NetfilterHook (1, NF_INET_LOCAL_OUT, NF_IP_PRI_CONNTRACK, preRouting); 
   Ipv4NetfilterHook nfh2 = Ipv4NetfilterHook (1, NF_INET_POST_ROUTING, NF_IP_PRI_CONNTRACK_CONFIRM, localIn); 
   Ipv4NetfilterHook nfh3 = Ipv4NetfilterHook (1, NF_INET_LOCAL_IN, NF_IP_PRI_CONNTRACK_CONFIRM, localIn); 
-  
-  this->RegisterNetfilterHook (nfh);
-  this->RegisterNetfilterHook (nfh1);
+
+
+ // this->RegisterNetfilterHook (nfh);
+ // this->RegisterNetfilterHook (nfh1);
   this->RegisterNetfilterHook (nfh2);
   this->RegisterNetfilterHook (nfh3);
 
+#ifdef NOTYET  
   if (m_enableNat)
     EnableNat ();
 
@@ -197,6 +198,7 @@ uint32_t
 Ipv4Netfilter::RegisterL4Protocol(Ptr<NetfilterConntrackL4Protocol> l4Protocol)
 {
   m_netfilterConntrackL4Protocols.push_back(l4Protocol);
+  //m_netfilterConntrackL4Protocols = l4Protocol;
   return 0;
 }
 
@@ -385,7 +387,6 @@ Ipv4Netfilter::NetfilterConntrackIn (Hooks_t hook, Ptr<Packet> packet, Ptr<NetDe
 
   /*if (l4proto != NULL) {
   }*/
-
   ResolveNormalConntrack (packet, 1 /* PF */, ipHeader.GetProtocol (), l3proto, l4proto, setReply, ctInfo, ipHeader);
 
   // Call layer 4 Packet callback

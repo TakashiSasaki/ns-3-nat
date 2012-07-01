@@ -193,7 +193,6 @@ Ipv4L3Protocol::SetNetfilter (Ptr<Ipv4Netfilter> netfilter)
   m_netfilter = netfilter;
 }
 
-
 Ptr<Ipv4Netfilter>
 Ipv4L3Protocol::GetNetfilter (void) const
 {
@@ -583,14 +582,14 @@ Ipv4L3Protocol::Send (Ptr<Packet> packet,
       ttl = tag.GetTtl ();
     }
 
-  Ptr<NetDevice> device;
+/*  Ptr<NetDevice> device;
 
   if (route)
     {
       std::cout<< "Route: " << *route << std::endl;
       device = route->GetOutputDevice ();
     }
-
+*/
   // Handle a few cases:
   // 1) packet is destined to limited broadcast address
   // 2) packet is destined to a subnet-directed broadcast address
@@ -611,13 +610,15 @@ Ipv4L3Protocol::Send (Ptr<Packet> packet,
           Ptr<Packet> packetCopy = packet->Copy ();
 
           NS_ASSERT (packetCopy->GetSize () <= outInterface->GetDevice ()->GetMtu ());
-
+          m_sendOutgoingTrace (ipHeader, packetCopy, ifaceIndex);
+          packetCopy->AddHeader (ipHeader);
+/*        
           //Netfilter Hook Point
 
           if (m_netfilter != 0)
             {
               NS_LOG_DEBUG ("NF_INET_LOCAL_OUT Hook");
-              Verdicts_t verdict = (Verdicts_t) m_netfilter->ProcessHook (PF_INET, NF_INET_LOCAL_OUT, packet, device, 0);
+              Verdicts_t verdict = (Verdicts_t) m_netfilter->ProcessHook (PF_INET, NF_INET_LOCAL_OUT, packet, 0, 0);
               if (verdict == NF_DROP)
                 {
                   NS_LOG_DEBUG ("NF_INET_LOCAL_OUT packet not accepted");
@@ -625,12 +626,13 @@ Ipv4L3Protocol::Send (Ptr<Packet> packet,
                   return;
                 }
             }
-
+*/
           //Netfilter Hook Point
           if (m_netfilter != 0)
             {
               NS_LOG_DEBUG ("NF_INET_POST_ROUTING Hook");
-              Verdicts_t verdict = (Verdicts_t) m_netfilter->ProcessHook (PF_INET, NF_INET_POST_ROUTING, packet, device, 0);
+              Callback<uint32_t, Ptr<Packet> > ccb = MakeCallback (&Ipv4Netfilter::NetfilterConntrackConfirm, m_netfilter);
+              Verdicts_t verdict = (Verdicts_t) m_netfilter->ProcessHook (PF_INET, NF_INET_POST_ROUTING, packet, 0, 0, ccb);
               if (verdict == NF_DROP)
                 {
                   NS_LOG_DEBUG ("NF_INET_POST_ROUTING packet not accepted");
@@ -639,8 +641,6 @@ Ipv4L3Protocol::Send (Ptr<Packet> packet,
                 }
             }
 
-          m_sendOutgoingTrace (ipHeader, packetCopy, ifaceIndex);
-          packetCopy->AddHeader (ipHeader);
           m_txTrace (packetCopy, m_node->GetObject<Ipv4> (), ifaceIndex);
           outInterface->Send (packetCopy, destination);
         }
@@ -665,13 +665,13 @@ Ipv4L3Protocol::Send (Ptr<Packet> packet,
               Ptr<Packet> packetCopy = packet->Copy ();
               m_sendOutgoingTrace (ipHeader, packetCopy, ifaceIndex);
               packetCopy->AddHeader (ipHeader);
-
+/*
               //Netfilter Hook Point
 
               if (m_netfilter != 0)
                 {
                   NS_LOG_DEBUG ("NF_INET_LOCAL_OUT Hook");
-                  Verdicts_t verdict = (Verdicts_t) m_netfilter->ProcessHook (PF_INET, NF_INET_LOCAL_OUT, packet, device, 0);
+                  Verdicts_t verdict = (Verdicts_t) m_netfilter->ProcessHook (PF_INET, NF_INET_LOCAL_OUT, packet, 0, 0);
                   if (verdict == NF_DROP)
                     {
                       NS_LOG_DEBUG ("NF_INET_LOCAL_OUT packet not accepted");
@@ -679,12 +679,13 @@ Ipv4L3Protocol::Send (Ptr<Packet> packet,
                       return;
                     }
                 }
-
+*/
               //Netfilter Hook Point
               if (m_netfilter != 0)
                 {
                   NS_LOG_DEBUG ("NF_INET_POST_ROUTING Hook");
-                  Verdicts_t verdict = (Verdicts_t) m_netfilter->ProcessHook (PF_INET, NF_INET_POST_ROUTING, packet, device, 0);
+                  Callback<uint32_t, Ptr<Packet> > ccb = MakeCallback (&Ipv4Netfilter::NetfilterConntrackConfirm, m_netfilter);
+                  Verdicts_t verdict = (Verdicts_t) m_netfilter->ProcessHook (PF_INET, NF_INET_POST_ROUTING, packet, 0, 0, ccb);
                   if (verdict == NF_DROP)
                     {
                       NS_LOG_DEBUG ("NF_INET_POST_ROUTING packet not accepted");
@@ -704,23 +705,26 @@ Ipv4L3Protocol::Send (Ptr<Packet> packet,
   if (route && route->GetGateway () != Ipv4Address ())
     {
       NS_LOG_LOGIC ("Ipv4L3Protocol::Send case 3:  passed in with route");
-
+      Ptr<Packet> packetCopy = packet->Copy (); 
+      ipHeader = BuildHeader (source, destination, protocol, packet->GetSize (), ttl, mayFragment);
+      int32_t interface = GetInterfaceForDevice (route->GetOutputDevice ());   
+      packetCopy->AddHeader (ipHeader);
+      NS_LOG_DEBUG (" :: Add Ipv4 Header :: ");
       //Netfilter Hook Point
-
+      
       if (m_netfilter != 0)
         {
           NS_LOG_DEBUG ("NF_INET_LOCAL_OUT Hook");
-          Verdicts_t verdict = (Verdicts_t) m_netfilter->ProcessHook (PF_INET, NF_INET_LOCAL_OUT, packet, device, 0);
+          Verdicts_t verdict = (Verdicts_t) m_netfilter->ProcessHook (PF_INET, NF_INET_LOCAL_OUT, packetCopy, 0, 0);
           if (verdict == NF_DROP)
             {
               NS_LOG_DEBUG ("NF_INET_LOCAL_OUT packet not accepted");
               // Add drop trace here
               return;
             }
-        }
-
-      ipHeader = BuildHeader (source, destination, protocol, packet->GetSize (), ttl, mayFragment);
-      int32_t interface = GetInterfaceForDevice (route->GetOutputDevice ());
+        } 
+      packetCopy->RemoveHeader (ipHeader);
+      
       m_sendOutgoingTrace (ipHeader, packet, interface);
       SendRealOut (route, packet->Copy (), ipHeader);
       return;
@@ -740,13 +744,15 @@ Ipv4L3Protocol::Send (Ptr<Packet> packet,
   Ptr<NetDevice> oif (0);     // unused for now
   ipHeader = BuildHeader (source, destination, protocol, packet->GetSize (), ttl, mayFragment);
   Ptr<Ipv4Route> newRoute;
-
+  Ptr<Packet> packetCopy = packet->Copy (); 
+  packetCopy->AddHeader (ipHeader);
+  NS_LOG_DEBUG (" :: Add Ipv4 Header :: ");
   //Netfilter Hook Point
 
   if (m_netfilter != 0)
     {
       NS_LOG_DEBUG ("NF_INET_LOCAL_OUT Hook");
-      Verdicts_t verdict = (Verdicts_t) m_netfilter->ProcessHook (PF_INET, NF_INET_LOCAL_OUT, packet, device, 0);
+      Verdicts_t verdict = (Verdicts_t) m_netfilter->ProcessHook (PF_INET, NF_INET_LOCAL_OUT, packet, 0, 0);
       if (verdict == NF_DROP)
         {
           NS_LOG_DEBUG ("NF_INET_LOCAL_OUT packet not accepted");
@@ -754,6 +760,7 @@ Ipv4L3Protocol::Send (Ptr<Packet> packet,
           return;
         }
     }
+  packetCopy->RemoveHeader (ipHeader);
 
 
   if (m_routingProtocol != 0)
@@ -830,13 +837,15 @@ Ipv4L3Protocol::SendRealOut (Ptr<Ipv4Route> route,
   if (m_netfilter != 0)
     {
       NS_LOG_DEBUG ("NF_INET_POST_ROUTING Hook");
-      Verdicts_t verdict = (Verdicts_t) m_netfilter->ProcessHook (PF_INET, NF_INET_POST_ROUTING, packet, device, 0);
+      ContinueCallback ccb = MakeCallback (&Ipv4Netfilter::NetfilterConntrackConfirm, m_netfilter);
+      Verdicts_t verdict=(Verdicts_t)m_netfilter->ProcessHook (PF_INET, NF_INET_POST_ROUTING, packet, device, 0, ccb);
       if (verdict == NF_DROP)
         {
           NS_LOG_DEBUG ("NF_INET_POST_ROUTING packet not accepted");
           // Add drop trace here
           return;
         }
+      
     }
 
 
@@ -956,7 +965,7 @@ Ipv4L3Protocol::IpForward (Ptr<Ipv4Route> rtentry, Ptr<const Packet> p, const Ip
   // Forwarding
   Ipv4Header ipHeader = header;
   Ptr<Packet> packet = p->Copy ();
-  Ptr<NetDevice> device = rtentry->GetOutputDevice ();
+  //Ptr<NetDevice> device = rtentry->GetOutputDevice ();
   int32_t interface = GetInterfaceForDevice (rtentry->GetOutputDevice ());
   ipHeader.SetTtl (ipHeader.GetTtl () - 1);
   if (ipHeader.GetTtl () == 0)
@@ -978,7 +987,7 @@ Ipv4L3Protocol::IpForward (Ptr<Ipv4Route> rtentry, Ptr<const Packet> p, const Ip
   if (m_netfilter != 0)
     {
       NS_LOG_DEBUG ("NF_INET_FORWARD Hook");
-      Verdicts_t verdict = (Verdicts_t) m_netfilter->ProcessHook (PF_INET, NF_INET_FORWARD, packet, device, 0);
+      Verdicts_t verdict = (Verdicts_t) m_netfilter->ProcessHook (PF_INET, NF_INET_FORWARD, packet, 0, 0);
       if (verdict == NF_DROP)
         {
           NS_LOG_DEBUG ("NF_INET_FORWARD packet not accepted");
@@ -995,13 +1004,14 @@ Ipv4L3Protocol::LocalDeliver (Ptr<const Packet> packet, Ipv4Header const&ip, uin
   NS_LOG_FUNCTION (this << packet << &ip);
 
   Ptr<Packet> pkt = packet->Copy ();
-  Ptr<NetDevice> device;
-
+  //Ptr<NetDevice> device;
+  pkt->AddHeader(ip);
   //Netfilter Hook Point
   if (m_netfilter != 0)
     {
       NS_LOG_DEBUG ("NF_INET_LOCAL_IN Hook");
-      Verdicts_t verdict = (Verdicts_t) m_netfilter->ProcessHook (PF_INET, NF_INET_LOCAL_IN, pkt, device, 0);
+      Callback<uint32_t, Ptr<Packet> > ccb = MakeCallback (&Ipv4Netfilter::NetfilterConntrackConfirm, m_netfilter);
+      Verdicts_t verdict = (Verdicts_t) m_netfilter->ProcessHook (PF_INET, NF_INET_LOCAL_IN, pkt, 0, 0, ccb);
       if (verdict == NF_DROP)
         {
           NS_LOG_DEBUG ("NF_INET_LOCAL_IN packet not accepted");
