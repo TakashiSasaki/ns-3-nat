@@ -605,7 +605,7 @@ Ipv4L3Protocol::Send (Ptr<Packet> packet,
           if (m_netfilter != 0)
             {
               NS_LOG_DEBUG ("NF_INET_LOCAL_OUT Hook");
-              Verdicts_t verdict = (Verdicts_t) m_netfilter->ProcessHook (PF_INET, NF_INET_LOCAL_OUT, packet, 0, 0);
+              Verdicts_t verdict = (Verdicts_t) m_netfilter->ProcessHook (PF_INET, NF_INET_LOCAL_OUT, packetCopy, 0, 0);
               if (verdict == NF_DROP)
                 {
                   NS_LOG_DEBUG ("NF_INET_LOCAL_OUT packet not accepted");
@@ -619,7 +619,7 @@ Ipv4L3Protocol::Send (Ptr<Packet> packet,
             {
               NS_LOG_DEBUG ("NF_INET_POST_ROUTING Hook");
               Callback<uint32_t, Ptr<Packet> > ccb = MakeCallback (&Ipv4Netfilter::NetfilterConntrackConfirm, m_netfilter);
-              Verdicts_t verdict = (Verdicts_t) m_netfilter->ProcessHook (PF_INET, NF_INET_POST_ROUTING, packet, 0, 0, ccb);
+              Verdicts_t verdict = (Verdicts_t) m_netfilter->ProcessHook (PF_INET, NF_INET_POST_ROUTING, packetCopy, 0, 0, ccb);
               if (verdict == NF_DROP)
                 {
                   NS_LOG_DEBUG ("NF_INET_POST_ROUTING packet not accepted");
@@ -655,7 +655,7 @@ Ipv4L3Protocol::Send (Ptr<Packet> packet,
               if (m_netfilter != 0)
                 {
                   NS_LOG_DEBUG ("NF_INET_LOCAL_OUT Hook");
-                  Verdicts_t verdict = (Verdicts_t) m_netfilter->ProcessHook (PF_INET, NF_INET_LOCAL_OUT, packet, 0, 0);
+                  Verdicts_t verdict = (Verdicts_t) m_netfilter->ProcessHook (PF_INET, NF_INET_LOCAL_OUT, packetCopy, 0, 0);
                   if (verdict == NF_DROP)
                     {
                       NS_LOG_DEBUG ("NF_INET_LOCAL_OUT packet not accepted");
@@ -669,7 +669,7 @@ Ipv4L3Protocol::Send (Ptr<Packet> packet,
                 {
                   NS_LOG_DEBUG ("NF_INET_POST_ROUTING Hook");
                   Callback<uint32_t, Ptr<Packet> > ccb = MakeCallback (&Ipv4Netfilter::NetfilterConntrackConfirm, m_netfilter);
-                  Verdicts_t verdict = (Verdicts_t) m_netfilter->ProcessHook (PF_INET, NF_INET_POST_ROUTING, packet, 0, 0, ccb);
+                  Verdicts_t verdict = (Verdicts_t) m_netfilter->ProcessHook (PF_INET, NF_INET_POST_ROUTING, packetCopy, 0, 0, ccb);
                   if (verdict == NF_DROP)
                     {
                       NS_LOG_DEBUG ("NF_INET_POST_ROUTING packet not accepted");
