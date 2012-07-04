@@ -91,7 +91,7 @@ Ipv4Netfilter::Ipv4Netfilter ()
 
 
   this->RegisterNetfilterHook (nfh);
-  //this->RegisterNetfilterHook (nfh1);
+  this->RegisterNetfilterHook (nfh1);
   this->RegisterNetfilterHook (nfh2);
   this->RegisterNetfilterHook (nfh3);
 
