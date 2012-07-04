@@ -456,8 +456,6 @@ Ipv4L3Protocol::Receive ( Ptr<NetDevice> device, Ptr<const Packet> p, uint16_t p
   uint32_t interface = 0;
   Ptr<Packet> packet = p->Copy ();
 
-  //Netfilter Hook Point
-
   if (m_netfilter != 0)
     {
       NS_LOG_DEBUG ("NF_INET_PRE_ROUTING Hook");
@@ -582,14 +580,6 @@ Ipv4L3Protocol::Send (Ptr<Packet> packet,
       ttl = tag.GetTtl ();
     }
 
-/*  Ptr<NetDevice> device;
-
-  if (route)
-    {
-      std::cout<< "Route: " << *route << std::endl;
-      device = route->GetOutputDevice ();
-    }
-*/
   // Handle a few cases:
   // 1) packet is destined to limited broadcast address
   // 2) packet is destined to a subnet-directed broadcast address
@@ -612,9 +602,6 @@ Ipv4L3Protocol::Send (Ptr<Packet> packet,
           NS_ASSERT (packetCopy->GetSize () <= outInterface->GetDevice ()->GetMtu ());
           m_sendOutgoingTrace (ipHeader, packetCopy, ifaceIndex);
           packetCopy->AddHeader (ipHeader);
-/*        
-          //Netfilter Hook Point
-
           if (m_netfilter != 0)
             {
               NS_LOG_DEBUG ("NF_INET_LOCAL_OUT Hook");
@@ -626,8 +613,8 @@ Ipv4L3Protocol::Send (Ptr<Packet> packet,
                   return;
                 }
             }
-*/
-          //Netfilter Hook Point
+          // Do not call SendRealOut () (which requires passing in a route)
+          // instead, just send the packet on the interface 
           if (m_netfilter != 0)
             {
               NS_LOG_DEBUG ("NF_INET_POST_ROUTING Hook");
@@ -665,9 +652,6 @@ Ipv4L3Protocol::Send (Ptr<Packet> packet,
               Ptr<Packet> packetCopy = packet->Copy ();
               m_sendOutgoingTrace (ipHeader, packetCopy, ifaceIndex);
               packetCopy->AddHeader (ipHeader);
-/*
-              //Netfilter Hook Point
-
               if (m_netfilter != 0)
                 {
                   NS_LOG_DEBUG ("NF_INET_LOCAL_OUT Hook");
@@ -679,8 +663,8 @@ Ipv4L3Protocol::Send (Ptr<Packet> packet,
                       return;
                     }
                 }
-*/
-              //Netfilter Hook Point
+              // Do not call SendRealOut () (which requires passing in a route)
+              // instead, just send the packet on the interface 
               if (m_netfilter != 0)
                 {
                   NS_LOG_DEBUG ("NF_INET_POST_ROUTING Hook");
@@ -705,16 +689,15 @@ Ipv4L3Protocol::Send (Ptr<Packet> packet,
   if (route && route->GetGateway () != Ipv4Address ())
     {
       NS_LOG_LOGIC ("Ipv4L3Protocol::Send case 3:  passed in with route");
-      Ptr<Packet> packetCopy = packet->Copy (); 
       ipHeader = BuildHeader (source, destination, protocol, packet->GetSize (), ttl, mayFragment);
       int32_t interface = GetInterfaceForDevice (route->GetOutputDevice ());   
-      packetCopy->AddHeader (ipHeader);
-      NS_LOG_DEBUG (" :: Add Ipv4 Header :: ");
-      //Netfilter Hook Point
-      
       if (m_netfilter != 0)
         {
           NS_LOG_DEBUG ("NF_INET_LOCAL_OUT Hook");
+          // the LOCAL_OUT hook expects an IP header on the packet, but
+          // SendRealOut () (below) is where it is added.  So add one here.
+          Ptr<Packet> packetCopy = packet->Copy (); 
+          packetCopy->AddHeader (ipHeader);
           Verdicts_t verdict = (Verdicts_t) m_netfilter->ProcessHook (PF_INET, NF_INET_LOCAL_OUT, packetCopy, 0, 0);
           if (verdict == NF_DROP)
             {
@@ -723,7 +706,6 @@ Ipv4L3Protocol::Send (Ptr<Packet> packet,
               return;
             }
         } 
-      packetCopy->RemoveHeader (ipHeader);
       
       m_sendOutgoingTrace (ipHeader, packet, interface);
       SendRealOut (route, packet->Copy (), ipHeader);
@@ -744,15 +726,14 @@ Ipv4L3Protocol::Send (Ptr<Packet> packet,
   Ptr<NetDevice> oif (0);     // unused for now
   ipHeader = BuildHeader (source, destination, protocol, packet->GetSize (), ttl, mayFragment);
   Ptr<Ipv4Route> newRoute;
-  Ptr<Packet> packetCopy = packet->Copy (); 
-  packetCopy->AddHeader (ipHeader);
-  NS_LOG_DEBUG (" :: Add Ipv4 Header :: ");
-  //Netfilter Hook Point
-
   if (m_netfilter != 0)
     {
       NS_LOG_DEBUG ("NF_INET_LOCAL_OUT Hook");
-      Verdicts_t verdict = (Verdicts_t) m_netfilter->ProcessHook (PF_INET, NF_INET_LOCAL_OUT, packet, 0, 0);
+      // the LOCAL_OUT hook expects an IP header on the packet, but
+      // SendRealOut () (below) is where it is added.  So add one here.
+      Ptr<Packet> packetCopy = packet->Copy (); 
+      packetCopy->AddHeader (ipHeader);
+      Verdicts_t verdict = (Verdicts_t) m_netfilter->ProcessHook (PF_INET, NF_INET_LOCAL_OUT, packetCopy, 0, 0);
       if (verdict == NF_DROP)
         {
           NS_LOG_DEBUG ("NF_INET_LOCAL_OUT packet not accepted");
@@ -760,8 +741,6 @@ Ipv4L3Protocol::Send (Ptr<Packet> packet,
           return;
         }
     }
-  packetCopy->RemoveHeader (ipHeader);
-
 
   if (m_routingProtocol != 0)
     {
@@ -833,7 +812,6 @@ Ipv4L3Protocol::SendRealOut (Ptr<Ipv4Route> route,
   packet->AddHeader (ipHeader);
   Ptr<NetDevice> device = route->GetOutputDevice ();
 
-  //Netfilter Hook Point
   if (m_netfilter != 0)
     {
       NS_LOG_DEBUG ("NF_INET_POST_ROUTING Hook");
@@ -965,7 +943,6 @@ Ipv4L3Protocol::IpForward (Ptr<Ipv4Route> rtentry, Ptr<const Packet> p, const Ip
   // Forwarding
   Ipv4Header ipHeader = header;
   Ptr<Packet> packet = p->Copy ();
-  //Ptr<NetDevice> device = rtentry->GetOutputDevice ();
   int32_t interface = GetInterfaceForDevice (rtentry->GetOutputDevice ());
   ipHeader.SetTtl (ipHeader.GetTtl () - 1);
   if (ipHeader.GetTtl () == 0)
@@ -983,7 +960,6 @@ Ipv4L3Protocol::IpForward (Ptr<Ipv4Route> rtentry, Ptr<const Packet> p, const Ip
       return;
     }
   m_unicastForwardTrace (ipHeader, packet, interface);
-  //Netfilter Hook Point
   if (m_netfilter != 0)
     {
       NS_LOG_DEBUG ("NF_INET_FORWARD Hook");
@@ -1004,9 +980,7 @@ Ipv4L3Protocol::LocalDeliver (Ptr<const Packet> packet, Ipv4Header const&ip, uin
   NS_LOG_FUNCTION (this << packet << &ip);
 
   Ptr<Packet> pkt = packet->Copy ();
-  //Ptr<NetDevice> device;
   pkt->AddHeader(ip);
-  //Netfilter Hook Point
   if (m_netfilter != 0)
     {
       NS_LOG_DEBUG ("NF_INET_LOCAL_IN Hook");
