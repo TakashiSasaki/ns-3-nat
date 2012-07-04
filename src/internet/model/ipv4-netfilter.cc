@@ -90,8 +90,8 @@ Ipv4Netfilter::Ipv4Netfilter ()
   Ipv4NetfilterHook nfh3 = Ipv4NetfilterHook (1, NF_INET_LOCAL_IN, NF_IP_PRI_CONNTRACK_CONFIRM, localIn); 
 
 
- // this->RegisterNetfilterHook (nfh);
- // this->RegisterNetfilterHook (nfh1);
+  this->RegisterNetfilterHook (nfh);
+  //this->RegisterNetfilterHook (nfh1);
   this->RegisterNetfilterHook (nfh2);
   this->RegisterNetfilterHook (nfh3);
 
@@ -388,7 +388,7 @@ Ipv4Netfilter::NetfilterConntrackIn (Hooks_t hook, Ptr<Packet> packet, Ptr<NetDe
   // HERE WE ARE JUST IGNORING THE PROTOCOLS WITHOUT A HELPER
   // todo: we need to return here afterwards and find a better solution and more
   // generic solution, this is just a hot fix so that the porting can be finished
-  if (l4proto == NULL) {
+  if (l4proto == 0) {
 	  NS_LOG_DEBUG ( "Netfilter: Letting packet pass without treatment, there is no helper for protocol: " << (int)ipHeader.GetProtocol ());
 	  return NF_ACCEPT;
   }
