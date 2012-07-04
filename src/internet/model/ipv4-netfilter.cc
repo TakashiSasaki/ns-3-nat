@@ -385,8 +385,14 @@ Ipv4Netfilter::NetfilterConntrackIn (Hooks_t hook, Ptr<Packet> packet, Ptr<NetDe
   
   Ptr<NetfilterConntrackL4Protocol> l4proto = FindL4ProtocolHelper (ipHeader.GetProtocol ());
 
-  /*if (l4proto != NULL) {
-  }*/
+  // HERE WE ARE JUST IGNORING THE PROTOCOLS WITHOUT A HELPER
+  // todo: we need to return here afterwards and find a better solution and more
+  // generic solution, this is just a hot fix so that the porting can be finished
+  if (l4proto == NULL) {
+	  NS_LOG_DEBUG ( "Netfilter: Letting packet pass without treatment, there is no helper for protocol: " << (int)ipHeader.GetProtocol ());
+	  return NF_ACCEPT;
+  }
+
   ResolveNormalConntrack (packet, 1 /* PF */, ipHeader.GetProtocol (), l3proto, l4proto, setReply, ctInfo, ipHeader);
 
   // Call layer 4 Packet callback
