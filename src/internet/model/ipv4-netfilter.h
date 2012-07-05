@@ -129,14 +129,16 @@ class Ipv4Netfilter  : public Object {
       */
     uint32_t ProcessHook (uint8_t protocolFamily, Hooks_t hookNumber, Ptr<Packet> p,Ptr<NetDevice> in, Ptr<NetDevice> out , ContinueCallback cc = MakeNullCallback <uint32_t, Ptr<Packet> > ());    //ContinueCallback ccb = defaultContinueCallback);
 
-#if 0    
+    
     //Adding void methods for Hooking on specific nodes - sender,forwarder and receiver
     void EnableSender();
     void EnableForwarder();
     void EnableReceiver();
-    uint32_t HookRegistered(void);
+    uint32_t HookRegistered1(Hooks_t hook, Ptr<Packet> packet, Ptr<NetDevice> in,
+               Ptr<NetDevice> out, ContinueCallback& ccb);
+    uint32_t HookRegistered2(Hooks_t hook, Ptr<Packet> packet, Ptr<NetDevice> in,
+               Ptr<NetDevice> out, ContinueCallback& ccb);
 
-#endif
 
     /**
       * \param l3Protocol Layer 3 protocol

@@ -12,3 +12,6 @@ def build(bld):
                                  ['network', 'internet', 'applications','point-to-point'])
     obj.source = 'netfilter-example-1.cc'
 
+    obj = bld.create_ns3_program('netfilter-hook-priority',
+                                 ['network', 'internet', 'applications','point-to-point'])
+    obj.source = 'netfilter-hook-priority.cc'
