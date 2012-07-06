@@ -8,10 +8,10 @@ def build(bld):
                                  ['network', 'internet', 'applications'])
     obj.source = 'main-simple.cc'
 
-    obj = bld.create_ns3_program('netfilter-example-1',
+    obj = bld.create_ns3_program('netfilter-three-node',
                                  ['network', 'internet', 'applications','point-to-point'])
-    obj.source = 'netfilter-example-1.cc'
+    obj.source = 'netfilter-three-node.cc'
 
-    obj = bld.create_ns3_program('netfilter-hook-priority',
+    obj = bld.create_ns3_program('netfilter-add-remove',
                                  ['network', 'internet', 'applications','point-to-point'])
-    obj.source = 'netfilter-hook-priority.cc'
+    obj.source = 'netfilter-add-remove.cc'

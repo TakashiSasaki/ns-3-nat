@@ -573,6 +573,13 @@ Ipv4L3Protocol::Send (Ptr<Packet> packet,
   Ipv4Header ipHeader;
   bool mayFragment = true;
   uint8_t ttl = m_defaultTtl;
+  Ptr<NetDevice> device;
+  
+  if (route) 
+  {
+    device = route->GetOutputDevice ();
+  }
+
   SocketIpTtlTag tag;
   bool found = packet->RemovePacketTag (tag);
   if (found)
@@ -698,7 +705,7 @@ Ipv4L3Protocol::Send (Ptr<Packet> packet,
           // SendRealOut () (below) is where it is added.  So add one here.
           Ptr<Packet> packetCopy = packet->Copy (); 
           packetCopy->AddHeader (ipHeader);
-          Verdicts_t verdict = (Verdicts_t) m_netfilter->ProcessHook (PF_INET, NF_INET_LOCAL_OUT, packetCopy, 0, 0);
+          Verdicts_t verdict = (Verdicts_t) m_netfilter->ProcessHook (PF_INET, NF_INET_LOCAL_OUT, packetCopy, 0, device);
           if (verdict == NF_DROP)
             {
               NS_LOG_DEBUG ("NF_INET_LOCAL_OUT packet not accepted");

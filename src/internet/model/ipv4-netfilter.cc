@@ -29,6 +29,8 @@
 
 #include "tcp-header.h"
 #include "udp-header.h"
+#include "ns3/node.h"
+#include "ns3/net-device.h"
 
 NS_LOG_COMPONENT_DEFINE ("Ipv4Netfilter");
 
@@ -127,90 +129,17 @@ Ipv4Netfilter::ProcessHook(uint8_t protocolFamily, Hooks_t hookNumber, Ptr<Packe
   //return 1;
 }
 
-
-//Adding the void methods for registering hooks on specific nodes -sender,forwarder and receiver.
-void 
-Ipv4Netfilter::EnableSender()
-{
-  NS_LOG_DEBUG (":: Registering Hooks Sender Node ::");
-
-  NetfilterHookCallback regHook = MakeCallback (&Ipv4Netfilter::HookRegistered1, this);
-  NetfilterHookCallback regHook2 = MakeCallback (&Ipv4Netfilter::HookRegistered2, this);
-
-
-  Ipv4NetfilterHook hookregCallback11 = Ipv4NetfilterHook (1, NF_INET_LOCAL_OUT,  NF_IP_PRI_MANGLE, regHook2); 
-  Ipv4NetfilterHook hookregCallback12 = Ipv4NetfilterHook (1, NF_INET_POST_ROUTING,  NF_IP_PRI_MANGLE, regHook2); 
-  Ipv4NetfilterHook hookregCallback1 = Ipv4NetfilterHook (1, NF_INET_LOCAL_OUT,  NF_IP_PRI_FILTER, regHook); 
-  Ipv4NetfilterHook hookregCallback2 = Ipv4NetfilterHook (1, NF_INET_POST_ROUTING,  NF_IP_PRI_FILTER, regHook); 
-  
-
-  this->RegisterNetfilterHook (hookregCallback11);
-  this->RegisterNetfilterHook (hookregCallback12);
-  this->RegisterNetfilterHook (hookregCallback1);
-  this->RegisterNetfilterHook (hookregCallback2);
-}
-
-void 
-Ipv4Netfilter::EnableForwarder()
-{
-  NS_LOG_DEBUG (":: Registering Hooks Forwarder Node ::");
-
-  NetfilterHookCallback regHook = MakeCallback (&Ipv4Netfilter::HookRegistered1, this);
-  NetfilterHookCallback regHook2 = MakeCallback (&Ipv4Netfilter::HookRegistered2, this);
-  
-  Ipv4NetfilterHook hookregCallback11 = Ipv4NetfilterHook (1, NF_INET_PRE_ROUTING,  NF_IP_PRI_FILTER, regHook2); 
-  Ipv4NetfilterHook hookregCallback12 = Ipv4NetfilterHook (1, NF_INET_FORWARD,  NF_IP_PRI_FILTER, regHook2); 
-  Ipv4NetfilterHook hookregCallback13 = Ipv4NetfilterHook (1, NF_INET_POST_ROUTING,  NF_IP_PRI_FILTER, regHook2); 
-  Ipv4NetfilterHook hookregCallback1 = Ipv4NetfilterHook (1, NF_INET_PRE_ROUTING,  NF_IP_PRI_FILTER, regHook); 
-  Ipv4NetfilterHook hookregCallback2 = Ipv4NetfilterHook (1, NF_INET_FORWARD,  NF_IP_PRI_FILTER, regHook); 
-  Ipv4NetfilterHook hookregCallback3 = Ipv4NetfilterHook (1, NF_INET_POST_ROUTING,  NF_IP_PRI_FILTER, regHook); 
-
-  
-  this->RegisterNetfilterHook (hookregCallback11);
-  this->RegisterNetfilterHook (hookregCallback12);
-  this->RegisterNetfilterHook (hookregCallback13);
-
-  this->RegisterNetfilterHook (hookregCallback1);
-  this->RegisterNetfilterHook (hookregCallback2);
-  this->RegisterNetfilterHook (hookregCallback3);
-}
-
-void 
-Ipv4Netfilter::EnableReceiver()
-{
-  NS_LOG_DEBUG (":: Registering Hooks Receiver Node ::");
-
-  NetfilterHookCallback regHook = MakeCallback (&Ipv4Netfilter::HookRegistered1, this);
-  NetfilterHookCallback regHook2 = MakeCallback (&Ipv4Netfilter::HookRegistered2, this);
-
-  Ipv4NetfilterHook hookregCallback11 = Ipv4NetfilterHook (1, NF_INET_PRE_ROUTING,  NF_IP_PRI_FILTER, regHook2); 
-  Ipv4NetfilterHook hookregCallback12 = Ipv4NetfilterHook (1, NF_INET_LOCAL_IN,  NF_IP_PRI_FILTER, regHook2); 
-  Ipv4NetfilterHook hookregCallback1 = Ipv4NetfilterHook (1, NF_INET_PRE_ROUTING,  NF_IP_PRI_FILTER, regHook); 
-  Ipv4NetfilterHook hookregCallback2 = Ipv4NetfilterHook (1, NF_INET_LOCAL_IN,  NF_IP_PRI_FILTER, regHook); 
-  
-  this->RegisterNetfilterHook (hookregCallback11);
-  this->RegisterNetfilterHook (hookregCallback12);
-  this->RegisterNetfilterHook (hookregCallback1);
-  this->RegisterNetfilterHook (hookregCallback2);
-}
-
 uint32_t
-Ipv4Netfilter::HookRegistered1(Hooks_t hook, Ptr<Packet> packet, Ptr<NetDevice> in,
+Ipv4Netfilter::HookRegistered(Hooks_t hook, Ptr<Packet> packet, Ptr<NetDevice> in,
                Ptr<NetDevice> out, ContinueCallback& ccb)
 {
-  std::cout<<"**************Hook Callback Lower Priority Registered****************"<<std::endl;
-  return 0;
+  if(out==0)
+    std::cout<<"********On "<<in->GetNode()->GetId()<<" "<<hook<<" hit***********"<<std::endl;
+  else
+    std::cout<<"********On "<<out->GetNode()->GetId()<<" "<<hook<<" hit***********"<<std::endl;
+
+   return 0;
 }
-
-uint32_t
-Ipv4Netfilter::HookRegistered2(Hooks_t hook, Ptr<Packet> packet, Ptr<NetDevice> in,
-               Ptr<NetDevice> out, ContinueCallback& ccb)
-{
-  std::cout<<"**************Hook Callback Higher Priority Registered****************"<<std::endl;
-  return 0;
-}
-
-
 
 uint32_t 
 Ipv4Netfilter::RegisterL3Protocol(Ptr<NetfilterConntrackL3Protocol> l3Protocol)
