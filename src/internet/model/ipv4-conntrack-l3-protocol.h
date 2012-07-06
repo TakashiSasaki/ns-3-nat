@@ -41,7 +41,6 @@ class NetDevice;
       uint32_t Ipv4Confirm (Hooks_t hookNumber, Ptr<Packet> packet, Ptr<NetDevice> in, Ptr<NetDevice> out, ContinueCallback& ccb);
 
     private:
-      std::vector< Ptr<Ipv4NetfilterHook> > ipv4HookData;
       NetfilterHookCallback Ipv4ConntrackIn;
       NetfilterHookCallback Ipv4ConntrackLocal;
       NetfilterHookCallback Ipv4ConntrackConfirm;

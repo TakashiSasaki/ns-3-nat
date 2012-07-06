@@ -64,7 +64,7 @@ typedef Callback<uint32_t, Hooks_t, Ptr<Packet>, Ptr<NetDevice>, Ptr<NetDevice>,
   * where the hook function should be inserted
   */
 
-class Ipv4NetfilterHook : public Object {
+class Ipv4NetfilterHook {
   public:
 
     Ipv4NetfilterHook ();
