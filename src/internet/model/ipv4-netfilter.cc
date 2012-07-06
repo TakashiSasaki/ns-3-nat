@@ -106,7 +106,7 @@ Ipv4Netfilter::Ipv4Netfilter ()
 }
 
 uint32_t 
-Ipv4Netfilter::RegisterHook (Ipv4NetfilterHook hook)
+Ipv4Netfilter::RegisterHook (const Ipv4NetfilterHook& hook)
 {
   //NS_LOG_FUNCTION (this << hook);
   m_netfilterHooks[hook.GetHookNumber ()].Insert (hook);
@@ -114,7 +114,7 @@ Ipv4Netfilter::RegisterHook (Ipv4NetfilterHook hook)
 }
 
 uint32_t 
-Ipv4Netfilter::DeregisterHook (Ipv4NetfilterHook& hook)
+Ipv4Netfilter::DeregisterHook (const Ipv4NetfilterHook& hook)
 {
   m_netfilterHooks[hook.GetHookNumber ()].Remove (hook);
   return 0;

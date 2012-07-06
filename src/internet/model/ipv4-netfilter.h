@@ -96,7 +96,7 @@ class Ipv4Netfilter  : public Object {
       * that hook and is called whenever a packet traverses
       * that hook.
       */
-    uint32_t RegisterHook (Ipv4NetfilterHook hook);
+    uint32_t RegisterHook (const Ipv4NetfilterHook& hook);
 
     /**
       * \param hook The hook function to be registered
@@ -106,7 +106,7 @@ class Ipv4Netfilter  : public Object {
       * The hook function is removed from the callback chain for
       * that hook.
       */
-    uint32_t DeregisterHook (Ipv4NetfilterHook& hook);
+    uint32_t DeregisterHook (const Ipv4NetfilterHook& hook);
 
     /**
       * \param protocolFamily The protocol family e.g., PF_INET

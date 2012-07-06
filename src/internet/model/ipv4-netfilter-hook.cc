@@ -69,13 +69,13 @@ Ipv4NetfilterHook::operator= (const Ipv4NetfilterHook& hook)
 }
 
 int32_t 
-Ipv4NetfilterHook::GetPriority ()
+Ipv4NetfilterHook::GetPriority () const
 {
   return m_priority;
 }
 
 int32_t 
-Ipv4NetfilterHook::GetHookNumber ()
+Ipv4NetfilterHook::GetHookNumber () const
 {
   return m_hookNumber;
 }

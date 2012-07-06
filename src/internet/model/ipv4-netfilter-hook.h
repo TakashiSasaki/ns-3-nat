@@ -72,8 +72,8 @@ class Ipv4NetfilterHook {
     Ipv4NetfilterHook (uint8_t protocolFamily, Hooks_t hookNumber, uint32_t priority, NetfilterHookCallback hook);
     Ipv4NetfilterHook & operator= (const Ipv4NetfilterHook& hook);
     bool operator== (const Ipv4NetfilterHook& hook) const;
-    int32_t GetPriority ();
-    int32_t GetHookNumber ();
+    int32_t GetPriority () const;
+    int32_t GetHookNumber () const;
     int32_t HookCallback (Hooks_t, Ptr<Packet>, Ptr<NetDevice>, Ptr<NetDevice>, ContinueCallback);
     void Print (std::ostream &os) const;
 

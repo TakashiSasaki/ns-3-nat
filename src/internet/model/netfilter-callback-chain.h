@@ -30,12 +30,12 @@ namespace ns3 {
 class NetfilterCallbackChain {
   public:
     NetfilterCallbackChain ();
-    void Insert (Ipv4NetfilterHook& hook);
-    std::list<Ipv4NetfilterHook>::iterator Find (Ipv4NetfilterHook& hook);
-    void Remove (Ipv4NetfilterHook& hook);
+    void Insert (const Ipv4NetfilterHook& hook);
+    std::list<Ipv4NetfilterHook>::iterator Find (const Ipv4NetfilterHook& hook);
+    void Remove (const Ipv4NetfilterHook& hook);
     Ipv4NetfilterHook Front ();
-    uint32_t Size ();
-    bool IsEmpty ();
+    uint32_t Size () const;
+    bool IsEmpty () const;
     void Clear ();
     int32_t IterateAndCallHook (Hooks_t , Ptr<Packet> p, Ptr<NetDevice> in, Ptr<NetDevice> out, ContinueCallback ccb);
 

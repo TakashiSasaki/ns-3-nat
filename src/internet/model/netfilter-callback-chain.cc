@@ -28,7 +28,7 @@ NetfilterCallbackChain::NetfilterCallbackChain ()
 }
 
 void 
-NetfilterCallbackChain::Insert (Ipv4NetfilterHook& hook)
+NetfilterCallbackChain::Insert (const Ipv4NetfilterHook& hook)
 { 
   if (m_netfilterHooks.empty () )
     m_netfilterHooks.push_front (hook);
@@ -46,7 +46,7 @@ NetfilterCallbackChain::Insert (Ipv4NetfilterHook& hook)
 }
     
 std::list<Ipv4NetfilterHook>::iterator 
-NetfilterCallbackChain::Find (Ipv4NetfilterHook& hook)
+NetfilterCallbackChain::Find (const Ipv4NetfilterHook& hook)
 {
   std::list<Ipv4NetfilterHook>::iterator it = m_netfilterHooks.begin ();
   std::list<Ipv4NetfilterHook>::iterator it2;
@@ -60,7 +60,7 @@ NetfilterCallbackChain::Find (Ipv4NetfilterHook& hook)
 }
     
 void 
-NetfilterCallbackChain::Remove (Ipv4NetfilterHook& hook)
+NetfilterCallbackChain::Remove (const Ipv4NetfilterHook& hook)
 { 
   m_netfilterHooks.remove (hook);
 } 
@@ -72,13 +72,13 @@ NetfilterCallbackChain::Front ()
 }
 
 uint32_t 
-NetfilterCallbackChain::Size ()
+NetfilterCallbackChain::Size () const
 {
   return m_netfilterHooks.size ();
 }
     
 bool 
-NetfilterCallbackChain::IsEmpty ()
+NetfilterCallbackChain::IsEmpty () const
 {   
   if (m_netfilterHooks.empty ())
     return true;
