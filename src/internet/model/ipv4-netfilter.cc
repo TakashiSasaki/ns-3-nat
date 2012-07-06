@@ -105,19 +105,16 @@ Ipv4Netfilter::Ipv4Netfilter ()
 #endif
 }
 
-uint32_t 
+void
 Ipv4Netfilter::RegisterHook (const Ipv4NetfilterHook& hook)
 {
-  //NS_LOG_FUNCTION (this << hook);
   m_netfilterHooks[hook.GetHookNumber ()].Insert (hook);
-  return 0;
 }
 
-uint32_t 
+void
 Ipv4Netfilter::DeregisterHook (const Ipv4NetfilterHook& hook)
 {
   m_netfilterHooks[hook.GetHookNumber ()].Remove (hook);
-  return 0;
 }
 
 uint32_t  

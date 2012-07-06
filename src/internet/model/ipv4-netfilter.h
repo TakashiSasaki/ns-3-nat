@@ -88,7 +88,6 @@ class Ipv4Netfilter  : public Object {
 
     /**
       * \param hook The hook function to be registered
-      * \returns 0 on success
       * 
       * Registers the hook function at the specified hook 
       * using the priority given in the hook datastructure.
@@ -96,17 +95,16 @@ class Ipv4Netfilter  : public Object {
       * that hook and is called whenever a packet traverses
       * that hook.
       */
-    uint32_t RegisterHook (const Ipv4NetfilterHook& hook);
+    void RegisterHook (const Ipv4NetfilterHook& hook);
 
     /**
       * \param hook The hook function to be registered
-      * \returns 0 on success
       * 
       * Unregisters the hook function from the specified hook 
       * The hook function is removed from the callback chain for
       * that hook.
       */
-    uint32_t DeregisterHook (const Ipv4NetfilterHook& hook);
+    void DeregisterHook (const Ipv4NetfilterHook& hook);
 
     /**
       * \param protocolFamily The protocol family e.g., PF_INET
