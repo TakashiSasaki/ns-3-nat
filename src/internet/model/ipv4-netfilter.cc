@@ -92,10 +92,10 @@ Ipv4Netfilter::Ipv4Netfilter ()
   Ipv4NetfilterHook nfh3 = Ipv4NetfilterHook (1, NF_INET_LOCAL_IN, NF_IP_PRI_CONNTRACK_CONFIRM, localIn); 
 
 
-  this->RegisterNetfilterHook (nfh);
-  this->RegisterNetfilterHook (nfh1);
-  this->RegisterNetfilterHook (nfh2);
-  this->RegisterNetfilterHook (nfh3);
+  this->RegisterHook (nfh);
+  this->RegisterHook (nfh1);
+  this->RegisterHook (nfh2);
+  this->RegisterHook (nfh3);
 
 #ifdef NOTYET  
   if (m_enableNat)
@@ -106,22 +106,20 @@ Ipv4Netfilter::Ipv4Netfilter ()
 }
 
 uint32_t 
-Ipv4Netfilter::RegisterNetfilterHook (Ipv4NetfilterHook hook)
+Ipv4Netfilter::RegisterHook (Ipv4NetfilterHook hook)
 {
   //NS_LOG_FUNCTION (this << hook);
   m_netfilterHooks[hook.GetHookNumber ()].Insert (hook);
   return 0;
 }
 
-#if 0
 uint32_t 
-Ipv4Netfilter::UnRegisterNetfilterHook (Ipv4NetfilterHook& hook)
+Ipv4Netfilter::DeregisterHook (Ipv4NetfilterHook& hook)
 {
   m_netfilterHooks[hook.GetHookNumber ()].Remove (hook);
   return 0;
 }
 
-#endif
 uint32_t  
 Ipv4Netfilter::ProcessHook(uint8_t protocolFamily, Hooks_t hookNumber, Ptr<Packet> p,Ptr<NetDevice> in, Ptr<NetDevice> out,ContinueCallback ccb)
 {
@@ -633,8 +631,8 @@ Ipv4Netfilter::EnableNat ()
   Ipv4NetfilterHook natCallback2 = Ipv4NetfilterHook (1, NF_INET_PRE_ROUTING, NF_IP_PRI_NAT_DST, doNat); 
   
 
-  this->RegisterNetfilterHook (natCallback1);
-  this->RegisterNetfilterHook (natCallback2);
+  this->RegisterHook (natCallback1);
+  this->RegisterHook (natCallback2);
 }
 
 uint32_t 
