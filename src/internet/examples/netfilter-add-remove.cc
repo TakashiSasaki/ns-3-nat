@@ -64,24 +64,31 @@ main (int argc, char *argv[])
 
   Ipv4InterfaceContainer firstInterfaces = address1.Assign (devices1);
   Ipv4InterfaceContainer secondInterfaces = address2.Assign (devices2);
-
-Ptr <Ipv4> ipv4=first.Get (1)->GetObject<Ipv4> ();
+  
+  
+  //Hook Registering on Node 1
+  Ptr<Ipv4> ipv4=first.Get (1)->GetObject<Ipv4> ();
   std::cout << "==============Number of interfaces on node " << first.Get (1)->GetId() << ": " << ipv4->GetNInterfaces () << std::endl;
   
- Ptr <Ipv4L3Protocol>  ipv4L3 = DynamicCast <Ipv4L3Protocol>(first.Get (1)->GetObject<Ipv4> ());
-   Ptr <Ipv4Netfilter> netfilter = ipv4L3->GetNetfilter ();
-  
-  NS_LOG_DEBUG (":: Registering Hooks Forwarder Node ::");
+  Ptr<Ipv4L3Protocol> ipv4L3 = DynamicCast <Ipv4L3Protocol>(first.Get (1)->GetObject<Ipv4> ());
+  Ptr <Ipv4Netfilter> netfilter = ipv4L3->GetNetfilter ();
 
-  NetfilterHookCallback regHook = MakeCallback (&Ipv4Netfilter::HookRegistered, PeekPointer(netfilter));
+  NetfilterHookCallback nodehook1 = MakeCallback (&Ipv4Netfilter::HookPri1, PeekPointer (netfilter));
+  NetfilterHookCallback nodehook2 = MakeCallback (&Ipv4Netfilter::HookPri2, PeekPointer (netfilter));
+  NetfilterHookCallback nodehook3 = MakeCallback (&Ipv4Netfilter::HookPri3, PeekPointer (netfilter));
+
+
+  Ipv4NetfilterHook nfh = Ipv4NetfilterHook (1, NF_INET_FORWARD, NF_IP_PRI_FIRST , nodehook1); 
+  Ipv4NetfilterHook nfh1 = Ipv4NetfilterHook (1, NF_INET_FORWARD, NF_IP_PRI_FILTER, nodehook2); 
+  Ipv4NetfilterHook nfh2 = Ipv4NetfilterHook (1, NF_INET_FORWARD, NF_IP_PRI_LAST, nodehook3);
   
-  Ipv4NetfilterHook hookregCallback1 = Ipv4NetfilterHook (1, NF_INET_PRE_ROUTING,  NF_IP_PRI_FILTER, regHook); 
-  Ipv4NetfilterHook hookregCallback2 = Ipv4NetfilterHook (1, NF_INET_FORWARD,  NF_IP_PRI_FILTER, regHook); 
-  Ipv4NetfilterHook hookregCallback3 = Ipv4NetfilterHook (1, NF_INET_POST_ROUTING,  NF_IP_PRI_FILTER, regHook); 
- 
-  netfilter->RegisterNetfilterHook (hookregCallback1);
-  netfilter->RegisterNetfilterHook (hookregCallback2);
-  netfilter->RegisterNetfilterHook (hookregCallback3);
+  netfilter->RegisterHook (nfh);
+  netfilter->RegisterHook (nfh1);
+  netfilter->DeregisterHook(nfh1);
+  netfilter->RegisterHook (nfh2);
+
+
+
 
   UdpEchoServerHelper echoServer (port);
 

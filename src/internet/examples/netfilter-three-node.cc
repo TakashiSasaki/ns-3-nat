@@ -80,10 +80,10 @@ main (int argc, char *argv[])
   Ipv4NetfilterHook nfh2 = Ipv4NetfilterHook (1, NF_INET_LOCAL_OUT, NF_IP_PRI_FILTER, nodehook); 
   Ipv4NetfilterHook nfh3 = Ipv4NetfilterHook (1, NF_INET_POST_ROUTING, NF_IP_PRI_FILTER, nodehook);
  
-  netfilter->RegisterNetfilterHook (nfh);
-  netfilter->RegisterNetfilterHook (nfh1);
-  netfilter->RegisterNetfilterHook (nfh2);
-  netfilter->RegisterNetfilterHook (nfh3);
+  netfilter->RegisterHook (nfh);
+  netfilter->RegisterHook (nfh1);
+  netfilter->RegisterHook (nfh2);
+  netfilter->RegisterHook (nfh3);
 
 
   //Hook Registering on Node 1
@@ -99,9 +99,9 @@ main (int argc, char *argv[])
   nfh1 = Ipv4NetfilterHook (1, NF_INET_FORWARD, NF_IP_PRI_FILTER, nodehook); 
   nfh2 = Ipv4NetfilterHook (1, NF_INET_POST_ROUTING, NF_IP_PRI_FILTER, nodehook);
  
-  netfilter->RegisterNetfilterHook (nfh);
-  netfilter->RegisterNetfilterHook (nfh1);
-  netfilter->RegisterNetfilterHook (nfh2);
+  netfilter->RegisterHook (nfh);
+  netfilter->RegisterHook (nfh1);
+  netfilter->RegisterHook (nfh2);
 
 
   //Hook Registering on Node 2
@@ -118,10 +118,10 @@ main (int argc, char *argv[])
   nfh2 = Ipv4NetfilterHook (1, NF_INET_LOCAL_OUT, NF_IP_PRI_FILTER, nodehook); 
   nfh3 = Ipv4NetfilterHook (1, NF_INET_POST_ROUTING, NF_IP_PRI_FILTER, nodehook);
  
-  netfilter->RegisterNetfilterHook (nfh);
-  netfilter->RegisterNetfilterHook (nfh1);
-  netfilter->RegisterNetfilterHook (nfh2);
-  netfilter->RegisterNetfilterHook (nfh3);
+  netfilter->RegisterHook (nfh);
+  netfilter->RegisterHook (nfh1);
+  netfilter->RegisterHook (nfh2);
+  netfilter->RegisterHook (nfh3);
 
   UdpEchoServerHelper echoServer (port);
 

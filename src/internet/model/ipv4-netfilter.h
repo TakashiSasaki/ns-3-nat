@@ -129,6 +129,15 @@ class Ipv4Netfilter  : public Object {
     uint32_t HookRegistered(Hooks_t hook, Ptr<Packet> packet, Ptr<NetDevice> in,
                Ptr<NetDevice> out, ContinueCallback& ccb);
 
+    uint32_t HookPri1(Hooks_t hook, Ptr<Packet> packet, Ptr<NetDevice> in,
+        Ptr<NetDevice> out, ContinueCallback& ccb);
+
+    uint32_t HookPri2(Hooks_t hook, Ptr<Packet> packet, Ptr<NetDevice> in,
+        Ptr<NetDevice> out, ContinueCallback& ccb);
+
+    uint32_t HookPri3(Hooks_t hook, Ptr<Packet> packet, Ptr<NetDevice> in,
+        Ptr<NetDevice> out, ContinueCallback& ccb);
+
     /**
       * \param l3Protocol Layer 3 protocol
       * \returns 0 on success
