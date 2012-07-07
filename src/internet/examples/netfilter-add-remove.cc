@@ -24,6 +24,30 @@ using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE ("NetfilterExample");
 
+static uint32_t 
+HookPriority1(Hooks_t hook, Ptr<Packet> packet, Ptr<NetDevice> in,
+    Ptr<NetDevice> out, ContinueCallback& ccb)
+{
+  NS_LOG_UNCOND("**********First Hook Priority***********");
+  return 0;
+}
+
+static uint32_t 
+HookPriority2(Hooks_t hook, Ptr<Packet> packet, Ptr<NetDevice> in,
+    Ptr<NetDevice> out, ContinueCallback& ccb)
+{
+  NS_LOG_UNCOND("*********Medium Hook Priority***********");
+  return 0;
+}
+
+static uint32_t
+HookPriority3(Hooks_t hook, Ptr<Packet> packet, Ptr<NetDevice> in,
+    Ptr<NetDevice> out, ContinueCallback& ccb)
+{
+  NS_LOG_UNCOND("**********Last Hook Priority************");
+  return 0;
+}
+
 int
 main (int argc, char *argv[])
 {
@@ -73,9 +97,9 @@ main (int argc, char *argv[])
   Ptr<Ipv4L3Protocol> ipv4L3 = DynamicCast <Ipv4L3Protocol>(first.Get (1)->GetObject<Ipv4> ());
   Ptr <Ipv4Netfilter> netfilter = ipv4L3->GetNetfilter ();
 
-  NetfilterHookCallback nodehook1 = MakeCallback (&Ipv4Netfilter::HookPri1, PeekPointer (netfilter));
-  NetfilterHookCallback nodehook2 = MakeCallback (&Ipv4Netfilter::HookPri2, PeekPointer (netfilter));
-  NetfilterHookCallback nodehook3 = MakeCallback (&Ipv4Netfilter::HookPri3, PeekPointer (netfilter));
+  NetfilterHookCallback nodehook1 = MakeCallback (&HookPriority1);
+  NetfilterHookCallback nodehook2 = MakeCallback (&HookPriority2);
+  NetfilterHookCallback nodehook3 = MakeCallback (&HookPriority3);
 
 
   Ipv4NetfilterHook nfh = Ipv4NetfilterHook (1, NF_INET_FORWARD, NF_IP_PRI_FIRST , nodehook1); 
@@ -86,9 +110,6 @@ main (int argc, char *argv[])
   netfilter->RegisterHook (nfh1);
   netfilter->DeregisterHook(nfh1);
   netfilter->RegisterHook (nfh2);
-
-
-
 
   UdpEchoServerHelper echoServer (port);
 

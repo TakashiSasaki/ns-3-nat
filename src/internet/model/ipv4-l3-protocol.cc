@@ -988,12 +988,13 @@ Ipv4L3Protocol::LocalDeliver (Ptr<const Packet> packet, Ipv4Header const&ip, uin
   NS_LOG_FUNCTION (this << packet << &ip);
 
   Ptr<Packet> pkt = packet->Copy ();
+  Ptr<NetDevice> device = GetNetDevice(iif);
   pkt->AddHeader(ip);
   if (m_netfilter != 0)
     {
       NS_LOG_DEBUG ("NF_INET_LOCAL_IN Hook");
       Callback<uint32_t, Ptr<Packet> > ccb = MakeCallback (&Ipv4Netfilter::NetfilterConntrackConfirm, m_netfilter);
-      Verdicts_t verdict = (Verdicts_t) m_netfilter->ProcessHook (PF_INET, NF_INET_LOCAL_IN, pkt, 0, 0, ccb);
+      Verdicts_t verdict = (Verdicts_t) m_netfilter->ProcessHook (PF_INET, NF_INET_LOCAL_IN, pkt, 0, device, ccb);
       if (verdict == NF_DROP)
         {
           NS_LOG_DEBUG ("NF_INET_LOCAL_IN packet not accepted");

@@ -24,6 +24,25 @@ using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE ("NetfilterExample");
 
+static uint32_t
+HookRegistered(Hooks_t hook, Ptr<Packet> packet, Ptr<NetDevice> in,
+               Ptr<NetDevice> out, ContinueCallback& ccb)
+{ 
+  const char* hooknames[] = {"NF_INET_PRE_ROUTING","NF_INET_LOCAL_IN","NF_INET_FORWARD","NF_INET_LOCAL_OUT","NF_INET_POST_ROUTING","NF_INET_NUMHOOKS"};
+
+  if(out == 0 && in == 0)
+    std::cout<<"-1"<<std::endl;
+  else
+    if(out == 0 && in!= 0)
+      std::cout<<"********On Node "<<in->GetNode()->GetId()<<" "<<hooknames[hook]<<" hit***********"<<std::endl;
+    else
+      if(out!=0 && in == 0) 
+        std::cout<<"********On Node "<<out->GetNode()->GetId()<<" "<<hooknames[hook]<<" hit***********"<<std::endl;
+    return 0;
+
+  
+}
+
 int
 main (int argc, char *argv[])
 {
@@ -34,7 +53,7 @@ main (int argc, char *argv[])
 
   // Desired topology:  n0 <----> n1 <-----> n2
   // n0 and n1 in first container, n1 and n2 in second
-
+  
   NodeContainer first;
   first.Create (2);
 
@@ -73,7 +92,7 @@ main (int argc, char *argv[])
   Ptr <Ipv4L3Protocol> ipv4L3 = DynamicCast <Ipv4L3Protocol>(first.Get (0)->GetObject<Ipv4> ());
   Ptr <Ipv4Netfilter>  netfilter = ipv4L3->GetNetfilter ();
   
-  NetfilterHookCallback nodehook = MakeCallback (&Ipv4Netfilter::HookRegistered, PeekPointer (netfilter));
+  NetfilterHookCallback nodehook = MakeCallback (&HookRegistered);
   
   Ipv4NetfilterHook nfh = Ipv4NetfilterHook (1, NF_INET_PRE_ROUTING, NF_IP_PRI_FILTER , nodehook); 
   Ipv4NetfilterHook nfh1 = Ipv4NetfilterHook (1, NF_INET_LOCAL_IN, NF_IP_PRI_FILTER, nodehook); 
@@ -93,7 +112,7 @@ main (int argc, char *argv[])
   ipv4L3 = DynamicCast <Ipv4L3Protocol>(first.Get (1)->GetObject<Ipv4> ());
   netfilter = ipv4L3->GetNetfilter ();
 
-  nodehook = MakeCallback (&Ipv4Netfilter::HookRegistered, PeekPointer (netfilter));
+  nodehook = MakeCallback (&HookRegistered);
   
   nfh = Ipv4NetfilterHook (1, NF_INET_PRE_ROUTING, NF_IP_PRI_FILTER , nodehook); 
   nfh1 = Ipv4NetfilterHook (1, NF_INET_FORWARD, NF_IP_PRI_FILTER, nodehook); 
@@ -111,7 +130,7 @@ main (int argc, char *argv[])
   ipv4L3 = DynamicCast <Ipv4L3Protocol>(second.Get (1)->GetObject<Ipv4> ());
   netfilter = ipv4L3->GetNetfilter ();
   
-  nodehook = MakeCallback (&Ipv4Netfilter::HookRegistered, PeekPointer (netfilter));
+  nodehook = MakeCallback (&HookRegistered);
   
   nfh = Ipv4NetfilterHook (1, NF_INET_PRE_ROUTING, NF_IP_PRI_FILTER , nodehook); 
   nfh1 = Ipv4NetfilterHook (1, NF_INET_LOCAL_IN, NF_IP_PRI_FILTER, nodehook); 

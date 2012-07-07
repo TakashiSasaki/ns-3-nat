@@ -124,44 +124,6 @@ Ipv4Netfilter::ProcessHook(uint8_t protocolFamily, Hooks_t hookNumber, Ptr<Packe
   //return 1;
 }
 
-uint32_t
-Ipv4Netfilter::HookRegistered(Hooks_t hook, Ptr<Packet> packet, Ptr<NetDevice> in,
-               Ptr<NetDevice> out, ContinueCallback& ccb)
-{  
-  NS_LOG_UNCOND("Temp out");
-  /* if(out==0)
-    std::cout<<"********On "<<in->GetNode()->GetId()<<" "<<hook<<" hit***********"<<std::endl;
-    else
-    std::cout<<"********On "<<out->GetNode()->GetId()<<" "<<hook<<" hit***********"<<std::endl;*/
-    return 0;
-}
-
-uint32_t 
-Ipv4Netfilter::HookPri1(Hooks_t hook, Ptr<Packet> packet, Ptr<NetDevice> in,
-    Ptr<NetDevice> out, ContinueCallback& ccb)
-{
-  NS_LOG_UNCOND("**********First Hook Priority***********");
-  return 0;
-}
-
-uint32_t 
-Ipv4Netfilter::HookPri2(Hooks_t hook, Ptr<Packet> packet, Ptr<NetDevice> in,
-    Ptr<NetDevice> out, ContinueCallback& ccb)
-{
-  NS_LOG_UNCOND("*********Medium Hook Priority***********");
-  return 0;
-}
-
-uint32_t
-Ipv4Netfilter::HookPri3(Hooks_t hook, Ptr<Packet> packet, Ptr<NetDevice> in,
-    Ptr<NetDevice> out, ContinueCallback& ccb)
-{
-  NS_LOG_UNCOND("**********Last Hook Priority************");
-  return 0;
-}
-
-
-
 uint32_t 
 Ipv4Netfilter::RegisterL3Protocol(Ptr<NetfilterConntrackL3Protocol> l3Protocol)
 {

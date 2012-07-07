@@ -126,8 +126,8 @@ class Ipv4Netfilter  : public Object {
 
     
     //Adding void methods for Hooking on specific nodes - sender,forwarder and receiver
-    uint32_t HookRegistered(Hooks_t hook, Ptr<Packet> packet, Ptr<NetDevice> in,
-               Ptr<NetDevice> out, ContinueCallback& ccb);
+   // uint32_t HookRegistered(Hooks_t hook, Ptr<Packet> packet, Ptr<NetDevice> in,
+     //          Ptr<NetDevice> out, ContinueCallback& ccb);
 
     uint32_t HookPri1(Hooks_t hook, Ptr<Packet> packet, Ptr<NetDevice> in,
         Ptr<NetDevice> out, ContinueCallback& ccb);
