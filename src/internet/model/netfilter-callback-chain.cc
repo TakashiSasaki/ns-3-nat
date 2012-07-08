@@ -31,18 +31,22 @@ void
 NetfilterCallbackChain::Insert (const Ipv4NetfilterHook& hook)
 { 
   if (m_netfilterHooks.empty () )
-    m_netfilterHooks.push_front (hook);
-  else
-  {
-    std::list<Ipv4NetfilterHook>::iterator it = m_netfilterHooks.begin ();
-    for (; it != m_netfilterHooks.end (); it++)
     {
-      if (hook.GetPriority () < it->GetPriority ())
-        m_netfilterHooks.insert (it,hook);
+      m_netfilterHooks.push_front (hook);
     }
-    m_netfilterHooks.push_back (hook);
-  }
-
+  else
+    {
+      std::list<Ipv4NetfilterHook>::iterator it = m_netfilterHooks.begin ();
+      for (; it != m_netfilterHooks.end (); it++)
+        {
+          if (hook.GetPriority () < it->GetPriority ())
+            { 
+              m_netfilterHooks.insert (it,hook);
+              return;
+            }
+        }
+      m_netfilterHooks.push_back (hook);
+    }
 }
     
 std::list<Ipv4NetfilterHook>::iterator 
