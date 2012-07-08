@@ -27,9 +27,9 @@ NetfilterCallbackChain::NetfilterCallbackChain ()
 {
 }
 
-void 
+void
 NetfilterCallbackChain::Insert (const Ipv4NetfilterHook& hook)
-{ 
+{
   if (m_netfilterHooks.empty () )
     {
       m_netfilterHooks.push_front (hook);
@@ -40,7 +40,7 @@ NetfilterCallbackChain::Insert (const Ipv4NetfilterHook& hook)
       for (; it != m_netfilterHooks.end (); it++)
         {
           if (hook.GetPriority () < it->GetPriority ())
-            { 
+            {
               m_netfilterHooks.insert (it,hook);
               return;
             }
@@ -48,63 +48,69 @@ NetfilterCallbackChain::Insert (const Ipv4NetfilterHook& hook)
       m_netfilterHooks.push_back (hook);
     }
 }
-    
-std::list<Ipv4NetfilterHook>::iterator 
+
+std::list<Ipv4NetfilterHook>::iterator
 NetfilterCallbackChain::Find (const Ipv4NetfilterHook& hook)
 {
   std::list<Ipv4NetfilterHook>::iterator it = m_netfilterHooks.begin ();
   std::list<Ipv4NetfilterHook>::iterator it2;
 
-  for(; it != m_netfilterHooks.end (); it++)
-  {
-    if (*it == hook)
-      return it;
-  }
+  for (; it != m_netfilterHooks.end (); it++)
+    {
+      if (*it == hook)
+        {
+          return it;
+        }
+    }
   return it2;
 }
-    
-void 
-NetfilterCallbackChain::Remove (const Ipv4NetfilterHook& hook)
-{ 
-  m_netfilterHooks.remove (hook);
-} 
 
-Ipv4NetfilterHook 
+void
+NetfilterCallbackChain::Remove (const Ipv4NetfilterHook& hook)
+{
+  m_netfilterHooks.remove (hook);
+}
+
+Ipv4NetfilterHook
 NetfilterCallbackChain::Front ()
 {
   return m_netfilterHooks.front ();
 }
 
-uint32_t 
+uint32_t
 NetfilterCallbackChain::Size () const
 {
   return m_netfilterHooks.size ();
 }
-    
-bool 
-NetfilterCallbackChain::IsEmpty () const
-{   
-  if (m_netfilterHooks.empty ())
-    return true;
-  else
-    return false;
-}   
 
-void 
+bool
+NetfilterCallbackChain::IsEmpty () const
+{
+  if (m_netfilterHooks.empty ())
+    {
+      return true;
+    }
+  else
+    {
+      return false;
+    }
+}
+
+void
 NetfilterCallbackChain::Clear ()
 {
   m_netfilterHooks.clear ();
 }
 
-int32_t 
+int32_t
 NetfilterCallbackChain::IterateAndCallHook (Hooks_t hookNumber, Ptr<Packet> p, Ptr<NetDevice> in, Ptr<NetDevice> out, ContinueCallback ccb)
 {
   std::list<Ipv4NetfilterHook>::iterator it = m_netfilterHooks.begin ();
 
   for (; it != m_netfilterHooks.end (); it++)
-  {
-    it->HookCallback (hookNumber, p, in, out, ccb);
-  }
+    {
+      it->HookCallback (hookNumber, p, in, out, ccb);
+    }
 
   return NF_ACCEPT; // TODO: Check
 }

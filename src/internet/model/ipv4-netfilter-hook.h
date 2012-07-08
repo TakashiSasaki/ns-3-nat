@@ -1,7 +1,7 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
-/* 
+/*
  * Copyright (c) 2009 University of Texas at Dallas
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
  * published by the Free Software Foundation;
@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  * Author: Qasim Javed <qasim@utdallas.edu>
  */
 
@@ -33,7 +33,8 @@ namespace ns3 {
 class Packet;
 class NetDevice;
 
-typedef enum {
+typedef enum
+{
   NF_INET_PRE_ROUTING,
   NF_INET_LOCAL_IN,
   NF_INET_FORWARD,
@@ -42,7 +43,8 @@ typedef enum {
   NF_INET_NUMHOOKS,
 } Hooks_t;
 
-typedef enum {
+typedef enum
+{
   NF_DROP,
   NF_ACCEPT,
   NF_STOLEN,
@@ -64,24 +66,24 @@ typedef Callback<uint32_t, Hooks_t, Ptr<Packet>, Ptr<NetDevice>, Ptr<NetDevice>,
   * where the hook function should be inserted
   */
 
-class Ipv4NetfilterHook {
-  public:
+class Ipv4NetfilterHook
+{
+public:
+  Ipv4NetfilterHook ();
+  Ipv4NetfilterHook (uint8_t protocolFamily, uint32_t hookNumber, uint32_t priority, NetfilterHookCallback hook);
+  Ipv4NetfilterHook (uint8_t protocolFamily, Hooks_t hookNumber, uint32_t priority, NetfilterHookCallback hook);
+  Ipv4NetfilterHook & operator= (const Ipv4NetfilterHook& hook);
+  bool operator== (const Ipv4NetfilterHook& hook) const;
+  int32_t GetPriority () const;
+  int32_t GetHookNumber () const;
+  int32_t HookCallback (Hooks_t, Ptr<Packet>, Ptr<NetDevice>, Ptr<NetDevice>, ContinueCallback);
+  void Print (std::ostream &os) const;
 
-    Ipv4NetfilterHook ();
-    Ipv4NetfilterHook (uint8_t protocolFamily, uint32_t hookNumber, uint32_t priority, NetfilterHookCallback hook);
-    Ipv4NetfilterHook (uint8_t protocolFamily, Hooks_t hookNumber, uint32_t priority, NetfilterHookCallback hook);
-    Ipv4NetfilterHook & operator= (const Ipv4NetfilterHook& hook);
-    bool operator== (const Ipv4NetfilterHook& hook) const;
-    int32_t GetPriority () const;
-    int32_t GetHookNumber () const;
-    int32_t HookCallback (Hooks_t, Ptr<Packet>, Ptr<NetDevice>, Ptr<NetDevice>, ContinueCallback);
-    void Print (std::ostream &os) const;
-
-  private:
-    NetfilterHookCallback m_hook;
-    uint8_t m_protocolFamily;
-    uint32_t m_hookNumber;
-    int32_t m_priority;
+private:
+  NetfilterHookCallback m_hook;
+  uint8_t m_protocolFamily;
+  uint32_t m_hookNumber;
+  int32_t m_priority;
 };
 
 } // Namespace ns3

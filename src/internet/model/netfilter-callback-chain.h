@@ -29,25 +29,26 @@ namespace ns3 {
 /**
  * \brief container class for holding netfilter callbacks
  *
- * This class manages a list of callbacks for the netfilter system.  
+ * This class manages a list of callbacks for the netfilter system.
  * The callback objects are copied upon insertion into a list.
  * The IP netfilter code can call IterateAndCallHook () to traverse the
  * callback chain.
  */
-class NetfilterCallbackChain {
-  public:
-    NetfilterCallbackChain ();
-    void Insert (const Ipv4NetfilterHook& hook);
-    std::list<Ipv4NetfilterHook>::iterator Find (const Ipv4NetfilterHook& hook);
-    void Remove (const Ipv4NetfilterHook& hook);
-    Ipv4NetfilterHook Front ();
-    uint32_t Size () const;
-    bool IsEmpty () const;
-    void Clear ();
-    int32_t IterateAndCallHook (Hooks_t , Ptr<Packet> p, Ptr<NetDevice> in, Ptr<NetDevice> out, ContinueCallback ccb);
+class NetfilterCallbackChain
+{
+public:
+  NetfilterCallbackChain ();
+  void Insert (const Ipv4NetfilterHook& hook);
+  std::list<Ipv4NetfilterHook>::iterator Find (const Ipv4NetfilterHook& hook);
+  void Remove (const Ipv4NetfilterHook& hook);
+  Ipv4NetfilterHook Front ();
+  uint32_t Size () const;
+  bool IsEmpty () const;
+  void Clear ();
+  int32_t IterateAndCallHook (Hooks_t, Ptr<Packet> p, Ptr<NetDevice> in, Ptr<NetDevice> out, ContinueCallback ccb);
 
-  private:
-    std::list<Ipv4NetfilterHook> m_netfilterHooks;
+private:
+  std::list<Ipv4NetfilterHook> m_netfilterHooks;
 };
 
 } // namespace ns3

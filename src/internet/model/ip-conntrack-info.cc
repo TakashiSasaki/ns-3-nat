@@ -1,7 +1,7 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
-/* 
+/*
  * Copyright (c) 2009 University of Texas at Dallas
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
  * published by the Free Software Foundation;
@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  * Author: Qasim Javed <qasim@utdallas.edu>
  */
 #include "ip-conntrack-info.h"
@@ -31,25 +31,25 @@ IpConntrackInfo::IpConntrackInfo (uint32_t status)
   m_status = status;
 }
 
-void 
-IpConntrackInfo::SetStatus (uint32_t status) 
+void
+IpConntrackInfo::SetStatus (uint32_t status)
 {
   m_status |= status;
 }
 
-uint32_t 
+uint32_t
 IpConntrackInfo::GetStatus ()
 {
   return m_status;
 }
 
-void 
-IpConntrackInfo::SetInfo (uint8_t info) 
+void
+IpConntrackInfo::SetInfo (uint8_t info)
 {
   m_info = info;
 }
 
-uint8_t 
+uint8_t
 IpConntrackInfo::GetInfo ()
 {
   return m_info;
@@ -59,9 +59,13 @@ bool
 IpConntrackInfo::IsConfirmed ()
 {
   if ( m_status & IPS_CONFIRMED )
-    return true;
+    {
+      return true;
+    }
   else
-    return false;
+    {
+      return false;
+    }
 }
 
 void
@@ -74,18 +78,22 @@ bool
 IpConntrackInfo::IsDying ()
 {
   if ( m_status & IPS_DYING )
-    return true;
+    {
+      return true;
+    }
   else
-    return false;
+    {
+      return false;
+    }
 }
 
-void 
+void
 IpConntrackInfo::SetDying ()
 {
   m_status |= IPS_DYING;
 }
 
-ConntrackDirection_t 
+ConntrackDirection_t
 ConntrackInfoToDirection (ConntrackInfo_t ctinfo)
 {
   return ctinfo >= IP_CT_IS_REPLY ? IP_CT_DIR_REPLY : IP_CT_DIR_ORIGINAL;

@@ -1,7 +1,7 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
-/* 
+/*
  * Copyright (c) 2009 University of Texas at Dallas
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
  * published by the Free Software Foundation;
@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * 
+ *
  * Author: Qasim Javed <qasim@utdallas.edu>
  */
 #include "ipv4-netfilter-hook.h"
@@ -45,50 +45,52 @@ Ipv4NetfilterHook::Ipv4NetfilterHook (uint8_t protocolFamily, Hooks_t hookNumber
   m_hook = hook;
 }
 
-bool 
-Ipv4NetfilterHook::operator== (const Ipv4NetfilterHook& hook) const 
+bool
+Ipv4NetfilterHook::operator== (const Ipv4NetfilterHook& hook) const
 {
-  return (m_protocolFamily == hook.m_protocolFamily &&
-     m_hookNumber == hook.m_hookNumber &&
-     m_priority == hook.m_priority);
-     //m_hook == hook.m_hook);
+  return (m_protocolFamily == hook.m_protocolFamily
+          && m_hookNumber == hook.m_hookNumber
+          && m_priority == hook.m_priority);
+  //m_hook == hook.m_hook);
 }
 
-Ipv4NetfilterHook& 
-Ipv4NetfilterHook::operator= (const Ipv4NetfilterHook& hook) 
+Ipv4NetfilterHook&
+Ipv4NetfilterHook::operator= (const Ipv4NetfilterHook& hook)
 {
   if (this != &hook)
-  {
-    m_hook = hook.m_hook;
-    m_protocolFamily = hook.m_protocolFamily;
-    m_hookNumber = hook.m_hookNumber;
-    m_priority = hook.m_priority;
-  }
+    {
+      m_hook = hook.m_hook;
+      m_protocolFamily = hook.m_protocolFamily;
+      m_hookNumber = hook.m_hookNumber;
+      m_priority = hook.m_priority;
+    }
 
   return *this;
 }
 
-int32_t 
+int32_t
 Ipv4NetfilterHook::GetPriority () const
 {
   return m_priority;
 }
 
-int32_t 
+int32_t
 Ipv4NetfilterHook::GetHookNumber () const
 {
   return m_hookNumber;
 }
 
-int32_t 
+int32_t
 Ipv4NetfilterHook::HookCallback (Hooks_t hookNumber, Ptr<Packet> p, Ptr<NetDevice> in, Ptr<NetDevice> out, ContinueCallback ccb)
 {
   if (m_hook.IsNull ())
-    std::cout << "********* OOOPS! ***********" << std::endl;
+    {
+      std::cout << "********* OOOPS! ***********" << std::endl;
+    }
   return m_hook (hookNumber, p, in, out, ccb);
 }
 
-void 
+void
 Ipv4NetfilterHook::Print (std::ostream &os) const
 {
   os << "Hook: " << m_hookNumber << ","
