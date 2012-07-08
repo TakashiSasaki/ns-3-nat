@@ -26,7 +26,14 @@
 
 namespace ns3 {
 
-
+/**
+ * \brief container class for holding netfilter callbacks
+ *
+ * This class manages a list of callbacks for the netfilter system.  
+ * The callback objects are copied upon insertion into a list.
+ * The IP netfilter code can call IterateAndCallHook () to traverse the
+ * callback chain.
+ */
 class NetfilterCallbackChain {
   public:
     NetfilterCallbackChain ();
