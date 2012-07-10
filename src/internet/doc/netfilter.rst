@@ -95,9 +95,48 @@ The limitations to the current Netfilter design:
 References
 ==========
 
-
 Usage
 *****
+The usage of netfilter module would mainly involve introducing various callbacks to the specific hooks as per the requirement of the network scenario.This callback is the method that is going to govern what would happen to the packet that is being handled by the netfilter module.
+
+Callbacks can be added to the code in two ways: 
+
+1. By means of adding examples. Here the examples would perform relatively trivial operations to the packets and also need not be invoked every single time the module is processed(as opposed to conn track or NAT).
+The following illustrates how callbacks are added to the netfilter framework by means of examples: 
+
+The callback would have to be of type NetfilterHookCallback in order to be able to process and register to a Netfilter Hook:::
+
+  
+  static uint32_t HookRegistered(Hooks_t hook, Ptr<Packet> packet, Ptr<NetDevice> in, Ptr<NetDevice> out, ContinueCallback& ccb)
+
+Here the callback 'HookRegistered' is defined as a method on the example code. This is the method that is going to be called later when the callback is registered on the specific hook in the order or decreasing priority.
+
+The next step would be to instantiate netfilter object so that it can be used to register the hooks:::
+
+  Ptr <Ipv4> ipv4 = first.Get (0)->GetObject<Ipv4> ();
+  std::cout << "==============Number of interfaces on node " << first.Get (0)->GetId() << ": " << ipv4->GetNInterfaces () << std::endl;
+
+  Ptr <Ipv4L3Protocol> ipv4L3 = DynamicCast <Ipv4L3Protocol>(first.Get (0)->GetObject<Ipv4> ());
+  Ptr <Ipv4Netfilter>  netfilter = ipv4L3->GetNetfilter ();
+
+Once you have the method defined we can move on to creating and registering the Hooks and their callbacks. 
+The NetfilterHookCallback type callback is created by passing the reference to the method we have created above:::
+
+
+  NetfilterHookCallback nodehook = MakeCallback (&HookRegistered);
+
+Once this is done the hook is then created:::
+
+
+  Ipv4NetfilterHook nfh = Ipv4NetfilterHook (1, NF_INET_PRE_ROUTING, NF_IP_PRI_FILTER , nodehook); 
+
+Here the Priority of the callback is also set so that the callback is registered with that priority.
+Then simple calling the following would register the callback on the above specified hook:::
+
+  netfilter->RegisterHook (nfh);
+
+2. Adding callbacks to the actual netfilter code is also an option however it is recommended that this is done purely for developmental purposes to enhance the module and not for testing examples.
+
 
 Helper
 ======
