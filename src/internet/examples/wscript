@@ -15,3 +15,7 @@ def build(bld):
     obj = bld.create_ns3_program('netfilter-add-remove',
                                  ['network', 'internet', 'applications','point-to-point'])
     obj.source = 'netfilter-add-remove.cc'
+
+    obj = bld.create_ns3_program('netfilter-header-mangle',
+                                 ['network', 'internet', 'applications','point-to-point'])
+    obj.source = 'netfilter-header-mangle.cc'
