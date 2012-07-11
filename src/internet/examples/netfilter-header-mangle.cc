@@ -119,7 +119,7 @@ main (int argc, char *argv[])
   
   NetfilterHookCallback nodehook = MakeCallback (&TtlMangle1);
   
-  Ipv4NetfilterHook nfh = Ipv4NetfilterHook (1, NF_INET_POST_ROUTING, NF_IP_PRI_FILTER, nodehook);
+  Ipv4NetfilterHook nfh = Ipv4NetfilterHook (1, NF_INET_POST_ROUTING, NF_IP_PRI_MANGLE, nodehook);
  
   netfilter->RegisterHook (nfh);
 
@@ -132,7 +132,7 @@ main (int argc, char *argv[])
 
   nodehook = MakeCallback (&TtlMangle2);
   
-  nfh = Ipv4NetfilterHook (1, NF_INET_PRE_ROUTING, NF_IP_PRI_FILTER , nodehook); 
+  nfh = Ipv4NetfilterHook (1, NF_INET_PRE_ROUTING, NF_IP_PRI_MANGLE , nodehook); 
   
   netfilter->RegisterHook (nfh);
  
@@ -153,7 +153,7 @@ main (int argc, char *argv[])
 
   Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
 
-  pointToPoint.EnablePcapAll ("netfilter", false);
+  pointToPoint.EnablePcapAll ("netfilter");
 
   Simulator::Run ();
   Simulator::Destroy ();
