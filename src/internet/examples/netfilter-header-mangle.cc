@@ -30,7 +30,7 @@ TtlMangle1(Hooks_t hook, Ptr<Packet> packet, Ptr<NetDevice> in,
 { 
     NS_LOG_UNCOND("***********TTL Mangling 1 Callback*************");
  
-    Packet::EnablePrinting ();
+    //Packet::EnablePrinting ();
     packet->Print (std::cout);
     std::cout << std::endl;
 
@@ -52,7 +52,7 @@ TtlMangle2(Hooks_t hook, Ptr<Packet> packet, Ptr<NetDevice> in,
 { 
     NS_LOG_UNCOND("***********TTL Mangling 2 Callback*************");
     
-    Packet::EnablePrinting ();
+    //Packet::EnablePrinting ();
     packet->Print (std::cout);
     std::cout << std::endl;
 
