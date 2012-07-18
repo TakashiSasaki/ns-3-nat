@@ -55,9 +55,7 @@ Ipv4Netfilter::GetTypeId (void)
 }
 
 Ipv4Netfilter::Ipv4Netfilter ()
-#ifdef NOTYET
   : m_enableNat (0)
-#endif
 {
   NS_LOG_FUNCTION_NOARGS ();
 
@@ -99,14 +97,12 @@ Ipv4Netfilter::Ipv4Netfilter ()
   this->RegisterHook (nfh2);
   this->RegisterHook (nfh3);
 
-#ifdef NOTYET
   if (m_enableNat)
     {
       EnableNat ();
     }
 
   nextAvailablePort = 1024;
-#endif
 }
 
 void
@@ -475,7 +471,7 @@ Ipv4Netfilter::GetHash ()
   return m_hash;
 }
 
-#if 0
+
 uint32_t
 Ipv4Netfilter::NetfilterDoNat (Hooks_t hookNumber, Ptr<Packet> p,
                                Ptr<NetDevice> in, Ptr<NetDevice> out, ContinueCallback& ccb)
@@ -761,6 +757,6 @@ Ipv4Netfilter::NetfilterNatPacket (Hooks_t hookNumber, Ptr<Packet> p)
   return NF_ACCEPT;
 
 }
-#endif
+
 
 } // Namespace ns3
