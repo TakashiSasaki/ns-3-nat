@@ -55,7 +55,7 @@ Ipv4Netfilter::GetTypeId (void)
 }
 
 Ipv4Netfilter::Ipv4Netfilter ()
-  : m_enableNat (0)
+ // : m_enableNat (0)
 {
   NS_LOG_FUNCTION_NOARGS ();
 
@@ -471,7 +471,7 @@ Ipv4Netfilter::GetHash ()
   return m_hash;
 }
 
-
+#ifdef NOTYET
 uint32_t
 Ipv4Netfilter::NetfilterDoNat (Hooks_t hookNumber, Ptr<Packet> p,
                                Ptr<NetDevice> in, Ptr<NetDevice> out, ContinueCallback& ccb)
@@ -757,6 +757,6 @@ Ipv4Netfilter::NetfilterNatPacket (Hooks_t hookNumber, Ptr<Packet> p)
   return NF_ACCEPT;
 
 }
-
+#endif 
 
 } // Namespace ns3
