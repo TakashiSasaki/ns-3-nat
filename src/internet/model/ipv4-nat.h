@@ -38,31 +38,54 @@ namespace ns3 {
 
   class Packet;
   class NetDevice;
-  
-  
+     
 class Ipv4Nat  : public Object
-  {
-    public:
-  void AddNatRule (NatRule natRule);
+{
+public:
 
-  uint32_t NetfilterDoNat (Hooks_t hookNumber, Ptr<Packet> p,
-                           Ptr<NetDevice> in, Ptr<NetDevice> out, ContinueCallback& ccb);
+  static TypeId GetTypeId (void);
+
+  virtual ~Ipv4Nat ();
+
+  /**
+   * \brief Print the NAT translation table
+   *
+   * \param stream the ostream the NAT table is printed to
+   */
+  void AddRule (const Ipv4NatRule& natRule);
+
+  /**
+   * \return number of NAT rules
+   */
+  uint32_t GetNRules (void) const;
+
+  /**
+   * \param index index in table specifying rule to return
+   * \return rule at specified index
+   */
+  Ipv4NatRule GetRule (uint32_t index) const;
+
+  /**
+   * \param index index in table specifying rule to remove
+   */
+  void RemoveRule (uint32_t index);
+
+  /**
+   * \brief Print the NAT translation table
+   *
+   * \param stream the ostream the NAT table is printed to
+   */
+  void PrintTable (Ptr<OutputStreamWrapper> stream) const;
+
+  uint32_t NetfilterDoNat (Hooks_t hookNumber, Ptr<Packet> p, 
+                             Ptr<NetDevice> in, Ptr<NetDevice> out, ContinueCallback& ccb);
+
+  uint32_t NetfilterDoUnNat (Hooks_t hookNumber, Ptr<Packet> p, 
+                             Ptr<NetDevice> in, Ptr<NetDevice> out, ContinueCallback& ccb);
+  
 
 
- // std::vector<NatRule>::iterator FindNatRule (NatRule natRule);
 
-//  std::vector<NatRule>::iterator FindNatRule (Ipv4Address orig, Ptr<NetDevice> out);
-  //static NetfilterConntrackTuple currentTuple[IP_CT_DIR_MAX];
+};
 
-//  void EnableNat ();
-
-  uint32_t NetfilterNatPacket (Hooks_t hookNumber, Ptr<Packet> p);
-
-
-
-    private:
-
-        TranslationMap m_natReplyLookup;
-        std::vector <NatRule> m_natRules;
-  };
 }
