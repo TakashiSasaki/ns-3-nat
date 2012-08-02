@@ -37,45 +37,46 @@
 
 namespace ns3 {
 
-  class Packet;
-  class NetDevice;
+class Packet;
+class NetDevice;
+class OutputStreamWrapper;
      
+class Ipv4StaticNatRule
+{
+  public:
+    
+    Ipv4StaticNatRule (Ipv4Address localip, uint16_t locprt, Ipv4Address globalip,uint16_t gloprt, uint16_t protocol);
+
+    // This version is used for no port restrictions
+    Ipv4StaticNatRule (Ipv4Address localip, Ipv4Address globalip);
+  
+  private:
+    
+    Ipv4Address m_localaddr;
+    Ipv4Address m_globaladdr;
+    uint16_t m_localport;
+    uint16_t m_globalport;
+  
+   // private data member
+};
+
+
+class Ipv4DynamicNatRule 
+{
+  public:
+    
+    Ipv4DynamicNatRule (Ipv4Address localnet, Ipv4Mask localmask);
+  
+  private:
+    
+    Ipv4Address m_localnetwork;
+    Ipv4Mask m_localmask;
+  // private data members
+};
+
 class Ipv4Nat:public Object
 {
 public:
-  
-  class Ipv4StaticNatRule
-  {
-    public:
-      
-      Ipv4StaticNatRule (Ipv4Address localip, uint16_t locprt, Ipv4Address globalip,uint16_t gloprt, uint16_t protocol);
-
-      // This version is used for no port restrictions
-      Ipv4StaticNatRule (Ipv4Address localip, Ipv4Address globalip);
-    
-    private:
-      
-      Ipv4Address localaddr;
-      Ipv4Address globaladdr;
-      uint16_t localport;
-      uint16_t globalport;
-    
-     // private data member
-  };
-  
-
-  class Ipv4DynamicNatRule 
-  {
-    public:
-      
-      Ipv4DynamicNatRule (Ipv4Address localnet, Ipv4Mask localmask);
-    
-    private:
-      
-      Ipv4Address m_localnetwork;
-      Ipv4Mask m_localmask;
-    // private data members
-  };
 
   static TypeId GetTypeId (void);
 
@@ -87,14 +88,15 @@ public:
    * \param stream the ostream the NAT table is printed to
    */
   
-  void AddDynamicRule(Ipv4DynamicNatRule);
+  void AddDynamicRule(const Ipv4DynamicNatRule& rule);
 
-  void AddStaticRule(Ipv4StaticNatRule);
+  void AddStaticRule(const Ipv4StaticNatRule& rule);
   /**
    * \return number of NAT rules
    */
-  uint32_t GetNRules (void) const;
+  uint32_t GetNStaticRules (void) const;
 
+  uint32_t GetNDynamicRules (void) const;
   /**
    * \param index index in table specifying rule to return
    * \return rule at specified index
@@ -104,8 +106,9 @@ public:
   /**
    * \param index index in table specifying rule to remove
    */
-  void RemoveRule (uint32_t index);
+  void RemoveStaticRule (uint32_t index);
 
+  void RemoveDynamicRule (uint32_t index);
   /**
    * \brief Print the NAT translation table
    *

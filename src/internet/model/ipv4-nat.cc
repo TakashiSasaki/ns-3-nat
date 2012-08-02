@@ -30,6 +30,8 @@
 #include "udp-header.h"
 #include "ns3/node.h"
 #include "ns3/net-device.h"
+#include "ns3/output-stream-wrapper.h"
+#include "ipv4-nat.h"
 
 NS_LOG_COMPONENT_DEFINE ("Ipv4Nat");
 
@@ -53,7 +55,7 @@ Ipv4Nat::Ipv4Nat ()
 
   {
 
-  NS_LOG_DEBUG (":: Enabling NAT ::");
+  NS_LOG_FUNCTION (this);
 
   NetfilterHookCallback doNat = MakeCallback (&Ipv4Nat::NetfilterDoNat, this);
   NetfilterHookCallback doUnNat = MakeCallback (&Ipv4Nat::NetfilterDoUnNat, this);
@@ -62,53 +64,39 @@ Ipv4Nat::Ipv4Nat ()
   Ipv4NetfilterHook natCallback2 = Ipv4NetfilterHook (1, NF_INET_PRE_ROUTING, NF_IP_PRI_NAT_DST, doUnNat); 
   
 
+#if 0
+  // XXX this hook should be registered on the Netfilter object instead
   this->RegisterHook (natCallback1);
   this->RegisterHook (natCallback2);
+#endif
 
   }
 
-  /**
-   * \brief Print the NAT translation table
-   *
-   * \param stream the ostream the NAT table is printed to
-   */
-/*void AddRule (const Ipv4NatRule& natRule)
+uint32_t 
+Ipv4Nat::GetNStaticRules (void) const
   {
-  NS_LOG_DEBUG("Add Rules");
-  }
-*/
-
-  /**
-   * \return number of NAT rules
-   */
-int32_t 
-Ipv4Nat::GetNRules (void) const
-  {
-  NS_LOG_DEBUG("Get N Rules");
+  NS_LOG_FUNCTION (this);
   return 0;
   }
 
-
-  /**
-   * \param index index in table specifying rule to return
-   * \return rule at specified index
-   */
-
-/*Ipv4Nat :: Ipv4NatRule GetRule (uint32_t index) const
+uint32_t 
+Ipv4Nat::GetNDynamicRules (void) const
   {
-
-  NS_LOG_DEBUG("Print Tables");
-  
+  NS_LOG_FUNCTION (this);
+  return 0;
   }
-*/
 
-  /**
-   * \param index index in table specifying rule to remove
-   */
 void
-Ipv4Nat::RemoveRule (uint32_t index)
+Ipv4Nat::RemoveStaticRule (uint32_t index)
   {
-       NS_LOG_DEBUG("Remove Rules");
+  NS_LOG_FUNCTION (this << index);
+
+  }
+
+void
+Ipv4Nat::RemoveDynamicRule (uint32_t index)
+  {
+  NS_LOG_FUNCTION (this << index);
 
   }
 
@@ -130,7 +118,7 @@ uint32_t
 Ipv4Nat::NetfilterDoNat (Hooks_t hookNumber, Ptr<Packet> p, 
                              Ptr<NetDevice> in, Ptr<NetDevice> out, ContinueCallback& ccb)
   {
-      NS_LOG_DEBUG("Nat Callback1");
+    NS_LOG_FUNCTION (this << hookNumber << in << out);
       return 0;
 
   }
@@ -139,7 +127,7 @@ uint32_t
 Ipv4Nat::NetfilterDoUnNat (Hooks_t hookNumber, Ptr<Packet> p, 
                              Ptr<NetDevice> in, Ptr<NetDevice> out, ContinueCallback& ccb)
   {
-      NS_LOG_DEBUG("UnNat Callback");
+    NS_LOG_FUNCTION (this << hookNumber << in << out);
       return 0;
 
   }
@@ -147,24 +135,20 @@ Ipv4Nat::NetfilterDoUnNat (Hooks_t hookNumber, Ptr<Packet> p,
 void 
 Ipv4Nat::AddAddressPool (Ipv4Address globalip, Ipv4Mask globalmask)
 {
-   
-    NS_LOG_DEBUG("Add Address Pool");
+    NS_LOG_FUNCTION (this << globalip << globalmask);
 }
 
   
 void 
 Ipv4Nat::AddPortPool (uint16_t strprt, uint16_t dstprt) //port range 
 {
-
-
-      NS_LOG_DEBUG("Port Range Pool");
+    NS_LOG_FUNCTION (this << strprt << dstprt);
 }
 
 void 
 Ipv4Nat::SetInside (uint32_t interfaceIndex)
 {
-
-  NS_LOG_DEBUG("Set Inside");
+    NS_LOG_FUNCTION (this << interfaceIndex);
 
 }
   
@@ -172,47 +156,47 @@ void
 Ipv4Nat::SetOutside (uint32_t interfaceIndex)
 {
    
-  NS_LOG_DEBUG("Set Outside");
+  NS_LOG_FUNCTION (this << interfaceIndex);
 }
 
 
 void 
 Ipv4Nat::AddDynamicRule(const Ipv4DynamicNatRule&)
 {
-  NS_LOG_DEBUG("Dynamic Rule"); 
+  NS_LOG_FUNCTION (this); 
 }
 
 
 void 
 Ipv4Nat::AddStaticRule(const Ipv4StaticNatRule&)
 {
-    NS_LOG_DEBUG("Static Rule"); 
+  NS_LOG_FUNCTION (this);
 }
 
-Ipv4Nat::Ipv4StaticNatRule::Ipv4StaticNatRule (Ipv4Address localip, uint16_t locprt, Ipv4Address globalip,uint16_t gloprt, uint16_t protocol)
-
+Ipv4StaticNatRule::Ipv4StaticNatRule (Ipv4Address localip, uint16_t locprt, Ipv4Address globalip,uint16_t gloprt, uint16_t protocol)
     {
+  NS_LOG_FUNCTION (this << localip << locprt << globalip << gloprt << protocol);
       m_localaddr = localip;
       m_globaladdr = globalip;
       m_localport = locprt;
       m_globalport = gloprt;
-      m_protocol = 0;
+      //m_protocol = 0;
     }
 
      // This version is used for no port restrictions
-Ipv4Nat::Ipv4StaticNatRule::Ipv4StaticNatRule (Ipv4Address localip, Ipv4Address globalip)
+Ipv4StaticNatRule::Ipv4StaticNatRule (Ipv4Address localip, Ipv4Address globalip)
       {
+  NS_LOG_FUNCTION (this << localip << globalip);
         m_localaddr = localip;
         m_globaladdr = globalip;
       }
 
 
-Ipv4Nat::Ipv4DynamicNatRule::Ipv4DynamicNatRule (Ipv4Address localnet, Ipv4Mask localmask)
+Ipv4DynamicNatRule::Ipv4DynamicNatRule (Ipv4Address localnet, Ipv4Mask localmask)
   {
+  NS_LOG_FUNCTION (this << localnet << localmask);
     m_localnetwork = localnet;
     m_localmask = localmask;
   }
   
-};
-
 }
