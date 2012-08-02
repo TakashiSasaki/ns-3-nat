@@ -76,7 +76,7 @@ uint32_t
 Ipv4Nat::GetNStaticRules (void) const
 {
   NS_LOG_FUNCTION (this);
-  return 0;
+  return m_statictable.size ();
 }
 
 uint32_t
@@ -173,6 +173,7 @@ void
 Ipv4Nat::AddStaticRule (const Ipv4StaticNatRule&)
 {
   NS_LOG_FUNCTION (this);
+  m_statictable.push_front (Ipv4StaticNatRule);
 }
 
 Ipv4StaticNatRule::Ipv4StaticNatRule (Ipv4Address localip, uint16_t locprt, Ipv4Address globalip,uint16_t gloprt, uint16_t protocol)
