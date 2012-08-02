@@ -40,44 +40,39 @@ namespace ns3 {
 class Packet;
 class NetDevice;
 class OutputStreamWrapper;
-     
+
 class Ipv4StaticNatRule
 {
-  public:
-    
-    Ipv4StaticNatRule (Ipv4Address localip, uint16_t locprt, Ipv4Address globalip,uint16_t gloprt, uint16_t protocol);
+public:
+  Ipv4StaticNatRule (Ipv4Address localip, uint16_t locprt, Ipv4Address globalip,uint16_t gloprt, uint16_t protocol);
 
-    // This version is used for no port restrictions
-    Ipv4StaticNatRule (Ipv4Address localip, Ipv4Address globalip);
-  
-  private:
-    
-    Ipv4Address m_localaddr;
-    Ipv4Address m_globaladdr;
-    uint16_t m_localport;
-    uint16_t m_globalport;
-  
-   // private data member
+  // This version is used for no port restrictions
+  Ipv4StaticNatRule (Ipv4Address localip, Ipv4Address globalip);
+
+private:
+  Ipv4Address m_localaddr;
+  Ipv4Address m_globaladdr;
+  uint16_t m_localport;
+  uint16_t m_globalport;
+
+  // private data member
 };
 
 
-class Ipv4DynamicNatRule 
+class Ipv4DynamicNatRule
 {
-  public:
-    
-    Ipv4DynamicNatRule (Ipv4Address localnet, Ipv4Mask localmask);
-  
-  private:
-    
-    Ipv4Address m_localnetwork;
-    Ipv4Mask m_localmask;
+public:
+  Ipv4DynamicNatRule (Ipv4Address localnet, Ipv4Mask localmask);
+
+private:
+  Ipv4Address m_localnetwork;
+  Ipv4Mask m_localmask;
   // private data members
 };
 
-class Ipv4Nat:public Object
+class Ipv4Nat : public Object
 {
 public:
-
   static TypeId GetTypeId (void);
 
   Ipv4Nat ();
@@ -87,10 +82,10 @@ public:
    *
    * \param stream the ostream the NAT table is printed to
    */
-  
-  void AddDynamicRule(const Ipv4DynamicNatRule& rule);
 
-  void AddStaticRule(const Ipv4StaticNatRule& rule);
+  void AddDynamicRule (const Ipv4DynamicNatRule& rule);
+
+  void AddStaticRule (const Ipv4StaticNatRule& rule);
   /**
    * \return number of NAT rules
    */
@@ -115,31 +110,28 @@ public:
    * \param stream the ostream the NAT table is printed to
    */
   void PrintTable (Ptr<OutputStreamWrapper> stream) const;
-  
-  void AddAddressPool (Ipv4Address, Ipv4Mask); 
-  
-  void AddPortPool (uint16_t, uint16_t); //port range 
-  
+
+  void AddAddressPool (Ipv4Address, Ipv4Mask);
+
+  void AddPortPool (uint16_t, uint16_t); //port range
+
   void SetInside (uint32_t interfaceIndex);
-  
+
   void SetOutside (uint32_t interfaceIndex);
- 
+
   typedef std::list<Ipv4StaticNatRule> StaticNatRules;
   typedef std::list<Ipv4DynamicNatRule> DynamicNatRules;
 
 
 private:
+  uint32_t NetfilterDoNat (Hooks_t hookNumber, Ptr<Packet> p,
+                           Ptr<NetDevice> in, Ptr<NetDevice> out, ContinueCallback& ccb);
 
-
-  
-  uint32_t NetfilterDoNat (Hooks_t hookNumber, Ptr<Packet> p, 
+  uint32_t NetfilterDoUnNat (Hooks_t hookNumber, Ptr<Packet> p,
                              Ptr<NetDevice> in, Ptr<NetDevice> out, ContinueCallback& ccb);
 
-  uint32_t NetfilterDoUnNat (Hooks_t hookNumber, Ptr<Packet> p, 
-                             Ptr<NetDevice> in, Ptr<NetDevice> out, ContinueCallback& ccb);
-  
-   StaticNatRules m_statictable;
-   DynamicNatRules m_dynamictable;
+  StaticNatRules m_statictable;
+  DynamicNatRules m_dynamictable;
 
 };
 
