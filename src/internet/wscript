@@ -192,7 +192,6 @@ def build(bld):
         'model/tcp-conntrack-l4-protocol.cc',
         'model/udp-conntrack-l4-protocol.cc',
         'model/icmpv4-conntrack-l4-protocol.cc',
-        'model/nat-rule.cc',
         'model/ipv4-nat.cc',
       ]
 
@@ -305,7 +304,6 @@ def build(bld):
         'model/udp-conntrack-l4-protocol.h',
         'model/icmpv4-conntrack-l4-protocol.h',
         'model/sgi-hashmap.h',
-        'model/nat-rule.h',
         'model/ipv4-nat.h',
 # 'model/ipv6-address-generator.h',
        ]

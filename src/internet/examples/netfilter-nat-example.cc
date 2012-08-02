@@ -70,9 +70,7 @@ main (int argc, char *argv[])
   
   Ptr <Ipv4L3Protocol> ipv4L3 = DynamicCast <Ipv4L3Protocol>(first.Get (0)->GetObject<Ipv4> ());
   Ptr <Ipv4Netfilter>  netfilter = ipv4L3->GetNetfilter ();
-  netfilter->EnableNat ();
-  std::cout << "Adding rule at node " << first.Get (1)->GetId () << ", device " << first.Get (1)->GetDevice (1)->GetIfIndex () << std::endl;
-  netfilter->AddNatRule ( NatRule (Ipv4Address ("192.168.1.1"), Ipv4Address ("203.82.48.1"), first.Get (1)->GetDevice (1)));
+  Ptr<Ipv4Nat> nat = CreateObject<Ipv4Nat> ();
 
   UdpEchoServerHelper echoServer (9);
 

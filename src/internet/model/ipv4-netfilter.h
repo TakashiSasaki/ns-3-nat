@@ -39,7 +39,6 @@
 #include "netfilter-conntrack-l3-protocol.h"
 #include "netfilter-conntrack-l4-protocol.h"
 #include "ip-conntrack-info.h"
-#include "nat-rule.h"
 //#include "network-address-translation.h"
 
 #define CTINFO2DIR(ctinfo) ((ctinfo) >= IP_CT_IS_REPLY ? IP_CT_DIR_REPLY : IP_CT_DIR_ORIGINAL)
@@ -247,7 +246,7 @@ public:
 
   TupleHash& GetHash ();
 
-
+#ifdef NOTYET
   void AddNatRule (NatRule natRule);
 
   uint32_t NetfilterDoNat (Hooks_t hookNumber, Ptr<Packet> p,
@@ -263,6 +262,8 @@ public:
 
   uint32_t NetfilterNatPacket (Hooks_t hookNumber, Ptr<Packet> p);
 
+#endif 
+
 private:
   NetfilterCallbackChain m_netfilterHooks[NF_INET_NUMHOOKS];
   //std::vector<Ptr<NetfilterConntrackL3Protocol> > m_netfilterConntrackL3Protocols;
@@ -274,12 +275,12 @@ private:
   Ptr<NetfilterConntrackL3Protocol> m_netfilterConntrackL3Protocols;
   std::vector<Ptr<NetfilterConntrackL4Protocol> > m_netfilterConntrackL4Protocols;
 
-  TranslationMap m_natMappings;
+  //TranslationMap m_natMappings;
 
   NetfilterConntrackTuple currentOriginalTuple;
   NetfilterConntrackTuple currentReplyTuple;
 
-
+/*
   uint8_t m_enableNat;
   std::vector <NatRule> m_natRules;
 
@@ -287,7 +288,7 @@ private:
   uint16_t nextAvailablePort;
 
   TranslationMap m_natReplyLookup;
-
+*/
 };
 
 //uint16_t Ipv4Netfilter::nextAvailablePort = 1024;

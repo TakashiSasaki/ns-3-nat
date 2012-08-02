@@ -97,13 +97,14 @@ Ipv4Netfilter::Ipv4Netfilter ()
   this->RegisterHook (nfh2);
   this->RegisterHook (nfh3);
 
-  if (m_enableNat)
+/*  if (m_enableNat)
     {
       EnableNat ();
     }
 
   nextAvailablePort = 1024;
-}
+*/
+  }
 
 void
 Ipv4Netfilter::RegisterHook (const Ipv4NetfilterHook& hook)

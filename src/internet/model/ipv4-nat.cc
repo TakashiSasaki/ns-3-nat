@@ -35,22 +35,28 @@ NS_LOG_COMPONENT_DEFINE ("Ipv4Nat");
 
 namespace ns3 {
 
-  class Packet;
-  class NetDevice;
      
-class Ipv4Nat  : public Object
+NS_OBJECT_ENSURE_REGISTERED (Ipv4Nat);
+
+TypeId
+Ipv4Nat::GetTypeId (void)
 {
-public:
+  static TypeId tId = TypeId ("ns3::Ipv4Nat")
+    .SetParent<Object> ()
+  ;
 
-  static TypeId GetTypeId (void);
+  return tId;
+}
 
-  Ipv4Nat :: Ipv4Nat ()
+
+Ipv4Nat::Ipv4Nat ()
+
   {
 
   NS_LOG_DEBUG (":: Enabling NAT ::");
 
-  NetfilterHookCallback doNat = MakeCallback (&Ipv4Netfilter::NetfilterDoNat, this);
-  NetfilterHookCallback doUnNat = MakeCallback (&Ipv4Netfilter::NetfilterDoUnNat, this);
+  NetfilterHookCallback doNat = MakeCallback (&Ipv4Nat::NetfilterDoNat, this);
+  NetfilterHookCallback doUnNat = MakeCallback (&Ipv4Nat::NetfilterDoUnNat, this);
 
   Ipv4NetfilterHook natCallback1 = Ipv4NetfilterHook (1, NF_INET_POST_ROUTING, NF_IP_PRI_NAT_SRC, doNat); 
   Ipv4NetfilterHook natCallback2 = Ipv4NetfilterHook (1, NF_INET_PRE_ROUTING, NF_IP_PRI_NAT_DST, doUnNat); 
@@ -66,16 +72,17 @@ public:
    *
    * \param stream the ostream the NAT table is printed to
    */
-  void AddRule (const Ipv4NatRule& natRule)
+/*void AddRule (const Ipv4NatRule& natRule)
   {
   NS_LOG_DEBUG("Add Rules");
   }
-
+*/
 
   /**
    * \return number of NAT rules
    */
-  uint32_t GetNRules (void) const
+int32_t 
+Ipv4Nat::GetNRules (void) const
   {
   NS_LOG_DEBUG("Get N Rules");
   return 0;
@@ -86,18 +93,20 @@ public:
    * \param index index in table specifying rule to return
    * \return rule at specified index
    */
-  Ipv4NatRule GetRule (uint32_t index) const
+
+/*Ipv4Nat :: Ipv4NatRule GetRule (uint32_t index) const
   {
 
   NS_LOG_DEBUG("Print Tables");
   
   }
-
+*/
 
   /**
    * \param index index in table specifying rule to remove
    */
-  void RemoveRule (uint32_t index)
+void
+Ipv4Nat::RemoveRule (uint32_t index)
   {
        NS_LOG_DEBUG("Remove Rules");
 
@@ -109,14 +118,16 @@ public:
    *
    * \param stream the ostream the NAT table is printed to
    */
-  void PrintTable (Ptr<OutputStreamWrapper> stream) const
+
+/*void PrintTable (Ptr<OutputStreamWrapper> stream) const
 
   {
     NS_LOG_DEBUG("Print Tables");
 
   }
-
-  uint32_t NetfilterDoNat (Hooks_t hookNumber, Ptr<Packet> p, 
+*/  
+uint32_t
+Ipv4Nat::NetfilterDoNat (Hooks_t hookNumber, Ptr<Packet> p, 
                              Ptr<NetDevice> in, Ptr<NetDevice> out, ContinueCallback& ccb)
   {
       NS_LOG_DEBUG("Nat Callback1");
@@ -124,16 +135,84 @@ public:
 
   }
 
-  uint32_t NetfilterDoUnNat (Hooks_t hookNumber, Ptr<Packet> p, 
+uint32_t 
+Ipv4Nat::NetfilterDoUnNat (Hooks_t hookNumber, Ptr<Packet> p, 
                              Ptr<NetDevice> in, Ptr<NetDevice> out, ContinueCallback& ccb)
   {
       NS_LOG_DEBUG("UnNat Callback");
       return 0;
 
   }
+ 
+void 
+Ipv4Nat::AddAddressPool (Ipv4Address globalip, Ipv4Mask globalmask)
+{
+   
+    NS_LOG_DEBUG("Add Address Pool");
+}
+
+  
+void 
+Ipv4Nat::AddPortPool (uint16_t strprt, uint16_t dstprt) //port range 
+{
 
 
+      NS_LOG_DEBUG("Port Range Pool");
+}
 
+void 
+Ipv4Nat::SetInside (uint32_t interfaceIndex)
+{
+
+  NS_LOG_DEBUG("Set Inside");
+
+}
+  
+void 
+Ipv4Nat::SetOutside (uint32_t interfaceIndex)
+{
+   
+  NS_LOG_DEBUG("Set Outside");
+}
+
+
+void 
+Ipv4Nat::AddDynamicRule(const Ipv4DynamicNatRule&)
+{
+  NS_LOG_DEBUG("Dynamic Rule"); 
+}
+
+
+void 
+Ipv4Nat::AddStaticRule(const Ipv4StaticNatRule&)
+{
+    NS_LOG_DEBUG("Static Rule"); 
+}
+
+Ipv4Nat::Ipv4StaticNatRule::Ipv4StaticNatRule (Ipv4Address localip, uint16_t locprt, Ipv4Address globalip,uint16_t gloprt, uint16_t protocol)
+
+    {
+      m_localaddr = localip;
+      m_globaladdr = globalip;
+      m_localport = locprt;
+      m_globalport = gloprt;
+      m_protocol = 0;
+    }
+
+     // This version is used for no port restrictions
+Ipv4Nat::Ipv4StaticNatRule::Ipv4StaticNatRule (Ipv4Address localip, Ipv4Address globalip)
+      {
+        m_localaddr = localip;
+        m_globaladdr = globalip;
+      }
+
+
+Ipv4Nat::Ipv4DynamicNatRule::Ipv4DynamicNatRule (Ipv4Address localnet, Ipv4Mask localmask)
+  {
+    m_localnetwork = localnet;
+    m_localmask = localmask;
+  }
+  
 };
 
 }
