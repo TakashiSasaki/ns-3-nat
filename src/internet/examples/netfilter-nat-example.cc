@@ -71,7 +71,16 @@ main (int argc, char *argv[])
   Ptr <Ipv4L3Protocol> ipv4L3 = DynamicCast <Ipv4L3Protocol>(first.Get (0)->GetObject<Ipv4> ());
   Ptr <Ipv4Netfilter>  netfilter = ipv4L3->GetNetfilter ();
   Ptr<Ipv4Nat> nat = CreateObject<Ipv4Nat> ();
+  // Add rules here
+  //
 
+
+  // Now print them out
+ 
+  Ptr<OutputStreamWrapper> natStream = Create<OutputStreamWrapper> ("nat.routes", std::ios::out);
+  
+  nat->PrintTable (natStream);
+  
   UdpEchoServerHelper echoServer (9);
 
   ApplicationContainer serverApps = echoServer.Install (second.Get (1));

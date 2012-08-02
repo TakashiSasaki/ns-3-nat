@@ -107,13 +107,15 @@ Ipv4Nat::RemoveDynamicRule (uint32_t index)
    * \param stream the ostream the NAT table is printed to
    */
 
-/*void PrintTable (Ptr<OutputStreamWrapper> stream) const
+void 
+Ipv4Nat::PrintTable (Ptr<OutputStreamWrapper> stream) const
 
   {
-    NS_LOG_DEBUG("Print Tables");
+     NS_LOG_FUNCTION (this);
 
   }
-*/  
+
+
 uint32_t
 Ipv4Nat::NetfilterDoNat (Hooks_t hookNumber, Ptr<Packet> p, 
                              Ptr<NetDevice> in, Ptr<NetDevice> out, ContinueCallback& ccb)
