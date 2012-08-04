@@ -49,6 +49,9 @@ public:
   // This version is used for no port restrictions
   Ipv4StaticNatRule (Ipv4Address localip, Ipv4Address globalip);
 
+  Ipv4Address GetLocalIp();
+  Ipv4Address GetGlobalIp();
+
 private:
   Ipv4Address m_localaddr;
   Ipv4Address m_globaladdr;
@@ -90,6 +93,8 @@ public:
    * \return number of NAT rules
    */
   uint32_t GetNStaticRules (void) const;
+
+  uint32_t GetStaticRule (uint32_t index) const;
 
   uint32_t GetNDynamicRules (void) const;
   /**

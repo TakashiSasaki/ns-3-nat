@@ -73,7 +73,8 @@ main (int argc, char *argv[])
   Ptr<Ipv4Nat> nat = CreateObject<Ipv4Nat> ();
   // Add rules here
   //
-
+  Ipv4StaticNatRule rule (Ipv4Address ("192.168.0.1"), Ipv4Address ("10.1.2.3"));
+  nat->AddStaticRule (rule);
 
   // Now print them out
  
