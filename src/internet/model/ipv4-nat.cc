@@ -51,10 +51,8 @@ Ipv4Nat::GetTypeId (void)
 }
 
 
-Ipv4Nat::Ipv4Nat ()
-
+Ipv4Nat::Ipv4Nat () : m_isConnected (false)
 {
-
   NS_LOG_FUNCTION (this);
 
   NetfilterHookCallback doNat = MakeCallback (&Ipv4Nat::NetfilterDoNat, this);
@@ -64,12 +62,38 @@ Ipv4Nat::Ipv4Nat ()
   Ipv4NetfilterHook natCallback2 = Ipv4NetfilterHook (1, NF_INET_PRE_ROUTING, NF_IP_PRI_NAT_DST, doUnNat);
 
 
-#if 0
-  // XXX this hook should be registered on the Netfilter object instead
-  this->RegisterHook (natCallback1);
-  this->RegisterHook (natCallback2);
-#endif
+}
 
+/*
+ * This method is called by AddAgregate and completes the aggregation
+ * by hooking to the Ipv4Netfilter
+ */
+void
+Ipv4Nat::NotifyNewAggregate ()
+{
+  NS_LOG_FUNCTION (this);
+  if (m_isConnected)
+    {
+      return;
+    }
+  Ptr<Node> node = this->GetObject<Node> ();
+  if (node != 0)
+    {
+      Ptr<Ipv4> ipv4 = node->GetObject<Ipv4> ();
+      if (ipv4 != 0)
+        {
+          Ptr<Ipv4Netfilter> netfilter = ipv4->GetNetfilter ();
+          if (ipv4 != 0)
+            {
+              m_isConnected = true;
+              // Set callbacks on netfilter pointer
+#if 0
+              netfilter->RegisterHook (natCallback1);
+              netfilter->RegisterHook (natCallback2);
+#endif
+            }
+    }
+  Object::NotifyNewAggregate ();
 }
 
 uint32_t

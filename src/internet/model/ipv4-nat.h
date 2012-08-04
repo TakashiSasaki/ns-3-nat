@@ -127,8 +127,12 @@ public:
   typedef std::list<Ipv4StaticNatRule> StaticNatRules;
   typedef std::list<Ipv4DynamicNatRule> DynamicNatRules;
 
+protected:
+  // from Object base class
+  virtual void NotifyNewAggregate (void);
 
 private:
+  bool m_isConnected;
   uint32_t NetfilterDoNat (Hooks_t hookNumber, Ptr<Packet> p,
                            Ptr<NetDevice> in, Ptr<NetDevice> out, ContinueCallback& ccb);
 

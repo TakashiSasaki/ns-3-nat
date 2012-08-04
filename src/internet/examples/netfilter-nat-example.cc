@@ -69,8 +69,10 @@ main (int argc, char *argv[])
   std::cout << "==============Number of interfaces on node " << first.Get (0)->GetId() << ": " << ipv4->GetNInterfaces () << std::endl;
   
   Ptr <Ipv4L3Protocol> ipv4L3 = DynamicCast <Ipv4L3Protocol>(first.Get (0)->GetObject<Ipv4> ());
-  Ptr <Ipv4Netfilter>  netfilter = ipv4L3->GetNetfilter ();
   Ptr<Ipv4Nat> nat = CreateObject<Ipv4Nat> ();
+  // Aggregate the NAT object to a node; this will hook it to Ipv4Netfilter
+  first.Get (0)->AggregateObject (nat);
+
   // Add rules here
   //
   Ipv4StaticNatRule rule (Ipv4Address ("192.168.0.1"), Ipv4Address ("10.1.2.3"));
