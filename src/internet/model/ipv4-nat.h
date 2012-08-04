@@ -94,7 +94,7 @@ public:
    */
   uint32_t GetNStaticRules (void) const;
 
-  uint32_t GetStaticRule (uint32_t index) const;
+  Ipv4StaticNatRule GetStaticRule (uint32_t index) const;
 
   uint32_t GetNDynamicRules (void) const;
   /**

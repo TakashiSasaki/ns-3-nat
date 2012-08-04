@@ -1,6 +1,5 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
 /*
- * Copyright (c) 2009 University of Texas at Dallas
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -103,7 +102,7 @@ Ipv4Nat::GetNStaticRules (void) const
   return m_statictable.size ();
 }
 
-uint32_t
+Ipv4StaticNatRule
 Ipv4Nat::GetStaticRule (uint32_t index) const
 {
   NS_LOG_FUNCTION(this<<index);
@@ -114,7 +113,7 @@ Ipv4Nat::GetStaticRule (uint32_t index) const
   {
     if(tmp == index)
     {
-      return i;
+      return *i;
     }
     tmp++;
   }
