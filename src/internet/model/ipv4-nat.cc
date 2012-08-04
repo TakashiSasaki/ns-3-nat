@@ -31,6 +31,7 @@
 #include "ns3/net-device.h"
 #include "ns3/output-stream-wrapper.h"
 #include "ipv4-nat.h"
+#include "ipv4.h"
 
 NS_LOG_COMPONENT_DEFINE ("Ipv4Nat");
 
@@ -91,6 +92,7 @@ Ipv4Nat::NotifyNewAggregate ()
               netfilter->RegisterHook (natCallback2);
 #endif
             }
+        }
     }
   Object::NotifyNewAggregate ();
 }
@@ -118,7 +120,7 @@ Ipv4Nat::GetStaticRule (uint32_t index) const
     tmp++;
   }
   NS_ASSERT(false);
- return 0;
+  return Ipv4StaticNatRule (Ipv4Address (), Ipv4Address ());
 }
 
 
@@ -262,9 +264,9 @@ Ipv4StaticNatRule::GetLocalIp() const
   }
 
 Ipv4Address
-Ipv4StaticNatRule::GetLocalIp() const
+Ipv4StaticNatRule::GetGlobalIp() const
   {
-    return m_localaddr;
+    return m_globaladdr;
   }
 
 

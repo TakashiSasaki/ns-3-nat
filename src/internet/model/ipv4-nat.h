@@ -49,8 +49,8 @@ public:
   // This version is used for no port restrictions
   Ipv4StaticNatRule (Ipv4Address localip, Ipv4Address globalip);
 
-  Ipv4Address GetLocalIp();
-  Ipv4Address GetGlobalIp();
+  Ipv4Address GetLocalIp() const;
+  Ipv4Address GetGlobalIp() const;
 
 private:
   Ipv4Address m_localaddr;
