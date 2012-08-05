@@ -37,6 +37,8 @@ NS_LOG_COMPONENT_DEFINE ("Ipv4Nat");
 
 namespace ns3 {
 
+  Ipv4NetfilterHook natCallback1;
+  Ipv4NetfilterHook natCallback2;
 
 NS_OBJECT_ENSURE_REGISTERED (Ipv4Nat);
 
@@ -58,8 +60,8 @@ Ipv4Nat::Ipv4Nat () : m_isConnected (false)
   NetfilterHookCallback doNat = MakeCallback (&Ipv4Nat::NetfilterDoNat, this);
   NetfilterHookCallback doUnNat = MakeCallback (&Ipv4Nat::NetfilterDoUnNat, this);
 
-  Ipv4NetfilterHook natCallback1 = Ipv4NetfilterHook (1, NF_INET_POST_ROUTING, NF_IP_PRI_NAT_SRC, doNat);
-  Ipv4NetfilterHook natCallback2 = Ipv4NetfilterHook (1, NF_INET_PRE_ROUTING, NF_IP_PRI_NAT_DST, doUnNat);
+  natCallback1 = Ipv4NetfilterHook (1, NF_INET_POST_ROUTING, NF_IP_PRI_NAT_SRC, doNat);
+  natCallback2 = Ipv4NetfilterHook (1, NF_INET_PRE_ROUTING, NF_IP_PRI_NAT_DST, doUnNat);
 
 
 }
@@ -87,10 +89,10 @@ Ipv4Nat::NotifyNewAggregate ()
             {
               m_isConnected = true;
               // Set callbacks on netfilter pointer
-#if 0
+
               netfilter->RegisterHook (natCallback1);
               netfilter->RegisterHook (natCallback2);
-#endif
+
             }
         }
     }
