@@ -169,7 +169,7 @@ Ipv4Nat::PrintTable (Ptr<OutputStreamWrapper> stream) const
      std::ostringstream locip,gloip;
      Ipv4StaticNatRule rule = (Ipv4StaticNatRule) GetStaticRule(i);
      locip << rule.GetLocalIp();
-      gloip << rule.GetGlobalIp();
+     gloip << rule.GetGlobalIp();
      *os << std::endl;
 
     }
@@ -182,7 +182,39 @@ uint32_t
 Ipv4Nat::NetfilterDoNat (Hooks_t hookNumber, Ptr<Packet> p,
                          Ptr<NetDevice> in, Ptr<NetDevice> out, ContinueCallback& ccb)
 {
-  NS_LOG_FUNCTION (this << hookNumber << in << out);
+  NS_LOG_FUNCTION (this << p << hookNumber << in << out);
+  NS_LOG_UNCOND ("NAT Hook");
+ 
+#if 0
+  Ipv4Header ipHeader;
+  Ipv4Address dstAddress, srcAddress;
+
+  //Remove the header   
+  p->RemoveHeader (ipHeader);
+
+  //Check the source ip of the pkt
+  srcAddress = ipHeader.GetSource();
+  
+  //iterate through the static rules list to find the first match for the src against the local ip
+
+  for (StaticNatRules::const_iterator i= m_statictable.end (); 
+      i != m_statictable.begin ();
+      i--)
+  {
+    if( srcAddress == m_statictable.first)
+    {
+      //Set Source to the global ip of this matching rule
+      ipHeader.SetSource = m_statictable.second;
+
+    }
+  }
+  NS_ASSERT(false);
+  return Ipv4StaticNatRule (Ipv4Address (), Ipv4Address ());
+
+  //Reattach header
+
+#endif
+
   return 0;
 
 }
@@ -192,6 +224,17 @@ Ipv4Nat::NetfilterDoUnNat (Hooks_t hookNumber, Ptr<Packet> p,
                            Ptr<NetDevice> in, Ptr<NetDevice> out, ContinueCallback& ccb)
 {
   NS_LOG_FUNCTION (this << hookNumber << in << out);
+
+  //Remove the header 
+  
+  //Check the source ip of the pkt
+
+  //iterate through the static rules list to find the first match for the src against the local ip
+
+  //Set Source to the global ip of this matching rule
+
+  //Reattach header
+
   return 0;
 
 }
