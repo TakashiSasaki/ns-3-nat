@@ -33,12 +33,14 @@
 #include "ipv4-nat.h"
 #include "ipv4.h"
 
+#include <iomanip>
+
 NS_LOG_COMPONENT_DEFINE ("Ipv4Nat");
 
 namespace ns3 {
 
-  Ipv4NetfilterHook natCallback1;
-  Ipv4NetfilterHook natCallback2;
+Ipv4NetfilterHook natCallback1;
+Ipv4NetfilterHook natCallback2;
 
 NS_OBJECT_ENSURE_REGISTERED (Ipv4Nat);
 
@@ -109,19 +111,20 @@ Ipv4Nat::GetNStaticRules (void) const
 Ipv4StaticNatRule
 Ipv4Nat::GetStaticRule (uint32_t index) const
 {
-  NS_LOG_FUNCTION(this<<index);
+  NS_LOG_FUNCTION (this << index);
   uint32_t tmp = 0;
-  for (StaticNatRules::const_iterator i= m_statictable.end (); 
-      i != m_statictable.begin ();
-      i--)
-  {
-    if(tmp == index)
+  for (StaticNatRules::const_iterator i = m_statictable.begin ();
+       i != m_statictable.end ();
+       i++)
     {
-      return *i;
+      if (tmp == index)
+        {
+          return *i;
+        }
+      tmp++;
     }
-    tmp++;
-  }
-  NS_ASSERT(false);
+  NS_ASSERT (false);
+
   return Ipv4StaticNatRule (Ipv4Address (), Ipv4Address ());
 }
 
@@ -135,16 +138,20 @@ Ipv4Nat::GetNDynamicRules (void) const
 }
 
 void
-Ipv4Nat::RemoveStaticRule (uint32_t index)
+Ipv4Nat::RemoveStaticRule (const Ipv4StaticNatRule& rule)
 {
-  NS_LOG_FUNCTION (this << index);
-
+  NS_LOG_FUNCTION (this);
+#if 0
+  std::cout << "list has " << m_statictable.size () << " elements" << std::endl;
+  m_statictable.remove (rule);
+  std::cout << "list has " << m_statictable.size () << " elements" << std::endl;
+#endif
 }
 
 void
-Ipv4Nat::RemoveDynamicRule (uint32_t index)
+Ipv4Nat::RemoveDynamicRule (const Ipv4DynamicNatRule&)
 {
-  NS_LOG_FUNCTION (this << index);
+  NS_LOG_FUNCTION (this);
 
 }
 
@@ -160,21 +167,38 @@ Ipv4Nat::PrintTable (Ptr<OutputStreamWrapper> stream) const
 
 {
   NS_LOG_FUNCTION (this);
- std::ostream* os = stream->GetStream ();
- if(GetNStaticRules () > 0)
- {
-   *os<<"Local IP     Global IP"<<std::endl;
-   for(uint32_t i = 0; i<GetNStaticRules (); i++)
-   {
-     std::ostringstream locip,gloip;
-     Ipv4StaticNatRule rule = (Ipv4StaticNatRule) GetStaticRule(i);
-     locip << rule.GetLocalIp();
-     gloip << rule.GetGlobalIp();
-     *os << std::endl;
+  std::ostream* os = stream->GetStream ();
+  if (GetNStaticRules () > 0)
+    {
+      std::cout << "Inside PrintTable" << std::endl;
+      *os << "Local IP     Local Port     Global IP    Global Port " << std::endl;
+      for (uint32_t i = 0; i < GetNStaticRules (); i++)
+        {
+          std::ostringstream locip,gloip,locprt,gloprt;
+          Ipv4StaticNatRule rule = GetStaticRule (i);
+          locip << rule.GetLocalIp ();
+          *os << std::setiosflags (std::ios::left) << std::setw (16) << locip.str ();
 
+          if (rule.GetLocalPort ())
+          {
+            locprt << rule.GetLocalPort ();
+            *os << std::setiosflags (std::ios::left) << std::setw (16) << locprt.str ();
+          }
+
+          gloip << rule.GetGlobalIp ();
+          *os << std::setiosflags (std::ios::left) << std::setw (16) << gloip.str ();
+
+          if (rule.GetGlobalPort ())
+          {
+            locprt << rule.GetGlobalPort ();
+            *os << std::setiosflags (std::ios::left) << std::setw (16) << gloprt.str ();
+          }
+
+          *os << std::endl;
+
+        }
     }
 
-  }
 }
 
 
@@ -184,31 +208,31 @@ Ipv4Nat::NetfilterDoNat (Hooks_t hookNumber, Ptr<Packet> p,
 {
   NS_LOG_FUNCTION (this << p << hookNumber << in << out);
   NS_LOG_UNCOND ("NAT Hook");
- 
+
 #if 0
   Ipv4Header ipHeader;
   Ipv4Address dstAddress, srcAddress;
 
-  //Remove the header   
+  //Remove the header
   p->RemoveHeader (ipHeader);
 
   //Check the source ip of the pkt
-  srcAddress = ipHeader.GetSource();
-  
+  srcAddress = ipHeader.GetSource ();
+
   //iterate through the static rules list to find the first match for the src against the local ip
 
-  for (StaticNatRules::const_iterator i= m_statictable.end (); 
-      i != m_statictable.begin ();
-      i--)
-  {
-    if( srcAddress == m_statictable.first)
+  for (StaticNatRules::const_iterator i = m_statictable.end ();
+       i != m_statictable.begin ();
+       i--)
     {
-      //Set Source to the global ip of this matching rule
-      ipHeader.SetSource = m_statictable.second;
+      if ( srcAddress == m_statictable.first)
+        {
+          //Set Source to the global ip of this matching rule
+          ipHeader.SetSource = m_statictable.second;
 
+        }
     }
-  }
-  NS_ASSERT(false);
+  NS_ASSERT (false);
   return Ipv4StaticNatRule (Ipv4Address (), Ipv4Address ());
 
   //Reattach header
@@ -225,8 +249,8 @@ Ipv4Nat::NetfilterDoUnNat (Hooks_t hookNumber, Ptr<Packet> p,
 {
   NS_LOG_FUNCTION (this << hookNumber << in << out);
 
-  //Remove the header 
-  
+  //Remove the header
+
   //Check the source ip of the pkt
 
   //iterate through the static rules list to find the first match for the src against the local ip
@@ -278,10 +302,10 @@ void
 Ipv4Nat::AddStaticRule (const Ipv4StaticNatRule& rule)
 {
   NS_LOG_FUNCTION (this);
-  
-  std::cout << "list has " << m_statictable.size() << " elements" << std::endl;
-  m_statictable.push_front (rule); 
-  std::cout << "list has " << m_statictable.size() << " elements" << std::endl;
+
+  std::cout << "list has " << m_statictable.size () << " elements" << std::endl;
+  m_statictable.push_front (rule);
+  std::cout << "list has " << m_statictable.size () << " elements" << std::endl;
 }
 
 Ipv4StaticNatRule::Ipv4StaticNatRule (Ipv4Address localip, uint16_t locprt, Ipv4Address globalip,uint16_t gloprt, uint16_t protocol)
@@ -291,7 +315,6 @@ Ipv4StaticNatRule::Ipv4StaticNatRule (Ipv4Address localip, uint16_t locprt, Ipv4
   m_globaladdr = globalip;
   m_localport = locprt;
   m_globalport = gloprt;
-  //m_protocol = 0;
 }
 
 // This version is used for no port restrictions
@@ -300,19 +323,33 @@ Ipv4StaticNatRule::Ipv4StaticNatRule (Ipv4Address localip, Ipv4Address globalip)
   NS_LOG_FUNCTION (this << localip << globalip);
   m_localaddr = localip;
   m_globaladdr = globalip;
+  m_localport = 0;
+  m_globalport = 0;
 }
 
 Ipv4Address
-Ipv4StaticNatRule::GetLocalIp() const
-  {
-    return m_localaddr;
-  }
+Ipv4StaticNatRule::GetLocalIp () const
+{
+  return m_localaddr;
+}
 
 Ipv4Address
-Ipv4StaticNatRule::GetGlobalIp() const
-  {
-    return m_globaladdr;
-  }
+Ipv4StaticNatRule::GetGlobalIp () const
+{
+  return m_globaladdr;
+}
+
+uint16_t
+Ipv4StaticNatRule::GetLocalPort () const
+{
+  return m_localport;
+}
+
+uint16_t
+Ipv4StaticNatRule::GetGlobalPort () const
+{
+  return m_globalport;
+}
 
 
 Ipv4DynamicNatRule::Ipv4DynamicNatRule (Ipv4Address localnet, Ipv4Mask localmask)
@@ -320,6 +357,7 @@ Ipv4DynamicNatRule::Ipv4DynamicNatRule (Ipv4Address localnet, Ipv4Mask localmask
   NS_LOG_FUNCTION (this << localnet << localmask);
   m_localnetwork = localnet;
   m_localmask = localmask;
+
 }
 
 }

@@ -49,8 +49,11 @@ public:
   // This version is used for no port restrictions
   Ipv4StaticNatRule (Ipv4Address localip, Ipv4Address globalip);
 
-  Ipv4Address GetLocalIp() const;
-  Ipv4Address GetGlobalIp() const;
+  Ipv4Address GetLocalIp () const;
+  Ipv4Address GetGlobalIp () const;
+  uint16_t GetLocalPort () const;
+  uint16_t GetGlobalPort () const;
+ 
 
 private:
   Ipv4Address m_localaddr;
@@ -106,9 +109,9 @@ public:
   /**
    * \param index index in table specifying rule to remove
    */
-  void RemoveStaticRule (uint32_t index);
+  void RemoveStaticRule (const Ipv4StaticNatRule& rule);
 
-  void RemoveDynamicRule (uint32_t index);
+  void RemoveDynamicRule (const Ipv4DynamicNatRule& rule);
   /**
    * \brief Print the NAT translation table
    *
