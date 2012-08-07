@@ -78,7 +78,7 @@ main (int argc, char *argv[])
   Ipv4StaticNatRule rule (Ipv4Address ("192.168.0.1"), Ipv4Address ("10.1.2.3"));
   nat->AddStaticRule (rule);
   
-  Ipv4StaticNatRule rule2 (Ipv4Address ("192.168.2.3"), uint16_t (80),Ipv4Address ("10.1.3.4"), uint16_t (123), uint16_t (0));
+  Ipv4StaticNatRule rule2 (Ipv4Address ("192.168.2.3"), uint16_t (80),Ipv4Address ("10.1.3.4"), uint16_t (8080), uint16_t (0));
   nat->AddStaticRule (rule2);
 
   //Ipv4StaticNatRule rule2 (Ipv4Address ("192.168.0.2"), Ipv4Address ("10.1.2.4"));

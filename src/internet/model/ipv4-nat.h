@@ -109,9 +109,9 @@ public:
   /**
    * \param index index in table specifying rule to remove
    */
-  void RemoveStaticRule (const Ipv4StaticNatRule& rule);
+  uint32_t RemoveStaticRule (uint32_t index);
 
-  void RemoveDynamicRule (const Ipv4DynamicNatRule& rule);
+  uint32_t RemoveDynamicRule (uint32_t index);
   /**
    * \brief Print the NAT translation table
    *
