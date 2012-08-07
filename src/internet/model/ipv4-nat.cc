@@ -140,24 +140,24 @@ Ipv4Nat::GetNDynamicRules (void) const
 uint32_t
 Ipv4Nat::RemoveStaticRule (uint32_t index)
 {
-#if 0  
+#if 0
   NS_LOG_FUNCTION (this << index);
-uint32_t tmp = 0;
+  uint32_t tmp = 0;
   for (StaticNatRules::const_iterator i = m_statictable.begin ();
        i != m_statictable.end ();
        i++)
     {
       if (tmp == index)
         {
-          m_statictable.remove(*i);
+          m_statictable.remove (*i);
           return tmp;
         }
       tmp++;
     }
-NS_ASSERT (false);
+  NS_ASSERT (false);
 #endif
 
-return 0;
+  return 0;
 
 }
 
@@ -193,29 +193,29 @@ Ipv4Nat::PrintTable (Ptr<OutputStreamWrapper> stream) const
           *os << std::setiosflags (std::ios::left) << std::setw (16) << locip.str ();
 */
           if (rule.GetLocalPort ())
-          {
-             locip << rule.GetLocalIp ();
-            *os << std::setiosflags (std::ios::left) << std::setw (16) << locip.str ();
+            {
+              locip << rule.GetLocalIp ();
+              *os << std::setiosflags (std::ios::left) << std::setw (16) << locip.str ();
 
-            locprt << rule.GetLocalPort ();
-            *os << std::setiosflags (std::ios::left) << std::setw (16) << locprt.str ();
-          }
+              locprt << rule.GetLocalPort ();
+              *os << std::setiosflags (std::ios::left) << std::setw (16) << locprt.str ();
+            }
 
           else
-          {
-            locip << rule.GetLocalIp ();
-            *os << std::setiosflags (std::ios::left) << std::setw (35) << locip.str ();
-          }
+            {
+              locip << rule.GetLocalIp ();
+              *os << std::setiosflags (std::ios::left) << std::setw (35) << locip.str ();
+            }
 
 
           gloip << rule.GetGlobalIp ();
           *os << std::setiosflags (std::ios::left) << std::setw (16) << gloip.str ();
 
           if (rule.GetGlobalPort ())
-          {
-            gloprt << rule.GetGlobalPort ();
-            *os << std::setiosflags (std::ios::left) << std::setw (16) << gloprt.str ();
-          }
+            {
+              gloprt << rule.GetGlobalPort ();
+              *os << std::setiosflags (std::ios::left) << std::setw (16) << gloprt.str ();
+            }
 
           *os << std::endl;
 

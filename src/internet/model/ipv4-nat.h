@@ -53,7 +53,7 @@ public:
   Ipv4Address GetGlobalIp () const;
   uint16_t GetLocalPort () const;
   uint16_t GetGlobalPort () const;
- 
+
 
 private:
   Ipv4Address m_localaddr;
