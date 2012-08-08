@@ -140,7 +140,7 @@ Ipv4Nat::GetNDynamicRules (void) const
 uint32_t
 Ipv4Nat::RemoveStaticRule (uint32_t index)
 {
-#if 0
+
   NS_LOG_FUNCTION (this << index);
   uint32_t tmp = 0;
   for (StaticNatRules::const_iterator i = m_statictable.begin ();
@@ -149,13 +149,13 @@ Ipv4Nat::RemoveStaticRule (uint32_t index)
     {
       if (tmp == index)
         {
-          m_statictable.remove (*i);
-          return tmp;
+          delete i->first;
+          m_statictable.erase (i);
+          return;
         }
       tmp++;
     }
   NS_ASSERT (false);
-#endif
 
   return 0;
 
