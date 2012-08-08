@@ -91,12 +91,8 @@ main (int argc, char *argv[])
   
   nat->PrintTable (natStream);
  
-  //nat->RemoveStaticRule (1);
-
-
- // Ptr<OutputStreamWrapper> natStream2 = Create<OutputStreamWrapper> ("nat2.routes", std::ios::out);
-  
- // nat->PrintTable (natStream);
+  nat->RemoveStaticRule (1);
+  nat->PrintTable (natStream);
 
 
   UdpEchoServerHelper echoServer (9);

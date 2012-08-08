@@ -54,10 +54,14 @@ Ipv4NatAddRemoveRules::DoRun (void)
   nat->AddStaticRule (rule2);
   NS_TEST_ASSERT_MSG_EQ (nat->GetNStaticRules (), 2, "adding to list failed");
 
-  // XXX shouldn't this be illegal?
+  nat->RemoveStaticRule (1);  // should remove the 10.1.2.3 rule, as 10.1.2.4 pushed it down the stack
+  NS_TEST_ASSERT_MSG_EQ (nat->GetNStaticRules (), 1, "removing from list failed");
+  Ipv4StaticNatRule returnRule = nat->GetStaticRule (0);
+  NS_TEST_ASSERT_MSG_EQ (returnRule.GetLocalIp (), Ipv4Address ("10.1.2.4"), "fetching from list failed");
+
   Ipv4StaticNatRule rule3 (Ipv4Address ("192.168.0.1"), Ipv4Address ("192.168.0.1"));
   nat->AddStaticRule (rule3);
-  
+
 }
 
 class Ipv4NatTestSuite : public TestSuite

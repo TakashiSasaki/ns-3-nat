@@ -137,35 +137,30 @@ Ipv4Nat::GetNDynamicRules (void) const
   return 0;
 }
 
-uint32_t
+void
 Ipv4Nat::RemoveStaticRule (uint32_t index)
 {
 
   NS_LOG_FUNCTION (this << index);
+  NS_ASSERT (index < m_statictable.size ());
   uint32_t tmp = 0;
-  for (StaticNatRules::const_iterator i = m_statictable.begin ();
-       i != m_statictable.end ();
-       i++)
+  for (StaticNatRules::iterator i = m_statictable.begin ();
+       i != m_statictable.end (); i++, tmp++)
     {
       if (tmp == index)
         {
-          delete i->first;
           m_statictable.erase (i);
           return;
         }
-      tmp++;
     }
-  NS_ASSERT (false);
-
-  return 0;
-
+  NS_ASSERT_MSG (false, "Rule Not Found");
 }
 
-uint32_t
+void
 Ipv4Nat::RemoveDynamicRule (uint32_t index)
 {
   NS_LOG_FUNCTION (this << index);
-  return 0;
+  return;
 }
 
 
