@@ -109,9 +109,9 @@ public:
   /**
    * \param index index in table specifying rule to remove
    */
-  uint32_t RemoveStaticRule (uint32_t index);
+  void RemoveStaticRule (uint32_t index);
 
-  uint32_t RemoveDynamicRule (uint32_t index);
+  void RemoveDynamicRule (uint32_t index);
   /**
    * \brief Print the NAT translation table
    *

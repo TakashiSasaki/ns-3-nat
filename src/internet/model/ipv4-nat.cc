@@ -325,10 +325,8 @@ void
 Ipv4Nat::AddStaticRule (const Ipv4StaticNatRule& rule)
 {
   NS_LOG_FUNCTION (this);
-
-  std::cout << "list has " << m_statictable.size () << " elements" << std::endl;
   m_statictable.push_front (rule);
-  std::cout << "list has " << m_statictable.size () << " elements" << std::endl;
+  NS_LOG_DEBUG ("list has " << m_statictable.size () << " elements after pushing");
 }
 
 Ipv4StaticNatRule::Ipv4StaticNatRule (Ipv4Address localip, uint16_t locprt, Ipv4Address globalip,uint16_t gloprt, uint16_t protocol)
