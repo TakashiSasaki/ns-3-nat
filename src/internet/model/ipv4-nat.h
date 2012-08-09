@@ -34,6 +34,8 @@
 #include "netfilter-conntrack-l3-protocol.h"
 #include "netfilter-conntrack-l4-protocol.h"
 #include "ip-conntrack-info.h"
+#include "ipv4.h"
+
 
 namespace ns3 {
 
@@ -135,15 +137,16 @@ protected:
   virtual void NotifyNewAggregate (void);
 
 private:
-  bool m_isConnected;
-  uint32_t NetfilterDoNat (Hooks_t hookNumber, Ptr<Packet> p,
-                           Ptr<NetDevice> in, Ptr<NetDevice> out, ContinueCallback& ccb);
+  //bool m_isConnected;
 
-  uint32_t NetfilterDoUnNat (Hooks_t hookNumber, Ptr<Packet> p,
-                             Ptr<NetDevice> in, Ptr<NetDevice> out, ContinueCallback& ccb);
+  Ptr<Ipv4> m_ipv4 ;
+  uint32_t DoNat (Hooks_t hookNumber, Ptr<Packet> p,
+                           Ptr<NetDevice> in, Ptr<NetDevice> out, ContinueCallback& ccb);
 
   StaticNatRules m_statictable;
   DynamicNatRules m_dynamictable;
+  uint32_t m_insideInterface;
+  uint32_t m_outsideInterface;
 
 };
 

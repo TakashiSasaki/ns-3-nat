@@ -55,12 +55,12 @@ Ipv4Nat::GetTypeId (void)
 }
 
 
-Ipv4Nat::Ipv4Nat () : m_isConnected (false)
+Ipv4Nat::Ipv4Nat () /* : m_isConnected (false)*/
 {
   NS_LOG_FUNCTION (this);
 
-  NetfilterHookCallback doNat = MakeCallback (&Ipv4Nat::NetfilterDoNat, this);
-  NetfilterHookCallback doUnNat = MakeCallback (&Ipv4Nat::NetfilterDoUnNat, this);
+  NetfilterHookCallback doNat = MakeCallback (&Ipv4Nat::DoNat, this);
+  NetfilterHookCallback doUnNat = MakeCallback (&Ipv4Nat::DoNat, this);
 
   natCallback1 = Ipv4NetfilterHook (1, NF_INET_POST_ROUTING, NF_IP_PRI_NAT_SRC, doNat);
   natCallback2 = Ipv4NetfilterHook (1, NF_INET_PRE_ROUTING, NF_IP_PRI_NAT_DST, doUnNat);
@@ -76,7 +76,7 @@ void
 Ipv4Nat::NotifyNewAggregate ()
 {
   NS_LOG_FUNCTION (this);
-  if (m_isConnected)
+  if (m_ipv4 != 0)
     {
       return;
     }
@@ -89,7 +89,7 @@ Ipv4Nat::NotifyNewAggregate ()
           Ptr<Ipv4Netfilter> netfilter = ipv4->GetNetfilter ();
           if (ipv4 != 0)
             {
-              m_isConnected = true;
+              m_ipv4 = ipv4;
               // Set callbacks on netfilter pointer
 
               netfilter->RegisterHook (natCallback1);
@@ -184,9 +184,7 @@ Ipv4Nat::PrintTable (Ptr<OutputStreamWrapper> stream) const
         {
           std::ostringstream locip,gloip,locprt,gloprt;
           Ipv4StaticNatRule rule = GetStaticRule (i);
-/*          locip << rule.GetLocalIp ();
-          *os << std::setiosflags (std::ios::left) << std::setw (16) << locip.str ();
-*/
+
           if (rule.GetLocalPort ())
             {
               locip << rule.GetLocalIp ();
@@ -221,61 +219,63 @@ Ipv4Nat::PrintTable (Ptr<OutputStreamWrapper> stream) const
 
 
 uint32_t
-Ipv4Nat::NetfilterDoNat (Hooks_t hookNumber, Ptr<Packet> p,
-                         Ptr<NetDevice> in, Ptr<NetDevice> out, ContinueCallback& ccb)
+Ipv4Nat::DoNat (Hooks_t hookNumber, Ptr<Packet> p,
+                Ptr<NetDevice> in, Ptr<NetDevice> out, ContinueCallback& ccb)
 {
   NS_LOG_FUNCTION (this << p << hookNumber << in << out);
   NS_LOG_UNCOND ("NAT Hook");
 
-#if 0
   Ipv4Header ipHeader;
-  Ipv4Address dstAddress, srcAddress;
 
-  //Remove the header
-  p->RemoveHeader (ipHeader);
-
-  //Check the source ip of the pkt
-  srcAddress = ipHeader.GetSource ();
-
-  //iterate through the static rules list to find the first match for the src against the local ip
-
-  for (StaticNatRules::const_iterator i = m_statictable.end ();
-       i != m_statictable.begin ();
-       i--)
+  if (m_ipv4->GetInterfaceForDevice (in) == (int32_t)m_insideInterface)
     {
-      if ( srcAddress == m_statictable.first)
+      // matching input interface
+
+      p->RemoveHeader (ipHeader);
+
+      if (hookNumber == NF_INET_POST_ROUTING)
         {
-          //Set Source to the global ip of this matching rule
-          ipHeader.SetSource = m_statictable.second;
+          Ipv4Address srcAddress = ipHeader.GetSource ();
+
+          for (StaticNatRules::const_iterator i = m_statictable.begin ();
+               i != m_statictable.end ();
+               i++)
+            {
+              if (srcAddress == (*i).GetLocalIp ())
+                {
+                  ipHeader.SetSource ((*i).GetGlobalIp ());
+                }
+            }
+
 
         }
+      p->AddHeader (ipHeader);
     }
-  NS_ASSERT (false);
-  return Ipv4StaticNatRule (Ipv4Address (), Ipv4Address ());
 
-  //Reattach header
+  if (m_ipv4->GetInterfaceForDevice (out) == (int32_t)m_outsideInterface)
+    {
+      // matching output interface
 
-#endif
+      p->RemoveHeader (ipHeader);
 
-  return 0;
+      if (hookNumber == NF_INET_PRE_ROUTING)
+        {
+          Ipv4Address destAddress = ipHeader.GetDestination ();
 
-}
+          for (StaticNatRules::const_iterator i = m_statictable.begin ();
+               i != m_statictable.end ();
+               i++)
+            {
+              if (destAddress == (*i).GetGlobalIp ())
+                {
+                  ipHeader.SetDestination ((*i).GetLocalIp ());
+                }
+            }
 
-uint32_t
-Ipv4Nat::NetfilterDoUnNat (Hooks_t hookNumber, Ptr<Packet> p,
-                           Ptr<NetDevice> in, Ptr<NetDevice> out, ContinueCallback& ccb)
-{
-  NS_LOG_FUNCTION (this << hookNumber << in << out);
 
-  //Remove the header
-
-  //Check the source ip of the pkt
-
-  //iterate through the static rules list to find the first match for the src against the local ip
-
-  //Set Source to the global ip of this matching rule
-
-  //Reattach header
+        }
+      p->AddHeader (ipHeader);
+    }
 
   return 0;
 
@@ -289,7 +289,7 @@ Ipv4Nat::AddAddressPool (Ipv4Address globalip, Ipv4Mask globalmask)
 
 
 void
-Ipv4Nat::AddPortPool (uint16_t strprt, uint16_t dstprt) //port range
+Ipv4Nat::AddPortPool (uint16_t strprt, uint16_t dstprt)     //port range
 {
   NS_LOG_FUNCTION (this << strprt << dstprt);
 }
@@ -298,6 +298,7 @@ void
 Ipv4Nat::SetInside (uint32_t interfaceIndex)
 {
   NS_LOG_FUNCTION (this << interfaceIndex);
+  m_insideInterface = interfaceIndex;
 
 }
 
@@ -306,6 +307,7 @@ Ipv4Nat::SetOutside (uint32_t interfaceIndex)
 {
 
   NS_LOG_FUNCTION (this << interfaceIndex);
+  m_outsideInterface = interfaceIndex;
 }
 
 
