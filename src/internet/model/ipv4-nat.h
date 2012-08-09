@@ -139,7 +139,7 @@ protected:
 private:
   //bool m_isConnected;
 
-  Ptr<Ipv4> m_ipv4 ;
+  Ptr<Ipv4> m_ipv4;
   uint32_t DoNat (Hooks_t hookNumber, Ptr<Packet> p,
                            Ptr<NetDevice> in, Ptr<NetDevice> out, ContinueCallback& ccb);
 

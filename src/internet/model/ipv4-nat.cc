@@ -229,12 +229,15 @@ Ipv4Nat::DoNat (Hooks_t hookNumber, Ptr<Packet> p,
 
   if (m_ipv4->GetInterfaceForDevice (in) == (int32_t)m_insideInterface)
     {
+      NS_LOG_UNCOND ("Inside Interface Check in");
       // matching input interface
 
       p->RemoveHeader (ipHeader);
 
       if (hookNumber == NF_INET_POST_ROUTING)
         {
+
+          NS_LOG_UNCOND ("Inside Hook Check Post Routing");
           Ipv4Address srcAddress = ipHeader.GetSource ();
 
           for (StaticNatRules::const_iterator i = m_statictable.begin ();
@@ -254,12 +257,15 @@ Ipv4Nat::DoNat (Hooks_t hookNumber, Ptr<Packet> p,
 
   if (m_ipv4->GetInterfaceForDevice (out) == (int32_t)m_outsideInterface)
     {
+
+      NS_LOG_UNCOND ("Inside Interface Check Out");
       // matching output interface
 
       p->RemoveHeader (ipHeader);
 
       if (hookNumber == NF_INET_PRE_ROUTING)
         {
+          NS_LOG_UNCOND ("Inside NF_INET_PRE_ROUTING check");
           Ipv4Address destAddress = ipHeader.GetDestination ();
 
           for (StaticNatRules::const_iterator i = m_statictable.begin ();
@@ -277,7 +283,7 @@ Ipv4Nat::DoNat (Hooks_t hookNumber, Ptr<Packet> p,
       p->AddHeader (ipHeader);
     }
 
-  return 0;
+return 0;
 
 }
 

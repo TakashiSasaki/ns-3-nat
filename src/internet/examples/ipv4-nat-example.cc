@@ -70,16 +70,19 @@ main (int argc, char *argv[])
   
   Ptr <Ipv4L3Protocol> ipv4L3 = DynamicCast <Ipv4L3Protocol>(first.Get (0)->GetObject<Ipv4> ());
   Ptr<Ipv4Nat> nat = CreateObject<Ipv4Nat> ();
+
   // Aggregate the NAT object to a node; this will hook it to Ipv4Netfilter
   first.Get (0)->AggregateObject (nat);
-
+  nat->SetInside (1);
+  nat->SetOutside (3);
+  
   // Add rules here
   //
-  Ipv4StaticNatRule rule (Ipv4Address ("192.168.0.1"), Ipv4Address ("10.1.2.3"));
+  Ipv4StaticNatRule rule (Ipv4Address ("192.168.1.1"), Ipv4Address ("10.1.1.1"));
   nat->AddStaticRule (rule);
   
-  Ipv4StaticNatRule rule2 (Ipv4Address ("192.168.2.3"), uint16_t (80),Ipv4Address ("10.1.3.4"), uint16_t (8080), uint16_t (0));
-  nat->AddStaticRule (rule2);
+  //Ipv4StaticNatRule rule2 (Ipv4Address ("192.168.2.3"), uint16_t (80),Ipv4Address ("10.1.3.4"), uint16_t (8080), uint16_t (0));
+ // nat->AddStaticRule (rule2);
 
   //Ipv4StaticNatRule rule2 (Ipv4Address ("192.168.0.2"), Ipv4Address ("10.1.2.4"));
  // nat->AddStaticRule (rule);
@@ -91,8 +94,8 @@ main (int argc, char *argv[])
   
   nat->PrintTable (natStream);
  
-  nat->RemoveStaticRule (1);
-  nat->PrintTable (natStream);
+  //nat->RemoveStaticRule (1);
+  //nat->PrintTable (natStream);
 
 
   UdpEchoServerHelper echoServer (9);
