@@ -54,9 +54,9 @@ Ipv4Nat::GetTypeId (void)
   return tId;
 }
 
-Ipv4Nat::Ipv4Nat () : 
-  m_insideInterface (-1),
-  m_outsideInterface (-1)
+Ipv4Nat::Ipv4Nat ()
+  : m_insideInterface (-1),
+    m_outsideInterface (-1)
 {
   NS_LOG_FUNCTION (this);
 
@@ -251,8 +251,43 @@ Ipv4Nat::DoNat (Hooks_t hookNumber, Ptr<Packet> p,
                 {
                   NS_LOG_DEBUG ("Rule match");
                   ipHeader.SetSource ((*i).GetGlobalIp ());
+                  if ((*i).GetLocalPort () && (*i).GetGlobalPort ())
+                    {
+
+                      NS_LOG_DEBUG ("Evaluation the rule with local" << (*i).GetLocalPort () << " global " << (*i).GetGlobalPort ());
+                    }
+
+                  {
+                    if (ipHeader.GetProtocol () == IPPROTO_TCP)
+                      {
+                        TcpHeader tcpHeader;
+
+                        p->RemoveHeader (tcpHeader);
+
+                        tcpHeader.SetSourcePort ((*i).GetLocalPort ());
+
+                        p->AddHeader (tcpHeader);
+
+                      }
+                    else
+                      {
+                        UdpHeader udpHeader;
+
+                        p->RemoveHeader (udpHeader);
+
+                        udpHeader.SetSourcePort ((*i).GetGlobalPort ());
+
+                        p->AddHeader (udpHeader);
+                      }
+
+                  }
+
+
+
+
                   break;
                 }
+
             }
         }
       p->AddHeader (ipHeader);
@@ -269,20 +304,46 @@ Ipv4Nat::DoNat (Hooks_t hookNumber, Ptr<Packet> p,
           Ipv4Address destAddress = ipHeader.GetDestination ();
 
           for (StaticNatRules::const_iterator i = m_statictable.begin ();
-               i != m_statictable.end ();
-               i++)
+               i != m_statictable.end (); i++)
             {
               if (destAddress == (*i).GetGlobalIp ())
                 {
                   NS_LOG_DEBUG ("Rule match");
                   ipHeader.SetDestination ((*i).GetLocalIp ());
+                  NS_LOG_DEBUG ("Evaluation the rule with local" << (*i).GetLocalPort () << " global " << (*i).GetGlobalPort ());
+
+                  {
+                    if (ipHeader.GetProtocol () == IPPROTO_TCP)
+                      {
+                        TcpHeader tcpHeader;
+
+                        p->RemoveHeader (tcpHeader);
+
+                        tcpHeader.SetDestinationPort ((*i).GetLocalPort ());
+
+                        p->AddHeader (tcpHeader);
+
+                      }
+                    else
+                      {
+                        UdpHeader udpHeader;
+
+                        p->RemoveHeader (udpHeader);
+
+                        udpHeader.SetSourcePort ((*i).GetLocalPort ());
+
+                        p->AddHeader (udpHeader);
+                      }
+
+                  }
+
                   break;
                 }
             }
         }
       p->AddHeader (ipHeader);
     }
-return 0;
+  return 0;
 }
 
 void
@@ -348,6 +409,7 @@ Ipv4StaticNatRule::Ipv4StaticNatRule (Ipv4Address localip, uint16_t locprt, Ipv4
   m_globaladdr = globalip;
   m_localport = locprt;
   m_globalport = gloprt;
+  m_protocol = protocol;
 }
 
 // This version is used for no port restrictions
@@ -384,6 +446,11 @@ Ipv4StaticNatRule::GetGlobalPort () const
   return m_globalport;
 }
 
+uint16_t
+Ipv4StaticNatRule::GetProtocol () const
+{
+  return m_protocol;
+}
 
 Ipv4DynamicNatRule::Ipv4DynamicNatRule (Ipv4Address localnet, Ipv4Mask localmask)
 {

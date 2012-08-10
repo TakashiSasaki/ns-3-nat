@@ -55,6 +55,7 @@ public:
   Ipv4Address GetGlobalIp () const;
   uint16_t GetLocalPort () const;
   uint16_t GetGlobalPort () const;
+  uint16_t GetProtocol () const;
 
 
 private:
@@ -62,6 +63,7 @@ private:
   Ipv4Address m_globaladdr;
   uint16_t m_localport;
   uint16_t m_globalport;
+  uint16_t m_protocol;
 
   // private data member
 };
