@@ -823,7 +823,7 @@ Ipv4L3Protocol::SendRealOut (Ptr<Ipv4Route> route,
     {
       NS_LOG_DEBUG ("NF_INET_POST_ROUTING Hook");
       ContinueCallback ccb = MakeCallback (&Ipv4Netfilter::NetfilterConntrackConfirm, m_netfilter);
-      Verdicts_t verdict=(Verdicts_t)m_netfilter->ProcessHook (PF_INET, NF_INET_POST_ROUTING, packet, device, 0, ccb);
+      Verdicts_t verdict=(Verdicts_t) m_netfilter->ProcessHook (PF_INET, NF_INET_POST_ROUTING, packet, 0, device, ccb);
       if (verdict == NF_DROP)
         {
           NS_LOG_DEBUG ("NF_INET_POST_ROUTING packet not accepted");
@@ -832,7 +832,6 @@ Ipv4L3Protocol::SendRealOut (Ptr<Ipv4Route> route,
         }
       
     }
-
 
   if (route == 0)
     {

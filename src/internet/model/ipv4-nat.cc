@@ -54,17 +54,16 @@ Ipv4Nat::GetTypeId (void)
   return tId;
 }
 
-
-Ipv4Nat::Ipv4Nat () /* : m_isConnected (false)*/
+Ipv4Nat::Ipv4Nat () : 
+  m_insideInterface (-1),
+  m_outsideInterface (-1)
 {
   NS_LOG_FUNCTION (this);
 
   NetfilterHookCallback doNat = MakeCallback (&Ipv4Nat::DoNat, this);
-  NetfilterHookCallback doUnNat = MakeCallback (&Ipv4Nat::DoNat, this);
 
   natCallback1 = Ipv4NetfilterHook (1, NF_INET_POST_ROUTING, NF_IP_PRI_NAT_SRC, doNat);
-  natCallback2 = Ipv4NetfilterHook (1, NF_INET_PRE_ROUTING, NF_IP_PRI_NAT_DST, doUnNat);
-
+  natCallback2 = Ipv4NetfilterHook (1, NF_INET_PRE_ROUTING, NF_IP_PRI_NAT_DST, doNat);
 
 }
 
@@ -178,7 +177,6 @@ Ipv4Nat::PrintTable (Ptr<OutputStreamWrapper> stream) const
   std::ostream* os = stream->GetStream ();
   if (GetNStaticRules () > 0)
     {
-      std::cout << "Inside PrintTable" << std::endl;
       *os << "Local IP     Local Port     Global IP    Global Port " << std::endl;
       for (uint32_t i = 0; i < GetNStaticRules (); i++)
         {
@@ -223,49 +221,51 @@ Ipv4Nat::DoNat (Hooks_t hookNumber, Ptr<Packet> p,
                 Ptr<NetDevice> in, Ptr<NetDevice> out, ContinueCallback& ccb)
 {
   NS_LOG_FUNCTION (this << p << hookNumber << in << out);
-  NS_LOG_UNCOND ("NAT Hook");
+
+  if (m_ipv4 == 0)
+    {
+      return 0;
+    }
 
   Ipv4Header ipHeader;
 
-  if (m_ipv4->GetInterfaceForDevice (in) == (int32_t)m_insideInterface)
+  NS_LOG_DEBUG ("Input device " << m_ipv4->GetInterfaceForDevice (in) << " inside interface " << m_insideInterface);
+  NS_LOG_DEBUG ("Output device " << m_ipv4->GetInterfaceForDevice (out) << " outside interface " << m_outsideInterface);
+  if (hookNumber == NF_INET_POST_ROUTING)
     {
-      NS_LOG_UNCOND ("Inside Interface Check in");
-      // matching input interface
-
+      // XXX consider PeekHeader here
       p->RemoveHeader (ipHeader);
-
-      if (hookNumber == NF_INET_POST_ROUTING)
+      if (m_ipv4->GetInterfaceForDevice (out) == m_outsideInterface)
         {
+          // matching output interface
+          NS_LOG_DEBUG ("evaluating packet with src " << ipHeader.GetSource () << " dst " << ipHeader.GetDestination ());
 
-          NS_LOG_UNCOND ("Inside Hook Check Post Routing");
           Ipv4Address srcAddress = ipHeader.GetSource ();
 
           for (StaticNatRules::const_iterator i = m_statictable.begin ();
                i != m_statictable.end ();
                i++)
             {
+              NS_LOG_DEBUG ("Evaluating rule with local " << (*i).GetLocalIp () << " global " << (*i).GetGlobalIp ());
               if (srcAddress == (*i).GetLocalIp ())
                 {
+                  NS_LOG_DEBUG ("Rule match");
                   ipHeader.SetSource ((*i).GetGlobalIp ());
+                  break;
                 }
             }
-
-
         }
       p->AddHeader (ipHeader);
     }
 
-  if (m_ipv4->GetInterfaceForDevice (out) == (int32_t)m_outsideInterface)
+  if (hookNumber == NF_INET_PRE_ROUTING)
     {
-
-      NS_LOG_UNCOND ("Inside Interface Check Out");
-      // matching output interface
-
+      // XXX consider PeekHeader here
       p->RemoveHeader (ipHeader);
-
-      if (hookNumber == NF_INET_PRE_ROUTING)
+      if (m_ipv4->GetInterfaceForDevice (in) == m_outsideInterface)
         {
-          NS_LOG_UNCOND ("Inside NF_INET_PRE_ROUTING check");
+          // outside interface is the input interface, NAT the destination addr
+          NS_LOG_DEBUG ("evaluating packet with src " << ipHeader.GetSource () << " dst " << ipHeader.GetDestination ());
           Ipv4Address destAddress = ipHeader.GetDestination ();
 
           for (StaticNatRules::const_iterator i = m_statictable.begin ();
@@ -274,17 +274,15 @@ Ipv4Nat::DoNat (Hooks_t hookNumber, Ptr<Packet> p,
             {
               if (destAddress == (*i).GetGlobalIp ())
                 {
+                  NS_LOG_DEBUG ("Rule match");
                   ipHeader.SetDestination ((*i).GetLocalIp ());
+                  break;
                 }
             }
-
-
         }
       p->AddHeader (ipHeader);
     }
-
 return 0;
-
 }
 
 void
@@ -301,7 +299,7 @@ Ipv4Nat::AddPortPool (uint16_t strprt, uint16_t dstprt)     //port range
 }
 
 void
-Ipv4Nat::SetInside (uint32_t interfaceIndex)
+Ipv4Nat::SetInside (int32_t interfaceIndex)
 {
   NS_LOG_FUNCTION (this << interfaceIndex);
   m_insideInterface = interfaceIndex;
@@ -309,7 +307,7 @@ Ipv4Nat::SetInside (uint32_t interfaceIndex)
 }
 
 void
-Ipv4Nat::SetOutside (uint32_t interfaceIndex)
+Ipv4Nat::SetOutside (int32_t interfaceIndex)
 {
 
   NS_LOG_FUNCTION (this << interfaceIndex);
@@ -330,6 +328,17 @@ Ipv4Nat::AddStaticRule (const Ipv4StaticNatRule& rule)
   NS_LOG_FUNCTION (this);
   m_statictable.push_front (rule);
   NS_LOG_DEBUG ("list has " << m_statictable.size () << " elements after pushing");
+  NS_ASSERT_MSG (m_ipv4, "Forgot to aggregate Ipv4Nat to Node");
+  if (m_ipv4->GetInterfaceForAddress (rule.GetGlobalIp ()) != -1)
+    {
+      NS_LOG_WARN ("Adding node's own IP address as the global NAT address");
+      return;
+    }
+  NS_ASSERT_MSG (m_outsideInterface > -1, "Forgot to assign outside interface");
+  // Add address to outside interface so that node will proxy ARP for it
+  Ipv4Mask outsideMask = m_ipv4->GetAddress (m_outsideInterface, 0).GetMask ();
+  Ipv4InterfaceAddress natAddress (rule.GetGlobalIp (), outsideMask);
+  m_ipv4->AddAddress (m_outsideInterface, natAddress);
 }
 
 Ipv4StaticNatRule::Ipv4StaticNatRule (Ipv4Address localip, uint16_t locprt, Ipv4Address globalip,uint16_t gloprt, uint16_t protocol)

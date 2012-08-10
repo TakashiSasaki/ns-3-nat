@@ -125,9 +125,9 @@ public:
 
   void AddPortPool (uint16_t, uint16_t); //port range
 
-  void SetInside (uint32_t interfaceIndex);
+  void SetInside (int32_t interfaceIndex);
 
-  void SetOutside (uint32_t interfaceIndex);
+  void SetOutside (int32_t interfaceIndex);
 
   typedef std::list<Ipv4StaticNatRule> StaticNatRules;
   typedef std::list<Ipv4DynamicNatRule> DynamicNatRules;
@@ -145,8 +145,8 @@ private:
 
   StaticNatRules m_statictable;
   DynamicNatRules m_dynamictable;
-  uint32_t m_insideInterface;
-  uint32_t m_outsideInterface;
+  int32_t m_insideInterface;
+  int32_t m_outsideInterface;
 
 };
 

@@ -56,6 +56,8 @@ main (int argc, char *argv[])
   stack.Install (first);
   stack.Install (second.Get(1));
 
+  // n0 <--------------------> n1 <-----------------------> n2
+  // 192.168.1.1   192.168.1.2    203.82.48.1  203.82.48.2
   Ipv4AddressHelper address1;
   address1.SetBase ("192.168.1.0", "255.255.255.0");
   
@@ -65,20 +67,19 @@ main (int argc, char *argv[])
   Ipv4InterfaceContainer firstInterfaces = address1.Assign (devices1);
   Ipv4InterfaceContainer secondInterfaces = address2.Assign (devices2);
 
-  Ptr <Ipv4> ipv4 = first.Get (0)->GetObject<Ipv4> ();
-  std::cout << "==============Number of interfaces on node " << first.Get (0)->GetId() << ": " << ipv4->GetNInterfaces () << std::endl;
+  Ptr <Ipv4> ipv4 = second.Get (0)->GetObject<Ipv4> ();
   
-  Ptr <Ipv4L3Protocol> ipv4L3 = DynamicCast <Ipv4L3Protocol>(first.Get (0)->GetObject<Ipv4> ());
+  Ptr <Ipv4L3Protocol> ipv4L3 = DynamicCast <Ipv4L3Protocol>(second.Get (0)->GetObject<Ipv4> ());
   Ptr<Ipv4Nat> nat = CreateObject<Ipv4Nat> ();
 
   // Aggregate the NAT object to a node; this will hook it to Ipv4Netfilter
-  first.Get (0)->AggregateObject (nat);
+  second.Get (0)->AggregateObject (nat);
   nat->SetInside (1);
-  nat->SetOutside (3);
+  nat->SetOutside (2);
   
   // Add rules here
   //
-  Ipv4StaticNatRule rule (Ipv4Address ("192.168.1.1"), Ipv4Address ("10.1.1.1"));
+  Ipv4StaticNatRule rule (Ipv4Address ("192.168.1.1"), Ipv4Address ("203.82.48.100"));
   nat->AddStaticRule (rule);
   
   //Ipv4StaticNatRule rule2 (Ipv4Address ("192.168.2.3"), uint16_t (80),Ipv4Address ("10.1.3.4"), uint16_t (8080), uint16_t (0));
