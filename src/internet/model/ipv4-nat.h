@@ -88,34 +88,32 @@ public:
   Ipv4Nat ();
 
   /**
-   * \brief Print the NAT translation table
+   * \brief Add rules to the NAT Tables.
    *
-   * \param stream the ostream the NAT table is printed to
+   * \param rule NAT rule reference reference to the NAT rule to be added
    */
 
   void AddDynamicRule (const Ipv4DynamicNatRule& rule);
-
   void AddStaticRule (const Ipv4StaticNatRule& rule);
+
   /**
    * \return number of NAT rules
    */
   uint32_t GetNStaticRules (void) const;
-
-  Ipv4StaticNatRule GetStaticRule (uint32_t index) const;
-
   uint32_t GetNDynamicRules (void) const;
+
   /**
    * \param index index in table specifying rule to return
    * \return rule at specified index
    */
-  //Ipv4NatRule GetRule (uint32_t index) const;
+  Ipv4StaticNatRule GetStaticRule (uint32_t index) const;
 
   /**
    * \param index index in table specifying rule to remove
    */
   void RemoveStaticRule (uint32_t index);
-
   void RemoveDynamicRule (uint32_t index);
+
   /**
    * \brief Print the NAT translation table
    *
@@ -123,12 +121,28 @@ public:
    */
   void PrintTable (Ptr<OutputStreamWrapper> stream) const;
 
+  /**
+   * \brief Add the address pool for Dynamic NAT
+   *
+   * \param Ipv4address the addresses to be added in the Dynamic Nat pool 
+   * \param Ipv4Mask the mask of the pool of network address given
+   */
   void AddAddressPool (Ipv4Address, Ipv4Mask);
 
+  /**
+   * \brief Add the port pool for Dynamic NAT
+   *
+   * \param     numbers for the port pool
+   * \param port 
+   */
   void AddPortPool (uint16_t, uint16_t); //port range
 
+  /**
+   * \brief Set the specific interfaces for the node
+   *
+   * \param interfaceIndex interface index number of the interface on the node
+   */
   void SetInside (int32_t interfaceIndex);
-
   void SetOutside (int32_t interfaceIndex);
 
   typedef std::list<Ipv4StaticNatRule> StaticNatRules;
