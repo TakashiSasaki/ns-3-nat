@@ -156,7 +156,9 @@ private:
   //bool m_isConnected;
 
   Ptr<Ipv4> m_ipv4;
-  uint32_t DoNat (Hooks_t hookNumber, Ptr<Packet> p,
+  uint32_t DoNatPreRouting (Hooks_t hookNumber, Ptr<Packet> p,
+                           Ptr<NetDevice> in, Ptr<NetDevice> out, ContinueCallback& ccb);
+  uint32_t DoNatPostRouting (Hooks_t hookNumber, Ptr<Packet> p,
                            Ptr<NetDevice> in, Ptr<NetDevice> out, ContinueCallback& ccb);
 
   StaticNatRules m_statictable;
