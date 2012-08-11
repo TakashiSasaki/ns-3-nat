@@ -218,7 +218,7 @@ Ipv4Nat::PrintTable (Ptr<OutputStreamWrapper> stream) const
 
 uint32_t
 Ipv4Nat::DoNatPreRouting (Hooks_t hookNumber, Ptr<Packet> p,
-                Ptr<NetDevice> in, Ptr<NetDevice> out, ContinueCallback& ccb)
+                          Ptr<NetDevice> in, Ptr<NetDevice> out, ContinueCallback& ccb)
 {
   NS_LOG_FUNCTION (this << p << hookNumber << in << out);
 
@@ -233,7 +233,7 @@ Ipv4Nat::DoNatPreRouting (Hooks_t hookNumber, Ptr<Packet> p,
   NS_LOG_DEBUG ("Output device " << m_ipv4->GetInterfaceForDevice (out) << " outside interface " << m_outsideInterface);
   // XXX consider PeekHeader here
   p->RemoveHeader (ipHeader);
-  if (m_ipv4->GetInterfaceForDevice (in) == m_outsideInterface)
+  if (m_ipv4->GetInterfaceForDevice (in) == m_insideInterface)
     {
       // outside interface is the input interface, NAT the destination addr
       NS_LOG_DEBUG ("evaluating packet with src " << ipHeader.GetSource () << " dst " << ipHeader.GetDestination ());
@@ -246,34 +246,52 @@ Ipv4Nat::DoNatPreRouting (Hooks_t hookNumber, Ptr<Packet> p,
             {
               NS_LOG_DEBUG ("Rule match");
               ipHeader.SetDestination ((*i).GetLocalIp ());
-              NS_LOG_DEBUG ("Evaluation the rule with local" << (*i).GetLocalPort () << " global " << (*i).GetGlobalPort ());
 
-              {
-                if (ipHeader.GetProtocol () == IPPROTO_TCP)
-                  {
-                    TcpHeader tcpHeader;
+              if ((*i).GetProtocol () == 0)
+                {
+                  break;
+                }
 
-                    p->RemoveHeader (tcpHeader);
+              else
+                {
+                  NS_LOG_DEBUG ("Evaluation the rule with local" << (*i).GetLocalPort () << " global " << (*i).GetGlobalPort ());
 
-                    tcpHeader.SetDestinationPort ((*i).GetLocalPort ());
+                  if (ipHeader.GetProtocol () == 6 && (*i).GetProtocol () == 6)
 
-                    p->AddHeader (tcpHeader);
+                    {
+                      TcpHeader tcpHeader;
 
-                  }
-                else
-                  {
-                    UdpHeader udpHeader;
+                      p->RemoveHeader (tcpHeader);
 
-                    p->RemoveHeader (udpHeader);
+                      if (tcpHeader.GetDestinationPort () == (*i).GetGlobalPort ())
+                        {
 
-                    udpHeader.SetSourcePort ((*i).GetLocalPort ());
+                          tcpHeader.SetDestinationPort ((*i).GetLocalPort ());
+                        }
 
-                    p->AddHeader (udpHeader);
-                  }
+                      p->AddHeader (tcpHeader);
 
-              }
+                    }
+                  else
+                  if (ipHeader.GetProtocol () == 17 && (*i).GetProtocol () == 17)
+                    {
+                      UdpHeader udpHeader;
+
+                      p->RemoveHeader (udpHeader);
+
+                      if (udpHeader.GetDestinationPort () == (*i).GetGlobalPort ())
+                        {
+                          udpHeader.SetDestinationPort ((*i).GetLocalPort ());
+                        }
+
+                      p->AddHeader (udpHeader);
+                    }
+
+                }
 
               break;
+
+
             }
         }
     }
@@ -284,7 +302,7 @@ Ipv4Nat::DoNatPreRouting (Hooks_t hookNumber, Ptr<Packet> p,
 
 uint32_t
 Ipv4Nat::DoNatPostRouting (Hooks_t hookNumber, Ptr<Packet> p,
-                Ptr<NetDevice> in, Ptr<NetDevice> out, ContinueCallback& ccb)
+                           Ptr<NetDevice> in, Ptr<NetDevice> out, ContinueCallback& ccb)
 {
   NS_LOG_FUNCTION (this << p << hookNumber << in << out);
 
@@ -315,39 +333,48 @@ Ipv4Nat::DoNatPostRouting (Hooks_t hookNumber, Ptr<Packet> p,
             {
               NS_LOG_DEBUG ("Rule match");
               ipHeader.SetSource ((*i).GetGlobalIp ());
-              if ((*i).GetLocalPort () && (*i).GetGlobalPort ())
-                {
 
-                  NS_LOG_DEBUG ("Evaluation the rule with local" << (*i).GetLocalPort () << " global " << (*i).GetGlobalPort ());
+              if ((*i).GetProtocol () == 0)
+                {
+                  break;
                 }
 
-              {
-                if (ipHeader.GetProtocol () == IPPROTO_TCP)
-                  {
-                    TcpHeader tcpHeader;
+              else
+                {
+                  NS_LOG_DEBUG ("Evaluation the rule with local" << (*i).GetLocalPort () << " global " << (*i).GetGlobalPort ());
 
-                    p->RemoveHeader (tcpHeader);
+                  if (ipHeader.GetProtocol () == 6 && (*i).GetProtocol () == 6)
 
-                    tcpHeader.SetSourcePort ((*i).GetLocalPort ());
+                    {
+                      TcpHeader tcpHeader;
 
-                    p->AddHeader (tcpHeader);
+                      p->RemoveHeader (tcpHeader);
 
-                  }
-                else
-                  {
-                    UdpHeader udpHeader;
+                      if (tcpHeader.GetSourcePort () == (*i).GetLocalPort ())
+                        {
 
-                    p->RemoveHeader (udpHeader);
+                          tcpHeader.SetSourcePort ((*i).GetGlobalPort ());
+                        }
 
-                    udpHeader.SetSourcePort ((*i).GetGlobalPort ());
+                      p->AddHeader (tcpHeader);
 
-                    p->AddHeader (udpHeader);
-                  }
+                    }
+                  else
+                  if (ipHeader.GetProtocol () == 17 && (*i).GetProtocol () == 17)
+                    {
+                      UdpHeader udpHeader;
 
-              }
+                      p->RemoveHeader (udpHeader);
 
+                      if (udpHeader.GetSourcePort () == (*i).GetLocalPort ())
+                        {
+                          udpHeader.SetSourcePort ((*i).GetGlobalPort ());
+                        }
 
+                      p->AddHeader (udpHeader);
+                    }
 
+                }
 
               break;
             }
@@ -422,7 +449,9 @@ Ipv4StaticNatRule::Ipv4StaticNatRule (Ipv4Address localip, uint16_t locprt, Ipv4
   m_globaladdr = globalip;
   m_localport = locprt;
   m_globalport = gloprt;
+  NS_ASSERT (protocol == 0 || protocol == 6 || protocol == 17);
   m_protocol = protocol;
+
 }
 
 // This version is used for no port restrictions
@@ -433,6 +462,7 @@ Ipv4StaticNatRule::Ipv4StaticNatRule (Ipv4Address localip, Ipv4Address globalip)
   m_globaladdr = globalip;
   m_localport = 0;
   m_globalport = 0;
+  m_protocol = 0;
 }
 
 Ipv4Address
