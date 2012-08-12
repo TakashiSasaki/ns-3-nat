@@ -67,13 +67,10 @@ main (int argc, char *argv[])
   Ipv4InterfaceContainer firstInterfaces = address1.Assign (devices1);
   Ipv4InterfaceContainer secondInterfaces = address2.Assign (devices2);
 
-  Ptr <Ipv4> ipv4 = second.Get (0)->GetObject<Ipv4> ();
-  
-  Ptr <Ipv4L3Protocol> ipv4L3 = DynamicCast <Ipv4L3Protocol>(second.Get (0)->GetObject<Ipv4> ());
-  Ptr<Ipv4Nat> nat = CreateObject<Ipv4Nat> ();
-
-  // Aggregate the NAT object to a node; this will hook it to Ipv4Netfilter
-  second.Get (0)->AggregateObject (nat);
+  Ipv4NatHelper natHelper;
+  // The zeroth element of the second node container is the NAT node
+  Ptr<Ipv4Nat> nat = natHelper.Install (second.Get (0));
+  // Configure which of its Ipv4Interfaces are the inside and outside interfaces
   nat->SetInside (1);
   nat->SetOutside (2);
   
