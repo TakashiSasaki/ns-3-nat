@@ -43,6 +43,13 @@ class Packet;
 class NetDevice;
 class OutputStreamWrapper;
 
+/**
+  * \brief Implementation of the Static NAT Rule.
+  *
+  * This implements the basic static NAT rule structure with some
+  * methods to access their attributes.
+  */
+
 class Ipv4StaticNatRule
 {
 public:
@@ -69,6 +76,13 @@ private:
 };
 
 
+/**
+  * \brief Implementation of the Static NAT Rule.
+  *
+  * This implements the basic static NAT rule structure with some
+  * methods to access their attributes.
+  */
+
 class Ipv4DynamicNatRule
 {
 public:
@@ -79,6 +93,13 @@ private:
   Ipv4Mask m_localmask;
   // private data members
 };
+
+/**
+  * \brief Implementation of Nat
+  *
+  * This implements NAT functionality over a Netfilter framework.
+  * The NAT is of two major types (static and dynamic).
+  */
 
 class Ipv4Nat : public Object
 {
@@ -91,6 +112,9 @@ public:
    * \brief Add rules to the NAT Tables.
    *
    * \param rule NAT rule reference reference to the NAT rule to be added
+   *
+   * Adds a NAT rule to the lists that have been dedicated for the specific types
+   * of rules.
    */
 
   void AddDynamicRule (const Ipv4DynamicNatRule& rule);
@@ -98,6 +122,8 @@ public:
 
   /**
    * \return number of NAT rules
+   *
+   * Returns the number of rules that are currently listed on the list.
    */
   uint32_t GetNStaticRules (void) const;
   uint32_t GetNDynamicRules (void) const;
@@ -105,11 +131,15 @@ public:
   /**
    * \param index index in table specifying rule to return
    * \return rule at specified index
+   *
+   * Returns the specific Static NAT rule that is stored on the given index.
    */
   Ipv4StaticNatRule GetStaticRule (uint32_t index) const;
 
   /**
    * \param index index in table specifying rule to remove
+   *
+   * Removes the NAT rule that is stored on the given index.
    */
   void RemoveStaticRule (uint32_t index);
   void RemoveDynamicRule (uint32_t index);
@@ -118,13 +148,15 @@ public:
    * \brief Print the NAT translation table
    *
    * \param stream the ostream the NAT table is printed to
+   *
+   * Prints out the NAT table.
    */
   void PrintTable (Ptr<OutputStreamWrapper> stream) const;
 
   /**
    * \brief Add the address pool for Dynamic NAT
    *
-   * \param Ipv4address the addresses to be added in the Dynamic Nat pool 
+   * \param Ipv4address the addresses to be added in the Dynamic Nat pool
    * \param Ipv4Mask the mask of the pool of network address given
    */
   void AddAddressPool (Ipv4Address, Ipv4Mask);
@@ -133,7 +165,7 @@ public:
    * \brief Add the port pool for Dynamic NAT
    *
    * \param     numbers for the port pool
-   * \param port 
+   * \param port
    */
   void AddPortPool (uint16_t, uint16_t); //port range
 
@@ -156,10 +188,38 @@ private:
   //bool m_isConnected;
 
   Ptr<Ipv4> m_ipv4;
+
+  /**
+    * \param hook The hook number e.g., NF_INET_PRE_ROUTING
+    * \param p Packet that is handed over to the callback chain for this hook
+    * \param in NetDevice which received the packet
+    * \param out The outgoing NetDevice
+    * \param ccb If not NULL, this callback will be invoked once the hook
+    * callback chain has finished processing
+    *
+    * \returns Netfilter verdict for the Packet. e.g., NF_ACCEPT, NF_DROP etc.
+    *
+    *  This method is invoke to perform NAT of the packet at the NF_INET_PRE_ROUTING stage.
+    */
+
   uint32_t DoNatPreRouting (Hooks_t hookNumber, Ptr<Packet> p,
-                           Ptr<NetDevice> in, Ptr<NetDevice> out, ContinueCallback& ccb);
+                            Ptr<NetDevice> in, Ptr<NetDevice> out, ContinueCallback& ccb);
+
+  /**
+     * \param hook The hook number e.g., NF_INET_PRE_ROUTING
+     * \param p Packet that is handed over to the callback chain for this hook
+     * \param in NetDevice which received the packet
+     * \param out The outgoing NetDevice
+     * \param ccb If not NULL, this callback will be invoked once the hook
+     * callback chain has finished processing
+     *
+     * \returns Netfilter verdict for the Packet. e.g., NF_ACCEPT, NF_DROP etc.
+     *
+     *  This method is invoke to perform NAT of the packet at the NF_INET_POST_ROUTING stage.
+     */
+
   uint32_t DoNatPostRouting (Hooks_t hookNumber, Ptr<Packet> p,
-                           Ptr<NetDevice> in, Ptr<NetDevice> out, ContinueCallback& ccb);
+                             Ptr<NetDevice> in, Ptr<NetDevice> out, ContinueCallback& ccb);
 
   StaticNatRules m_statictable;
   DynamicNatRules m_dynamictable;
