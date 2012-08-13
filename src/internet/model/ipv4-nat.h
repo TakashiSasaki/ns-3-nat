@@ -53,15 +53,47 @@ class OutputStreamWrapper;
 class Ipv4StaticNatRule
 {
 public:
+
+/**
+  *\brief Initialization of the static NAT rule with specific protcol port restricitions.
+  *\param localip The ip address of the host on the local network
+  *\param locprt The source port number of the host on the local network
+  *\param globalip The translated ip address on the global network
+  *\param gloprt The translated source port number of the host on the global network
+  *\param protocol The protocol used in the connection
+  */
   Ipv4StaticNatRule (Ipv4Address localip, uint16_t locprt, Ipv4Address globalip,uint16_t gloprt, uint16_t protocol);
 
-  // This version is used for no port restrictions
+/**
+  *\brief This version is used for no port restrictions
+  *\param localip The ip address of the host on the local network
+  *\param globalip The translated ip address on the global network
+  */
   Ipv4StaticNatRule (Ipv4Address localip, Ipv4Address globalip);
 
+/**
+  *\return The local host Ipv4Address
+  */
   Ipv4Address GetLocalIp () const;
+
+/**
+  *\return The translated global Ipv4Address
+  */
   Ipv4Address GetGlobalIp () const;
+
+/**
+  *\return The source port number of the host on the local network
+  */
   uint16_t GetLocalPort () const;
+
+/**
+  *\return The translated source port number of the host on the global network
+  */
   uint16_t GetGlobalPort () const;
+
+/**
+  *\return The Protocol the rule is specific to.
+  */
   uint16_t GetProtocol () const;
 
 
@@ -86,6 +118,13 @@ private:
 class Ipv4DynamicNatRule
 {
 public:
+
+/**
+  *\brief Used to initialize the pool of ip addresses to translate
+  *\param localnet The local network ip to be translated
+  *\param localmask The mask of the local network
+  */
+
   Ipv4DynamicNatRule (Ipv4Address localnet, Ipv4Mask localmask);
 
 private:
@@ -109,23 +148,40 @@ public:
   Ipv4Nat ();
 
   /**
-   * \brief Add rules to the NAT Tables.
+   * \brief Add rules to the Dynamic NAT Table.
    *
-   * \param rule NAT rule reference reference to the NAT rule to be added
+   * \param rule Dynamic NAT rule reference reference to the NAT rule to be added
    *
    * Adds a NAT rule to the lists that have been dedicated for the specific types
    * of rules.
    */
 
   void AddDynamicRule (const Ipv4DynamicNatRule& rule);
+
+  /**
+   * \brief Add rules to the Static NAT Table.
+   *
+   * \param rule Static NAT rule reference reference to the NAT rule to be added
+   *
+   * Adds a Static NAT rule to the lists that have been dedicated for the specific types
+   * of rules.
+   */
+
   void AddStaticRule (const Ipv4StaticNatRule& rule);
 
   /**
-   * \return number of NAT rules
+   * \return number of Static NAT rules
    *
    * Returns the number of rules that are currently listed on the list.
    */
   uint32_t GetNStaticRules (void) const;
+
+  /**
+   * \return number of Dynamic NAT rules
+   *
+   * Returns the number of rules that are currently listed on the list.
+   */
+
   uint32_t GetNDynamicRules (void) const;
 
   /**
@@ -139,9 +195,15 @@ public:
   /**
    * \param index index in table specifying rule to remove
    *
-   * Removes the NAT rule that is stored on the given index.
+   * Removes the Static NAT rule that is stored on the given index.
    */
   void RemoveStaticRule (uint32_t index);
+
+  /**
+   * \param index index in table specifying rule to remove
+   *
+   * Removes the Dynamic NAT rule that is stored on the given index.
+   */
   void RemoveDynamicRule (uint32_t index);
 
   /**
@@ -164,17 +226,23 @@ public:
   /**
    * \brief Add the port pool for Dynamic NAT
    *
-   * \param     numbers for the port pool
+   * \param numbers for the port pool
    * \param port
    */
   void AddPortPool (uint16_t, uint16_t); //port range
 
   /**
-   * \brief Set the specific interfaces for the node
+   * \brief Set the inside interface for the node
    *
    * \param interfaceIndex interface index number of the interface on the node
    */
   void SetInside (int32_t interfaceIndex);
+
+  /**
+   * \brief Set the outside interfaces for the node
+   *
+   * \param interfaceIndex interface index number of the interface on the node
+   */
   void SetOutside (int32_t interfaceIndex);
 
   typedef std::list<Ipv4StaticNatRule> StaticNatRules;
