@@ -24,17 +24,17 @@ using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE ("NetfilterExample");
 
-  int 
+int
 main (int argc, char *argv[])
 {
-  LogComponentEnable("UdpEchoClientApplication", LOG_LEVEL_INFO);
-  LogComponentEnable("UdpEchoServerApplication", LOG_LEVEL_INFO);
+  LogComponentEnable ("UdpEchoClientApplication", LOG_LEVEL_INFO);
+  LogComponentEnable ("UdpEchoServerApplication", LOG_LEVEL_INFO);
 
   //uint16_t port = 9;
 
   // Desired topology:  n0 <----> n1 <-----> n2
   // n0 and n1 in first container, n1 and n2 in second
-  
+
   NodeContainer first;
   first.Create (2);
 
@@ -48,19 +48,20 @@ main (int argc, char *argv[])
 
   NetDeviceContainer devices1;
   devices1 = pointToPoint.Install (first);
-  
+
   NetDeviceContainer devices2;
   devices2 = pointToPoint.Install (second);
 
   InternetStackHelper stack;
   stack.Install (first);
-  stack.Install (second.Get(1));
+  stack.Install (second.Get (1));
 
+  //        private address    NAT      public address
   // n0 <--------------------> n1 <-----------------------> n2
   // 192.168.1.1   192.168.1.2    203.82.48.1  203.82.48.2
   Ipv4AddressHelper address1;
   address1.SetBase ("192.168.1.0", "255.255.255.0");
-  
+
   Ipv4AddressHelper address2;
   address2.SetBase ("203.82.48.0", "255.255.255.0");
 
@@ -70,34 +71,25 @@ main (int argc, char *argv[])
   Ipv4NatHelper natHelper;
   // The zeroth element of the second node container is the NAT node
   Ptr<Ipv4Nat> nat = natHelper.Install (second.Get (0));
-  // Configure which of its Ipv4Interfaces are the inside and outside interfaces
+  // Configure which of its Ipv4Interfaces are inside and outside interfaces
+  // The zeroth Ipv4Interface is reserved for the loopback interface
+  // Hence, the interface facing n0 is numbered "1" and the interface
+  // facing n2 is numbered "2" (since it was assigned in the second step above)
   nat->SetInside (1);
   nat->SetOutside (2);
-  
-  // Add rules here
-  //
- //Ipv4StaticNatRule rule (Ipv4Address ("192.168.1.1"), Ipv4Address ("203.82.48.100"));
-// nat->AddStaticRule (rule);
-  
- Ipv4StaticNatRule rule2 (Ipv4Address ("192.168.1.1"), uint16_t (49153),Ipv4Address ("203.82.48.100"), uint16_t (8080), uint16_t (17));
+
+  // Add a rule here to map outbound connections from n0, port 49153, UDP
+  Ipv4StaticNatRule rule2 (Ipv4Address ("192.168.1.1"), 49153, Ipv4Address ("203.82.48.100"), 8080, IPPROTO_UDP);
   nat->AddStaticRule (rule2);
 
-  //Ipv4StaticNatRule rule2 (Ipv4Address ("192.168.0.2"), Ipv4Address ("10.1.2.4"));
- // nat->AddStaticRule (rule);
-
-
   // Now print them out
- 
-  Ptr<OutputStreamWrapper> natStream = Create<OutputStreamWrapper> ("nat.routes", std::ios::out);
-  
+  Ptr<OutputStreamWrapper> natStream = Create<OutputStreamWrapper> ("nat.rules", std::ios::out);
   nat->PrintTable (natStream);
- 
-  //nat->RemoveStaticRule (1);
-  //nat->PrintTable (natStream);
 
-
+  // Configure applications to generate traffic
   UdpEchoServerHelper echoServer (9);
 
+  // This application corresponds to the first rule
   ApplicationContainer serverApps = echoServer.Install (second.Get (1));
   serverApps.Start (Seconds (1.0));
   serverApps.Stop (Seconds (10.0));
@@ -111,9 +103,9 @@ main (int argc, char *argv[])
   clientApps.Start (Seconds (2.0));
   clientApps.Stop (Seconds (10.0));
 
+  // Prepare to run the simulation
   Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
-
-  pointToPoint.EnablePcapAll ("netfilter", false);
+  pointToPoint.EnablePcapAll ("ipv4-nat", false);
 
   Simulator::Run ();
   Simulator::Destroy ();
