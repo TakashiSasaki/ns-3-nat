@@ -231,134 +231,65 @@ Ipv4Nat::DoNatPreRouting (Hooks_t hookNumber, Ptr<Packet> p,
 
   NS_LOG_DEBUG ("Input device " << m_ipv4->GetInterfaceForDevice (in) << " inside interface " << m_insideInterface);
   NS_LOG_DEBUG ("Output device " << m_ipv4->GetInterfaceForDevice (out) << " outside interface " << m_outsideInterface);
-  // XXX consider PeekHeader here
   p->RemoveHeader (ipHeader);
-  if (m_ipv4->GetInterfaceForDevice (in) == m_insideInterface)
-    {
-      // inside interface is the input interface, NAT the source addr
-      NS_LOG_DEBUG ("evaluating packet with src " << ipHeader.GetSource () << " dst " << ipHeader.GetDestination ());
-      Ipv4Address srcAddress = ipHeader.GetSource ();
-
-      for (StaticNatRules::const_iterator i = m_statictable.begin ();
-           i != m_statictable.end (); i++)
-        {
-          if (srcAddress == (*i).GetLocalIp ())
-            {
-              NS_LOG_DEBUG ("Rule match");
-              ipHeader.SetSource ((*i).GetGlobalIp ());
-
-              if ((*i).GetProtocol () == 0)
-                {
-                  break;
-                }
-
-              else
-                {
-                  NS_LOG_DEBUG ("evaluating rule with local port " << (*i).GetLocalPort () << " global port " << (*i).GetGlobalPort ());
-
-                  if (ipHeader.GetProtocol () == IPPROTO_TCP && (*i).GetProtocol () == IPPROTO_TCP)
-
-                    {
-                      TcpHeader tcpHeader;
-
-                      p->RemoveHeader (tcpHeader);
-
-                      if (tcpHeader.GetSourcePort () == (*i).GetLocalPort ())
-                        {
-
-                          tcpHeader.SetSourcePort ((*i).GetGlobalPort ());
-                        }
-
-                      p->AddHeader (tcpHeader);
-
-                    }
-                  else
-                  if (ipHeader.GetProtocol () == IPPROTO_UDP && (*i).GetProtocol () == IPPROTO_UDP)
-                    {
-                      UdpHeader udpHeader;
-
-                      p->RemoveHeader (udpHeader);
-
-                      if (udpHeader.GetSourcePort () == (*i).GetLocalPort ())
-                        {
-                          udpHeader.SetSourcePort ((*i).GetGlobalPort ());
-                        }
-
-                      p->AddHeader (udpHeader);
-                    }
-
-                }
-
-              break;
-
-
-            }
-        }
-    }
   if (m_ipv4->GetInterfaceForDevice (in) == m_outsideInterface)
     {
       // outside interface is the input interface, NAT the destination addr
+      // so that the NAT does not try to locally deliver the packet
       NS_LOG_DEBUG ("evaluating packet with src " << ipHeader.GetSource () << " dst " << ipHeader.GetDestination ());
       Ipv4Address destAddress = ipHeader.GetDestination ();
 
       for (StaticNatRules::const_iterator i = m_statictable.begin ();
            i != m_statictable.end (); i++)
         {
-          if (destAddress == (*i).GetGlobalIp ())
+          if (destAddress != (*i).GetGlobalIp ())
             {
-              NS_LOG_DEBUG ("Rule match");
+              NS_LOG_DEBUG ("Skipping rule with global IP " << (*i).GetGlobalIp ());
+              continue;
+            }
+          if ((*i).GetGlobalPort () == 0)
+            {
+              NS_LOG_DEBUG ("Rule match with a non-port-specific rule");
               ipHeader.SetDestination ((*i).GetLocalIp ());
+              p->AddHeader (ipHeader);
+              return 0;
+            }
+          else 
+            {
+              NS_LOG_DEBUG ("evaluating rule with local port " << (*i).GetLocalPort () << " global port " << (*i).GetGlobalPort ());
 
-              if ((*i).GetProtocol () == 0)
+              if (ipHeader.GetProtocol () == IPPROTO_TCP && 
+                  (((*i).GetProtocol () == IPPROTO_TCP) || 
+                    (*i).GetProtocol () == 0))
                 {
-                  break;
+                  TcpHeader tcpHeader;
+                  p->RemoveHeader (tcpHeader);
+                  if (tcpHeader.GetDestinationPort () == (*i).GetGlobalPort ())
+                    {
+                      tcpHeader.SetDestinationPort ((*i).GetLocalPort ());
+                    }
+                  p->AddHeader (tcpHeader);
                 }
-
-              else
+              else if (ipHeader.GetProtocol () == IPPROTO_UDP && 
+                  (((*i).GetProtocol () == IPPROTO_UDP) || 
+                    (*i).GetProtocol () == 0))
                 {
-                  NS_LOG_DEBUG ("evaluating rule with local port " << (*i).GetLocalPort () << " global port " << (*i).GetGlobalPort ());
-
-                  if (ipHeader.GetProtocol () == IPPROTO_TCP && (*i).GetProtocol () == IPPROTO_TCP)
-
+                  UdpHeader udpHeader;
+                  p->RemoveHeader (udpHeader);
+                  if (udpHeader.GetDestinationPort () == (*i).GetGlobalPort ())
                     {
-                      TcpHeader tcpHeader;
-
-                      p->RemoveHeader (tcpHeader);
-
-                      if (tcpHeader.GetDestinationPort () == (*i).GetGlobalPort ())
-                        {
-
-                          tcpHeader.SetDestinationPort ((*i).GetLocalPort ());
-                        }
-
-                      p->AddHeader (tcpHeader);
-
+                      udpHeader.SetDestinationPort ((*i).GetLocalPort ());
                     }
-                  else
-                  if (ipHeader.GetProtocol () == IPPROTO_UDP && (*i).GetProtocol () == IPPROTO_UDP)
-                    {
-                      UdpHeader udpHeader;
-
-                      p->RemoveHeader (udpHeader);
-
-                      if (udpHeader.GetDestinationPort () == (*i).GetGlobalPort ())
-                        {
-                          udpHeader.SetDestinationPort ((*i).GetLocalPort ());
-                        }
-
-                      p->AddHeader (udpHeader);
-                    }
-
+                  p->AddHeader (udpHeader);
                 }
-
-              break;
-
-
+              NS_LOG_DEBUG ("Rule match with a port-specific rule");
+              ipHeader.SetDestination ((*i).GetLocalIp ());
+              p->AddHeader (ipHeader);
+              return 0;
             }
         }
     }
   p->AddHeader (ipHeader);
-
   return 0;
 }
 
@@ -377,74 +308,64 @@ Ipv4Nat::DoNatPostRouting (Hooks_t hookNumber, Ptr<Packet> p,
 
   NS_LOG_DEBUG ("Input device " << m_ipv4->GetInterfaceForDevice (in) << " inside interface " << m_insideInterface);
   NS_LOG_DEBUG ("Output device " << m_ipv4->GetInterfaceForDevice (out) << " outside interface " << m_outsideInterface);
-  // XXX consider PeekHeader here
   p->RemoveHeader (ipHeader);
   if (m_ipv4->GetInterfaceForDevice (out) == m_outsideInterface)
     {
-      // matching output interface
+      // matching output interface, consider whether to NAT the source
+      // address and port
       NS_LOG_DEBUG ("evaluating packet with src " << ipHeader.GetSource () << " dst " << ipHeader.GetDestination ());
-
       Ipv4Address srcAddress = ipHeader.GetSource ();
 
       for (StaticNatRules::const_iterator i = m_statictable.begin ();
-           i != m_statictable.end ();
-           i++)
+           i != m_statictable.end (); i++)
         {
-          NS_LOG_DEBUG ("Evaluating rule with local " << (*i).GetLocalIp () << " global " << (*i).GetGlobalIp ());
-          if (srcAddress == (*i).GetLocalIp ())
+          if (srcAddress != (*i).GetLocalIp ())
             {
-              NS_LOG_DEBUG ("Rule match");
-              ipHeader.SetSource ((*i).GetGlobalIp ());
-
-              if ((*i).GetProtocol () == 0)
-                {
-                  break;
-                }
-
-              else
-                {
-                  NS_LOG_DEBUG ("evaluating rule with local port " << (*i).GetLocalPort () << " global " << (*i).GetGlobalPort ());
-
-                  if (ipHeader.GetProtocol () == IPPROTO_TCP && (*i).GetProtocol () == IPPROTO_TCP)
-
-                    {
-                      TcpHeader tcpHeader;
-
-                      p->RemoveHeader (tcpHeader);
-
-                      if (tcpHeader.GetSourcePort () == (*i).GetLocalPort ())
-                        {
-
-                          tcpHeader.SetSourcePort ((*i).GetGlobalPort ());
-                        }
-
-                      p->AddHeader (tcpHeader);
-
-                    }
-                  else
-                  if (ipHeader.GetProtocol () == IPPROTO_UDP && (*i).GetProtocol () == IPPROTO_UDP)
-                    {
-                      UdpHeader udpHeader;
-
-                      p->RemoveHeader (udpHeader);
-
-                      if (udpHeader.GetSourcePort () == (*i).GetLocalPort ())
-                        {
-                          udpHeader.SetSourcePort ((*i).GetGlobalPort ());
-                        }
-
-                      p->AddHeader (udpHeader);
-                    }
-
-                }
-
-              break;
+              NS_LOG_DEBUG ("Skipping rule with local IP " << (*i).GetLocalIp ());
+              continue;
             }
-
+          if ((*i).GetLocalPort () == 0)
+            {
+              NS_LOG_DEBUG ("Rule match with a non-port-specific rule");
+              ipHeader.SetSource ((*i).GetGlobalIp ());
+              p->AddHeader (ipHeader);
+              return 0;
+            }
+          else
+            {
+              NS_LOG_DEBUG ("Evaluating rule with local port " << (*i).GetLocalPort () << " global port " << (*i).GetGlobalPort ());
+              if (ipHeader.GetProtocol () == IPPROTO_TCP && 
+                  (((*i).GetProtocol () == IPPROTO_TCP) || 
+                    (*i).GetProtocol () == 0))
+                {
+                  TcpHeader tcpHeader;
+                  p->RemoveHeader (tcpHeader);
+                  if (tcpHeader.GetSourcePort () == (*i).GetLocalPort ())
+                    {
+                      tcpHeader.SetSourcePort ((*i).GetGlobalPort ());
+                    }
+                  p->AddHeader (tcpHeader);
+                }
+              else if (ipHeader.GetProtocol () == IPPROTO_UDP && 
+                  (((*i).GetProtocol () == IPPROTO_UDP) || 
+                    (*i).GetProtocol () == 0))
+                {
+                  UdpHeader udpHeader;
+                  p->RemoveHeader (udpHeader);
+                  if (udpHeader.GetSourcePort () == (*i).GetLocalPort ())
+                    {
+                      udpHeader.SetSourcePort ((*i).GetGlobalPort ());
+                    }
+                  p->AddHeader (udpHeader);
+                }
+              NS_LOG_DEBUG ("Rule match with a port-specific rule");
+              ipHeader.SetSource ((*i).GetGlobalIp ());
+              p->AddHeader (ipHeader);
+              return 0;
+            }
         }
     }
   p->AddHeader (ipHeader);
-
   return 0;
 }
 
