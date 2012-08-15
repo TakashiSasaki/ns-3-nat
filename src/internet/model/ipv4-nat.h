@@ -193,6 +193,14 @@ public:
   Ipv4StaticNatRule GetStaticRule (uint32_t index) const;
 
   /**
+   * \param index index in table specifying rule to return
+   * \return rule at specified index
+   *
+   * Returns the specific Dynamic NAT rule that is stored on the given index.
+   */
+  Ipv4DynamicNatRule GetDynamicRule (uint32_t index) const;
+
+  /**
    * \param index index in table specifying rule to remove
    *
    * Removes the Static NAT rule that is stored on the given index.

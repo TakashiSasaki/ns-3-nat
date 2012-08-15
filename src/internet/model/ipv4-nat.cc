@@ -128,13 +128,32 @@ Ipv4Nat::GetStaticRule (uint32_t index) const
   return Ipv4StaticNatRule (Ipv4Address (), Ipv4Address ());
 }
 
+Ipv4DynamicNatRule
+Ipv4Nat::GetDynamicRule (uint32_t index) const
+{
+  NS_LOG_FUNCTION (this << index);
+  uint32_t tmp = 0;
+  for (DynamicNatRules::const_iterator i = m_dynamictable.begin ();
+       i != m_dynamictable.end ();
+       i++)
+    {
+      if (tmp == index)
+        {
+          return *i;
+        }
+      tmp++;
+    }
+  NS_ASSERT (false);
+
+  return Ipv4DynamicNatRule (Ipv4Address (), Ipv4Mask());
+}
 
 
 uint32_t
 Ipv4Nat::GetNDynamicRules (void) const
 {
   NS_LOG_FUNCTION (this);
-  return 0;
+  return m_dynamictable.size ();
 }
 
 void
@@ -160,7 +179,18 @@ void
 Ipv4Nat::RemoveDynamicRule (uint32_t index)
 {
   NS_LOG_FUNCTION (this << index);
-  return;
+  NS_ASSERT (index < m_dynamictable.size ());
+  uint32_t tmp = 0;
+  for (DynamicNatRules::iterator i = m_dynamictable.begin ();
+       i != m_dynamictable.end (); i++, tmp++)
+    {
+      if (tmp == index)
+        {
+          m_dynamictable.erase (i);
+          return;
+        }
+    }
+  NS_ASSERT_MSG (false, "Rule Not Found");
 }
 
 
@@ -213,6 +243,15 @@ Ipv4Nat::PrintTable (Ptr<OutputStreamWrapper> stream) const
 
         }
     }
+
+#ifdef TEMP
+  if (GetNDynamicRules () > 0)
+  {
+    *os << "Local Network     Local Netmask     Global Pool     Global Netmask     Port Pool" << std::endl;
+    for (uint32_t i = 0; i < GetNDynamicRules (); i++)
+        {
+
+#endif
 
 }
 
