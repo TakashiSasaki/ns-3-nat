@@ -250,6 +250,10 @@ Ipv4Nat::PrintTable (Ptr<OutputStreamWrapper> stream) const
     *os << "Local Network     Local Netmask     Global Pool     Global Netmask     Port Pool" << std::endl;
     for (uint32_t i = 0; i < GetNDynamicRules (); i++)
         {
+          std::ostringstream locip,gloip,locprt,gloprt;
+          Ipv4StaticNatRule rule = GetStaticRule (i);
+
+
 
 #endif
 
@@ -412,13 +416,40 @@ void
 Ipv4Nat::AddAddressPool (Ipv4Address globalip, Ipv4Mask globalmask)
 {
   NS_LOG_FUNCTION (this << globalip << globalmask);
+  m_globalip = globalip;
+  m_globalmask = globalmask;
 }
 
+Ipv4Address
+Ipv4Nat::GetAddressPoolIp ()
+{
+  return m_globalip;
+}
+
+Ipv4Mask
+Ipv4Nat::GetAddressPoolMask ()
+{
+  return m_globalmask;
+}
 
 void
-Ipv4Nat::AddPortPool (uint16_t strprt, uint16_t dstprt)     //port range
+Ipv4Nat::AddPortPool (uint16_t strtprt, uint16_t endprt)     //port range
 {
-  NS_LOG_FUNCTION (this << strprt << dstprt);
+  NS_LOG_FUNCTION (this << strtprt << endprt);
+  m_startport = strtprt;
+  m_endport = endprt;
+}
+
+uint16_t
+Ipv4Nat::GetStartPort ()
+{
+  return m_startport;
+}
+
+uint16_t
+Ipv4Nat::GetEndPort ()
+{
+  return m_endport;
 }
 
 void
@@ -439,9 +470,10 @@ Ipv4Nat::SetOutside (int32_t interfaceIndex)
 
 
 void
-Ipv4Nat::AddDynamicRule (const Ipv4DynamicNatRule&)
+Ipv4Nat::AddDynamicRule (const Ipv4DynamicNatRule& rule)
 {
   NS_LOG_FUNCTION (this);
+  m_dynamictable.push_front (rule);
 }
 
 

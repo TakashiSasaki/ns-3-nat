@@ -253,6 +253,11 @@ public:
    */
   void SetOutside (int32_t interfaceIndex);
 
+  Ipv4Address GetAddressPoolIp ();
+  Ipv4Mask GetAddressPoolMask ();
+  uint16_t GetStartPort ();
+  uint16_t GetEndPort ();
+
   typedef std::list<Ipv4StaticNatRule> StaticNatRules;
   typedef std::list<Ipv4DynamicNatRule> DynamicNatRules;
 
@@ -301,6 +306,10 @@ private:
   DynamicNatRules m_dynamictable;
   int32_t m_insideInterface;
   int32_t m_outsideInterface;
+  Ipv4Address m_globalip;
+  Ipv4Mask m_globalmask;
+  uint16_t m_startport;
+  uint16_t m_endport;
 
 };
 
