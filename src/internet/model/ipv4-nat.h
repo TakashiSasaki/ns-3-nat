@@ -53,7 +53,6 @@ class OutputStreamWrapper;
 class Ipv4StaticNatRule
 {
 public:
-
 /**
   *\brief Initialization of the static NAT rule with specific protcol port restricitions.
   *\param localip The ip address of the host on the local network
@@ -107,7 +106,6 @@ private:
   // private data member
 };
 
-
 /**
   * \brief Implementation of the Static NAT Rule.
   *
@@ -118,7 +116,6 @@ private:
 class Ipv4DynamicNatRule
 {
 public:
-
 /**
   *\brief Used to initialize the pool of ip addresses to translate
   *\param localnet The local network ip to be translated
@@ -131,6 +128,21 @@ private:
   Ipv4Address m_localnetwork;
   Ipv4Mask m_localmask;
   // private data members
+};
+
+class Ipv4DynamicNatTuple
+{
+public:
+  Ipv4DynamicNatTuple (Ipv4Address local, Ipv4Address global, uint16_t port);
+
+  Ipv4Address GetLocalAddress (void) const;
+  Ipv4Address GetGlobalAddress (void) const;
+  uint16_t GetTranslatedPort (void) const;
+
+private:
+  Ipv4Address m_localip;
+  Ipv4Address m_globalip;
+  uint16_t m_port;
 };
 
 /**
@@ -260,6 +272,8 @@ public:
 
   typedef std::list<Ipv4StaticNatRule> StaticNatRules;
   typedef std::list<Ipv4DynamicNatRule> DynamicNatRules;
+  typedef std::list<Ipv4DynamicNatTuple> DynamicNatTuple;
+
 
 protected:
   // from Object base class
@@ -304,6 +318,7 @@ private:
 
   StaticNatRules m_statictable;
   DynamicNatRules m_dynamictable;
+  DynamicNatTuple m_dynatuple;
   int32_t m_insideInterface;
   int32_t m_outsideInterface;
   Ipv4Address m_globalip;

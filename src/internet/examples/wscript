@@ -25,5 +25,5 @@ def build(bld):
     obj.source = 'ipv4-static-nat-example.cc'
 
     obj = bld.create_ns3_program('ipv4-dynamic-nat-example',
-                                 ['network', 'internet', 'applications','point-to-point'])
+                                 ['network', 'internet', 'applications','point-to-point','csma'])
     obj.source = 'ipv4-dynamic-nat-example.cc'
