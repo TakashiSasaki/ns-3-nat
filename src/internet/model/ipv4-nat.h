@@ -135,9 +135,9 @@ class Ipv4DynamicNatTuple
 public:
   Ipv4DynamicNatTuple (Ipv4Address local, Ipv4Address global, uint16_t port);
 
-  Ipv4Address GetLocalAddress (void) const;
-  Ipv4Address GetGlobalAddress (void) const;
-  uint16_t GetTranslatedPort (void) const;
+  Ipv4Address GetLocalAddress () const;
+  Ipv4Address GetGlobalAddress () const;
+  uint16_t GetTranslatedPort () const;
 
 private:
   Ipv4Address m_localip;
@@ -269,6 +269,9 @@ public:
   Ipv4Mask GetAddressPoolMask ();
   uint16_t GetStartPort ();
   uint16_t GetEndPort ();
+  uint16_t GetCurrentPort ();
+  uint16_t GetNewOutsidePort ();
+
 
   typedef std::list<Ipv4StaticNatRule> StaticNatRules;
   typedef std::list<Ipv4DynamicNatRule> DynamicNatRules;
@@ -325,6 +328,7 @@ private:
   Ipv4Mask m_globalmask;
   uint16_t m_startport;
   uint16_t m_endport;
+  uint16_t m_currentPort;
 
 };
 

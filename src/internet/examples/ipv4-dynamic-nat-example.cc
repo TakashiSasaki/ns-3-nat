@@ -97,9 +97,13 @@ main (int argc, char *argv[])
   nat->SetInside (1);
   nat->SetOutside (2);
 
+  //Adding the address to be translated to and port pools.
+
+  nat->AddAddressPool (Ipv4Address ("192.168.1.5"), Ipv4Mask ("255.255.255.0"));
+  nat->AddPortPool (49153, 49163);
   // Add a rule here to map outbound connections from n0, port 49153, UDP
-  Ipv4StaticNatRule rule2 (Ipv4Address ("192.168.1.1"), 49153, Ipv4Address ("203.82.48.100"), 8080, IPPROTO_UDP);
-  nat->AddStaticRule (rule2);
+  Ipv4DynamicNatRule rule (Ipv4Address ("192.168.1.0"), Ipv4Mask ("255.255.255.0"));
+  nat->AddDynamicRule (rule);
 
   // Now print them out
   Ptr<OutputStreamWrapper> natStream = Create<OutputStreamWrapper> ("nat.rules", std::ios::out);

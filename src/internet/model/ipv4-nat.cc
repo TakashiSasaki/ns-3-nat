@@ -333,12 +333,12 @@ Ipv4Nat::DoNatPreRouting (Hooks_t hookNumber, Ptr<Packet> p,
             }
         }
 
-#ifdef Notyet
+
       //Checking for Dynamic NAT Rules
-      for (Ipv4DynamicNatTuple::const_iterator i = m_.begin ();
-           i != m_dynamictable.end (); i++)
+      for (DynamicNatTuple::const_iterator i = m_dynatuple.begin ();
+           i != m_dynatuple.end (); i++)
         {
-          if (destAddress == GetGlobalAddress ())
+          if (destAddress == GetAddressPoolIp ())
             {
               if (ipHeader.GetProtocol () == IPPROTO_TCP)
 
@@ -346,7 +346,7 @@ Ipv4Nat::DoNatPreRouting (Hooks_t hookNumber, Ptr<Packet> p,
                   TcpHeader tcpHeader;
                   if (tcpHeader.GetDestinationPort () == (*i).GetTranslatedPort ())
                     {
-                      ipHeader.SetDestination (GetLocalAddress ());
+                      ipHeader.SetDestination ((*i).GetLocalAddress ());
                     }
 
                 }
@@ -355,14 +355,11 @@ Ipv4Nat::DoNatPreRouting (Hooks_t hookNumber, Ptr<Packet> p,
                   UdpHeader udpHeader;
                   if (udpHeader.GetDestinationPort () == (*i).GetTranslatedPort ())
                     {
-                      ipHeader.SetDestination (GetLocalAddress ());
+                      ipHeader.SetDestination ((*i).GetLocalAddress ());
                     }
                 }
             }
         }
-
-#endif
-
 
     }
   p->AddHeader (ipHeader);
@@ -442,7 +439,7 @@ Ipv4Nat::DoNatPostRouting (Hooks_t hookNumber, Ptr<Packet> p,
               return 0;
             }
         }
-#ifdef Notyet
+
       //Checking for Dynamic NAT Rules
 
       //Checking for existing connection
@@ -451,7 +448,7 @@ Ipv4Nat::DoNatPostRouting (Hooks_t hookNumber, Ptr<Packet> p,
         {
           if (srcAddress == (*i).GetLocalAddress ())
             {
-              ipHeader.SetSource (GetGlobalAddress ())
+              ipHeader.SetSource (GetAddressPoolIp ());
 
               if (ipHeader.GetProtocol () == IPPROTO_TCP)
 
@@ -468,34 +465,39 @@ Ipv4Nat::DoNatPostRouting (Hooks_t hookNumber, Ptr<Packet> p,
                 }
 
             }
+        }
 
 //This is for the new connections
 
-          for (DynamicNatRules::const_iterator i = m_dynamictable.begin ();
-               i != m_dynamictable.end (); i++)
+      for (DynamicNatRules::const_iterator i = m_dynamictable.begin ();
+           i != m_dynamictable.end (); i++)
+        {
+          if (m_globalip.CombineMask (m_globalmask) == srcAddress.CombineMask (m_globalmask))
+
             {
-              //This is where I need help, to check if ip belongs to network
-              if (srcAddress == GetAddressPoolIp ())
+              ipHeader.SetSource (GetAddressPoolIp ());
+
+              if (ipHeader.GetProtocol () == IPPROTO_TCP)
 
                 {
-                  ipHeader.SetSource (GetGlobalAddress ());
+                  TcpHeader tcpHeader;
+                  tcpHeader.SetSourcePort (GetNewOutsidePort ());
+                }
+              else
+                {
+                  UdpHeader udpHeader;
+                  udpHeader.SetSourcePort (GetNewOutsidePort ());
 
-                  if (ipHeader.GetProtocol () == IPPROTO_TCP)
 
-                    {
-                      TcpHeader tcpHeader;
-                      tcpHeader.SetSourcePort ((*i).GetTranslatedPort ());
-
-                    }
-                  else
-                    {
-                      UdpHeader udpHeader;
-                      udpHeader.SetSourcePort ((*i).GetTranslatedPort ());
-
-                    }
                 }
 
-#endif
+              Ipv4DynamicNatTuple natuple (srcAddress,GetAddressPoolIp (),GetCurrentPort ());
+              m_dynatuple.push_front (natuple);
+
+
+            }
+
+        }
     }
   p->AddHeader (ipHeader);
   return 0;
@@ -522,11 +524,12 @@ Ipv4Nat::GetAddressPoolMask ()
 }
 
 void
-Ipv4Nat::AddPortPool (uint16_t strtprt, uint16_t endprt)     //port range
+Ipv4Nat::AddPortPool (uint16_t strtprt, uint16_t endprt)         //port range
 {
   NS_LOG_FUNCTION (this << strtprt << endprt);
   m_startport = strtprt;
   m_endport = endprt;
+  m_currentPort = strtprt - 1;
 }
 
 uint16_t
@@ -539,6 +542,26 @@ uint16_t
 Ipv4Nat::GetEndPort ()
 {
   return m_endport;
+}
+
+uint16_t
+Ipv4Nat::GetCurrentPort ()
+{
+  return m_currentPort;
+}
+
+uint16_t
+Ipv4Nat::GetNewOutsidePort ()
+{
+  for (int i = m_startport - 1; i < m_endport; i++)
+    {
+      if ( m_currentPort == i)
+        {
+          m_currentPort++;
+        }
+    }
+
+  return m_currentPort;
 }
 
 void
