@@ -107,9 +107,9 @@ private:
 };
 
 /**
-  * \brief Implementation of the Static NAT Rule.
+  * \brief Implementation of the Dynamic NAT Rule.
   *
-  * This implements the basic static NAT rule structure with some
+  * This implements the basic Dynamic NAT rule structure with some
   * methods to access their attributes.
   */
 
@@ -117,12 +117,22 @@ class Ipv4DynamicNatRule
 {
 public:
 /**
-  *\brief Used to initialize the pool of ip addresses to translate
+  *\brief Used to initialize the network on the inside that is going to be translated
   *\param localnet The local network ip to be translated
   *\param localmask The mask of the local network
   */
 
   Ipv4DynamicNatRule (Ipv4Address localnet, Ipv4Mask localmask);
+
+/**
+  *\return The local network address
+  */
+  Ipv4Address GetLocalNet () const;
+
+/**
+  *\return The local network mask
+  */
+  Ipv4Mask GetLocalMask () const;
 
 private:
   Ipv4Address m_localnetwork;
@@ -130,13 +140,37 @@ private:
   // private data members
 };
 
+/**
+  * \brief Implementation of the Dynamic NAT Tuple.
+  *
+  * This implements the basic Dynamic NAT tuple entry structure with some
+  * methods to access their attributes.
+  */
+
 class Ipv4DynamicNatTuple
 {
 public:
+/**
+  *\brief Used to initialize the Dynamic NAT translated tuple entry.
+  *\param local The local host ip that is translated
+  *\param global The global ip that the host has been translated to
+  *\param port The source port that the local host has translated to
+  */
   Ipv4DynamicNatTuple (Ipv4Address local, Ipv4Address global, uint16_t port);
 
+/**
+  *\return The local host Ipv4Address
+  */
   Ipv4Address GetLocalAddress () const;
+
+/**
+  *\return The translated global Ipv4Address
+  */
   Ipv4Address GetGlobalAddress () const;
+
+/**
+  *\return The translated source port number of the host on the global network
+  */
   uint16_t GetTranslatedPort () const;
 
 private:
@@ -193,8 +227,14 @@ public:
    *
    * Returns the number of rules that are currently listed on the list.
    */
-
   uint32_t GetNDynamicRules (void) const;
+
+  /**
+   * \return number of Dynamic NAT Tuples
+   *
+   * Returns the number of tuples that are currently listed on the list.
+   */
+  uint32_t GetNDynamicTuples (void) const;
 
   /**
    * \param index index in table specifying rule to return
@@ -211,6 +251,15 @@ public:
    * Returns the specific Dynamic NAT rule that is stored on the given index.
    */
   Ipv4DynamicNatRule GetDynamicRule (uint32_t index) const;
+
+  /**
+   * \param index index in table specifying rule to return
+   * \return rule at specified index
+   *
+   * Returns the specific Dynamic NAT tuple that is stored on the given index.
+   */
+  Ipv4DynamicNatTuple GetDynamicTuple (uint32_t index) const;
+
 
   /**
    * \param index index in table specifying rule to remove
@@ -265,14 +314,6 @@ public:
    */
   void SetOutside (int32_t interfaceIndex);
 
-  Ipv4Address GetAddressPoolIp ();
-  Ipv4Mask GetAddressPoolMask ();
-  uint16_t GetStartPort ();
-  uint16_t GetEndPort ();
-  uint16_t GetCurrentPort ();
-  uint16_t GetNewOutsidePort ();
-
-
   typedef std::list<Ipv4StaticNatRule> StaticNatRules;
   typedef std::list<Ipv4DynamicNatRule> DynamicNatRules;
   typedef std::list<Ipv4DynamicNatTuple> DynamicNatTuple;
@@ -318,6 +359,35 @@ private:
 
   uint32_t DoNatPostRouting (Hooks_t hookNumber, Ptr<Packet> p,
                              Ptr<NetDevice> in, Ptr<NetDevice> out, ContinueCallback& ccb);
+  /**
+  *\return The Global Pool Ip address
+  */
+  Ipv4Address GetAddressPoolIp () const;
+
+  /**
+  *\return The Global Pool NetMask
+  */
+  Ipv4Mask GetAddressPoolMask () const;
+
+  /**
+  *\return The start port of the port pool
+  */
+  uint16_t GetStartPort () const;
+
+  /**
+  *\return The end port of the port pool
+  */
+  uint16_t GetEndPort () const;
+
+  /**
+  *\return The current port value for the dynamic nat translation
+  */
+  uint16_t GetCurrentPort () const;
+
+  /**
+  *\return The a new port to translate to from the port pool
+  */
+  uint16_t GetNewOutsidePort ();
 
   StaticNatRules m_statictable;
   DynamicNatRules m_dynamictable;

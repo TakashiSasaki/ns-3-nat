@@ -148,12 +148,39 @@ Ipv4Nat::GetDynamicRule (uint32_t index) const
   return Ipv4DynamicNatRule (Ipv4Address (), Ipv4Mask ());
 }
 
+Ipv4DynamicNatTuple
+Ipv4Nat::GetDynamicTuple (uint32_t index) const
+{
+  NS_LOG_FUNCTION (this << index);
+  uint32_t tmp = 0;
+  for (DynamicNatTuple::const_iterator i = m_dynatuple.begin ();
+       i != m_dynatuple.end ();
+       i++)
+    {
+      if (tmp == index)
+        {
+          return *i;
+        }
+      tmp++;
+    }
+  NS_ASSERT (false);
+
+  return Ipv4DynamicNatTuple (Ipv4Address (), Ipv4Address (), uint16_t ('0'));
+}
+
 
 uint32_t
 Ipv4Nat::GetNDynamicRules (void) const
 {
   NS_LOG_FUNCTION (this);
   return m_dynamictable.size ();
+}
+
+uint32_t
+Ipv4Nat::GetNDynamicTuples (void) const
+{
+  NS_LOG_FUNCTION (this);
+  return m_dynatuple.size ();
 }
 
 void
@@ -208,6 +235,7 @@ Ipv4Nat::PrintTable (Ptr<OutputStreamWrapper> stream) const
   std::ostream* os = stream->GetStream ();
   if (GetNStaticRules () > 0)
     {
+      *os << "       Static Nat Rules" << std::endl;
       *os << "Local IP     Local Port     Global IP    Global Port " << std::endl;
       for (uint32_t i = 0; i < GetNStaticRules (); i++)
         {
@@ -244,19 +272,51 @@ Ipv4Nat::PrintTable (Ptr<OutputStreamWrapper> stream) const
         }
     }
 
-#ifdef TEMP
   if (GetNDynamicRules () > 0)
     {
-      *os << "Local Network     Local Netmask     Global Pool     Global Netmask     Port Pool" << std::endl;
+      *os << std::endl;
+      *os << "       Dynamic Nat Rules" << std::endl;
+      *os << "Local Network          Local Netmask" << std::endl;
       for (uint32_t i = 0; i < GetNDynamicRules (); i++)
         {
-          std::ostringstream locip,gloip,locprt,gloprt;
-          Ipv4StaticNatRule rule = GetStaticRule (i);
+          std::ostringstream locnet,locmask,gloip,glomask,strtprt,endprt;
+          Ipv4DynamicNatRule rule = GetDynamicRule (i);
 
+          locnet << rule.GetLocalNet ();
+          *os << std::setiosflags (std::ios::left) << std::setw (32) << locnet.str ();
 
+          locmask << rule.GetLocalMask ();
+          *os << std::setiosflags (std::ios::left) << std::setw (16) << locmask.str ();
+        }
 
-#endif
+      *os << std::endl;
 
+    }
+
+  if (GetNDynamicTuples () > 0)
+    {
+      *os << std::endl;
+      *os << "       Current Dynamic Translations" << std::endl;
+      *os << "Local IP             Global IP           Translated Port" << std::endl;
+      for (uint32_t i = 0; i < GetNDynamicTuples (); i++)
+        {
+          std::ostringstream locip,gloip,prt;
+          Ipv4DynamicNatTuple tup = GetDynamicTuple (i);
+
+          locip << tup.GetLocalAddress ();
+          *os << std::setiosflags (std::ios::left) << std::setw (16) << locip.str ();
+
+          gloip << tup.GetGlobalAddress ();
+          *os << std::setiosflags (std::ios::left) << std::setw (16) << gloip.str ();
+
+          prt << tup.GetTranslatedPort ();
+          *os << std::setiosflags (std::ios::left) << std::setw (16) << prt.str ();
+
+          *os << std::endl;
+        }
+
+      *os << std::endl;
+    }
 }
 
 uint32_t
@@ -334,7 +394,7 @@ Ipv4Nat::DoNatPreRouting (Hooks_t hookNumber, Ptr<Packet> p,
         }
 
 
-      //Checking for Dynamic NAT Rules
+      //Passing traffic that has existing outgoing dynamic nat connections
       for (DynamicNatTuple::const_iterator i = m_dynatuple.begin ();
            i != m_dynatuple.end (); i++)
         {
@@ -448,20 +508,31 @@ Ipv4Nat::DoNatPostRouting (Hooks_t hookNumber, Ptr<Packet> p,
         {
           if (srcAddress == (*i).GetLocalAddress ())
             {
+              NS_LOG_DEBUG ("Checking for existing connections");
               ipHeader.SetSource (GetAddressPoolIp ());
 
               if (ipHeader.GetProtocol () == IPPROTO_TCP)
 
                 {
                   TcpHeader tcpHeader;
-                  tcpHeader.SetSourcePort ((*i).GetTranslatedPort ());
+                  p->RemoveHeader (tcpHeader);
+                  if (tcpHeader.GetSourcePort () == (*i).GetTranslatedPort ())
+                    {
+                      tcpHeader.SetSourcePort ((*i).GetTranslatedPort ());
+                    }
+                  p->AddHeader (tcpHeader);
+
 
                 }
               else
                 {
                   UdpHeader udpHeader;
-                  udpHeader.SetSourcePort ((*i).GetTranslatedPort ());
-
+                  p->RemoveHeader (udpHeader);
+                  if (udpHeader.GetSourcePort () == (*i).GetTranslatedPort ())
+                    {
+                      udpHeader.SetSourcePort ((*i).GetTranslatedPort ());
+                    }
+                  p->AddHeader (udpHeader);
                 }
 
             }
@@ -472,27 +543,33 @@ Ipv4Nat::DoNatPostRouting (Hooks_t hookNumber, Ptr<Packet> p,
       for (DynamicNatRules::const_iterator i = m_dynamictable.begin ();
            i != m_dynamictable.end (); i++)
         {
-          if (m_globalip.CombineMask (m_globalmask) == srcAddress.CombineMask (m_globalmask))
+          if ((*i).GetLocalNet ().CombineMask ((*i).GetLocalMask ()) == srcAddress.CombineMask ((*i).GetLocalMask ()))
 
             {
+              NS_LOG_DEBUG ("Checking for new connections");
               ipHeader.SetSource (GetAddressPoolIp ());
 
               if (ipHeader.GetProtocol () == IPPROTO_TCP)
 
                 {
                   TcpHeader tcpHeader;
+                  p->RemoveHeader (tcpHeader);
                   tcpHeader.SetSourcePort (GetNewOutsidePort ());
+                  p->AddHeader (tcpHeader);
+                  Ipv4DynamicNatTuple natuple (srcAddress,GetAddressPoolIp (),GetCurrentPort ());
+                  m_dynatuple.push_front (natuple);
                 }
               else
                 {
                   UdpHeader udpHeader;
+                  p->RemoveHeader (udpHeader);
                   udpHeader.SetSourcePort (GetNewOutsidePort ());
+                  p->AddHeader (udpHeader);
+                  Ipv4DynamicNatTuple natuple (srcAddress,GetAddressPoolIp (),GetCurrentPort ());
+                  m_dynatuple.push_front (natuple);
 
 
                 }
-
-              Ipv4DynamicNatTuple natuple (srcAddress,GetAddressPoolIp (),GetCurrentPort ());
-              m_dynatuple.push_front (natuple);
 
 
             }
@@ -512,13 +589,13 @@ Ipv4Nat::AddAddressPool (Ipv4Address globalip, Ipv4Mask globalmask)
 }
 
 Ipv4Address
-Ipv4Nat::GetAddressPoolIp ()
+Ipv4Nat::GetAddressPoolIp () const
 {
   return m_globalip;
 }
 
 Ipv4Mask
-Ipv4Nat::GetAddressPoolMask ()
+Ipv4Nat::GetAddressPoolMask () const
 {
   return m_globalmask;
 }
@@ -533,19 +610,19 @@ Ipv4Nat::AddPortPool (uint16_t strtprt, uint16_t endprt)         //port range
 }
 
 uint16_t
-Ipv4Nat::GetStartPort ()
+Ipv4Nat::GetStartPort () const
 {
   return m_startport;
 }
 
 uint16_t
-Ipv4Nat::GetEndPort ()
+Ipv4Nat::GetEndPort () const
 {
   return m_endport;
 }
 
 uint16_t
-Ipv4Nat::GetCurrentPort ()
+Ipv4Nat::GetCurrentPort () const
 {
   return m_currentPort;
 }
@@ -553,15 +630,16 @@ Ipv4Nat::GetCurrentPort ()
 uint16_t
 Ipv4Nat::GetNewOutsidePort ()
 {
-  for (int i = m_startport - 1; i < m_endport; i++)
+  for (int i = m_startport - 1; i <= m_endport; i++)
     {
       if ( m_currentPort == i)
         {
           m_currentPort++;
+          return m_currentPort;
+
         }
     }
-
-  return m_currentPort;
+  return 0;
 }
 
 void
@@ -667,6 +745,18 @@ Ipv4DynamicNatRule::Ipv4DynamicNatRule (Ipv4Address localnet, Ipv4Mask localmask
   m_localnetwork = localnet;
   m_localmask = localmask;
 
+}
+
+Ipv4Address
+Ipv4DynamicNatRule::GetLocalNet () const
+{
+  return m_localnetwork;
+}
+
+Ipv4Mask
+Ipv4DynamicNatRule::GetLocalMask () const
+{
+  return m_localmask;
 }
 
 Ipv4DynamicNatTuple::Ipv4DynamicNatTuple (Ipv4Address local, Ipv4Address global, uint16_t port)
