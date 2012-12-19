@@ -49,6 +49,7 @@ class Socket;
 class Ipv4RawSocketImpl;
 class IpL4Protocol;
 class Icmpv4L4Protocol;
+class Ipv4Netfilter;
 
 
 /**
@@ -103,6 +104,9 @@ public:
 
   void SetRoutingProtocol (Ptr<Ipv4RoutingProtocol> routingProtocol);
   Ptr<Ipv4RoutingProtocol> GetRoutingProtocol (void) const;
+
+  void SetNetfilter (Ptr<Ipv4Netfilter> netfilter);
+  Ptr<Ipv4Netfilter> GetNetfilter (void) const;
 
   Ptr<Socket> CreateRawSocket (void);
   void DeleteRawSocket (Ptr<Socket> socket);
@@ -314,6 +318,7 @@ private:
   TracedCallback<const Ipv4Header &, Ptr<const Packet>, DropReason, Ptr<Ipv4>, uint32_t> m_dropTrace;
 
   Ptr<Ipv4RoutingProtocol> m_routingProtocol;
+  Ptr<Ipv4Netfilter> m_netfilter;
 
   SocketList m_sockets;
 

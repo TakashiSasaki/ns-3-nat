@@ -183,7 +183,18 @@ def build(bld):
         'helper/ipv6-interface-container.cc',
         'helper/ipv6-routing-helper.cc',
         'model/ipv6-address-generator.cc',
-        ]
+        'model/ipv4-netfilter-hook.cc',
+        'model/ipv4-netfilter.cc',
+        'model/netfilter-callback-chain.cc',
+        'model/netfilter-conntrack-tuple.cc',
+        'model/ip-conntrack-info.cc',
+        'model/ipv4-conntrack-l3-protocol.cc',
+        'model/tcp-conntrack-l4-protocol.cc',
+        'model/udp-conntrack-l4-protocol.cc',
+        'model/icmpv4-conntrack-l4-protocol.cc',
+        'model/ipv4-nat.cc',
+        'helper/ipv4-nat-helper.cc',
+      ]
 
     internet_test = bld.create_ns3_module_test_library('internet')
     internet_test.source = [
@@ -208,6 +219,8 @@ def build(bld):
         'test/ipv6-dual-stack-test-suite.cc',
         'test/ipv6-fragmentation-test.cc',
         'test/ipv6-address-helper-test-suite.cc',
+        'test/ipv4-netfilter-test.cc',
+        'test/ipv4-nat-test-suite.cc',
         ]
 
     headers = bld.new_task_gen(features=['ns3header'])
@@ -272,6 +285,9 @@ def build(bld):
         'model/global-route-manager-impl.h',
         'model/candidate-queue.h',
         'model/ipv4-global-routing.h',
+        'model/ipv4-netfilter.h',
+        'model/ipv4-netfilter-hook.h',
+        'model/netfilter-callback-chain.h',
         'helper/ipv4-global-routing-helper.h',
         'helper/internet-stack-helper.h',
         'helper/internet-trace-helper.h',
@@ -279,9 +295,22 @@ def build(bld):
         'helper/ipv4-interface-container.h',
         'helper/ipv4-routing-helper.h',
         'helper/ipv6-address-helper.h',
+        'model/ipv6-address-generator.h',
         'helper/ipv6-interface-container.h',
         'helper/ipv6-routing-helper.h',
-        'model/ipv6-address-generator.h',
+        'model/netfilter-conntrack-l3-protocol.h',
+        'model/netfilter-conntrack-l4-protocol.h',
+        'model/netfilter-conntrack-tuple.h',
+        'model/netfilter-tuple-hash.h',
+        'model/ip-conntrack-info.h',
+        'model/ipv4-conntrack-l3-protocol.h',
+        'model/tcp-conntrack-l4-protocol.h',
+        'model/udp-conntrack-l4-protocol.h',
+        'model/icmpv4-conntrack-l4-protocol.h',
+        'model/sgi-hashmap.h',
+        'model/ipv4-nat.h',
+        'helper/ipv4-nat-helper.h',
+# 'model/ipv6-address-generator.h',
        ]
 
     if bld.env['NSC_ENABLED']:

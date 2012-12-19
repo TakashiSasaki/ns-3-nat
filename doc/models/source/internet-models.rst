@@ -7,4 +7,6 @@ Internet Models
    ipv4
    ipv6
    routing-overview
+   netfilter
+   ipv4-nat
    tcp

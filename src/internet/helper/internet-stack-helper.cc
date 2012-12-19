@@ -175,6 +175,7 @@
 #include "ns3/ipv6-extension-demux.h"
 #include "ns3/ipv6-extension-header.h"
 #include "ns3/global-router-interface.h"
+#include "ns3/ipv4-netfilter.h"
 #include <limits>
 #include <map>
 
@@ -406,6 +407,8 @@ InternetStackHelper::Install (Ptr<Node> node) const
       Ptr<Ipv4> ipv4 = node->GetObject<Ipv4> ();
       Ptr<Ipv4RoutingProtocol> ipv4Routing = m_routing->Create (node);
       ipv4->SetRoutingProtocol (ipv4Routing);
+      Ptr<Ipv4Netfilter> ipv4nf = CreateObject<Ipv4Netfilter> ();
+      ipv4->SetNetfilter (ipv4nf);
     }
 
   if (m_ipv6Enabled)

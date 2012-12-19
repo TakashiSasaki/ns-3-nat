@@ -7,3 +7,23 @@ def build(bld):
     obj = bld.create_ns3_program('main-simple',
                                  ['network', 'internet', 'applications'])
     obj.source = 'main-simple.cc'
+
+    obj = bld.create_ns3_program('netfilter-three-node',
+                                 ['network', 'internet', 'applications','point-to-point'])
+    obj.source = 'netfilter-three-node.cc'
+
+    obj = bld.create_ns3_program('netfilter-add-remove',
+                                 ['network', 'internet', 'applications','point-to-point'])
+    obj.source = 'netfilter-add-remove.cc'
+
+    obj = bld.create_ns3_program('netfilter-header-mangle',
+                                 ['network', 'internet', 'applications','point-to-point'])
+    obj.source = 'netfilter-header-mangle.cc'
+
+    obj = bld.create_ns3_program('ipv4-static-nat-example',
+                                 ['network', 'internet', 'applications','point-to-point'])
+    obj.source = 'ipv4-static-nat-example.cc'
+
+    obj = bld.create_ns3_program('ipv4-dynamic-nat-example',
+                                 ['network', 'internet', 'applications','point-to-point','csma'])
+    obj.source = 'ipv4-dynamic-nat-example.cc'
