@@ -13,12 +13,16 @@ if __name__ == "__main__":
         if a == "t":
        	    os.system("./waf configure --enable-tests")
             os.system("./waf")
+            print("t : finished")
         if a == "e":
-            os.system("./waf configure --enable-tests --enable-exmaples")
+            os.system("./waf configure --enable-tests --enable-examples")
             os.system("./waf")
+            os.system("./test.py")
+            print("e : finished")
         if a == "c":
             os.system("rm .hgignore")
             os.system("hg purge --all")
             os.system("hg revert .hgignore")
             os.system("hg status")
+            print("c : finished")
  
