@@ -16,4 +16,8 @@ if __name__ == "__main__":
         if a == "e":
             os.system("./waf configure --enable-tests --enable-exmaples")
             os.system("./waf")
-    
+	if a == "c":
+            os.system("rm .hgignore")
+            os.system("hg purge --all")
+            os.system("hg revert .hgignore)
+ 
