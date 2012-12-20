@@ -13,6 +13,7 @@ if __name__ == "__main__":
         if a == "t":
        	    os.system("./waf configure --enable-tests")
             os.system("./waf")
+            os.system("./test.py")
             print("t : finished")
         if a == "e":
             os.system("./waf configure --enable-tests --enable-examples")
