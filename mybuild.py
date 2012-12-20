@@ -10,16 +10,19 @@ if __name__ == "__main__":
         if a == "":
             print("Bye ... ")
             exit()
+
         if a == "t":
        	    os.system("./waf configure --enable-tests")
             os.system("./waf")
             os.system("./test.py")
             print("t : finished")
+
         if a == "e":
             os.system("./waf configure --enable-tests --enable-examples")
             os.system("./waf")
             os.system("./test.py")
             print("e : finished")
+
         if a == "c":
             os.system("rm .hgignore")
             os.system("hg purge --all")
