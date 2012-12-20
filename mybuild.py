@@ -4,7 +4,7 @@ import os
 if __name__ == "__main__":
     while True:
         print("t : configure with --enable-tests")
-        print("e : configure with --enable-tests --enable-examples")
+        print("e : configure with --enable-tests --enable-examples --enable-mpi")
         print("c : clean up all")
         a = input("Input a character to go ahead. Just type enter to quit : ")
         if a == "":
