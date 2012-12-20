@@ -20,4 +20,5 @@ if __name__ == "__main__":
             os.system("rm .hgignore")
             os.system("hg purge --all")
             os.system("hg revert .hgignore")
+            os.system("hg status")
  
