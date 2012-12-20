@@ -23,7 +23,7 @@ def build (bld) :
 	headers.source = [
 			  'model/animation-interface.h',
 			  'helper/animation-interface-helper.h',
-  			 ]
+                         ]
 
 	if (bld.env['ENABLE_EXAMPLES']) :
 		bld.add_subdirs ('examples')
