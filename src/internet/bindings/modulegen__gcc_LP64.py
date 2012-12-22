@@ -9829,7 +9829,12 @@ def register_Ns3Ipv4_methods(root_module, cls):
                    'void', 
                    [param('ns3::Ptr< ns3::Ipv4RoutingProtocol >', 'routingProtocol')], 
                    is_pure_virtual=True, is_virtual=True)
-    ## ipv4.h (module 'internet'): void ns3::Ipv4::SetUp(uint32_t interface) [member function]
+    ## ipv4.h (module 'internet'): void ns3::Ipv4::SetNetfilter(ns3::Ptr<ns3::Ip4Netfilter> netfilter) = 0 [member function]
+    cls.add_method('SetNetfilter',
+                   'void',
+                   [param('ns3::Ptr< ns3::Ipv4Netfilter >', 'netfilter')],
+                   is_pure_virtual=True, is_virtual=True)
+     ## ipv4.h (module 'internet'): void ns3::Ipv4::SetUp(uint32_t interface) [member function]
     cls.add_method('SetUp', 
                    'void', 
                    [param('uint32_t', 'interface')], 
