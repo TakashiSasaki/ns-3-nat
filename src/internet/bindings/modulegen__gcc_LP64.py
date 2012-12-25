@@ -136,8 +136,6 @@ def register_types(module):
     module.add_class('Ipv4RoutingTableEntry')
     ## ipv4-static-routing-helper.h (module 'internet'): ns3::Ipv4StaticRoutingHelper [class]
     module.add_class('Ipv4StaticRoutingHelper', parent=root_module['ns3::Ipv4RoutingHelper'])
-    ## ipv4-netfilter.h (module 'internet'): ns3::Ipv4Netfilter [class]
-    module.add_class('Ipv4Netfilter')
     ## ipv6-address.h (module 'network'): ns3::Ipv6Address [class]
     module.add_class('Ipv6Address', import_from_module='ns.network')
     ## ipv6-address.h (module 'network'): ns3::Ipv6Address [class]
@@ -640,7 +638,15 @@ def register_types(module):
     
     nested_module = module.add_cpp_namespace('FatalImpl')
     register_types_ns3_FatalImpl(nested_module)
-    
+
+    ## Netfilter
+    ## ipv4-netfilter.h (module 'internet'): ns3::Ipv4Netfilter [class]
+    module.add_class('Ipv4Netfilter')
+    ## ipv4-nat.h (module 'internet'): ns3::Ipv4Nat [class]
+    module.add_class('Ipv4Nat', parent=root_module["ns3::Object"])
+    module.add_class('Ipv4StaticNatRule', import_from_module='ns3.internet')
+    module.add_class('Ipv4DynamicNatRule', import_from_module='ns3.internet')
+    module.add_class('Ipv4DynamicNatTuple', import_from_module='ns3.internet')
 
 def register_types_ns3_FatalImpl(module):
     root_module = module.get_root()
@@ -901,6 +907,10 @@ def register_methods(root_module):
     register_Ns3Ipv6ExtensionLooseRouting_methods(root_module, root_module['ns3::Ipv6ExtensionLooseRouting'])
     register_Ns3Ipv6ListRouting_methods(root_module, root_module['ns3::Ipv6ListRouting'])
     register_Ns3LoopbackNetDevice_methods(root_module, root_module['ns3::LoopbackNetDevice'])
+    register_Ns3Ipv4StaticNatRule_methods(root_module, root_module['ns3::Ipv4StaticNatRule'])
+    register_Ns3Ipv4DynamicNatRule_methods(root_module, root_module['ns3::Ipv4DynamicNatRule'])
+    register_Ns3Ipv4DynamicNatTuple_methods(root_module, root_module['ns3::Ipv4DynamicNatTuple'])
+    register_Ns3Ipv4Nat_methods(root_module, root_module['ns3::Ipv4Nat'])
     return
 
 def register_Ns3Address_methods(root_module, cls):
@@ -14201,6 +14211,45 @@ def register_Ns3LoopbackNetDevice_methods(root_module, cls):
                    [], 
                    visibility='protected', is_virtual=True)
     return
+
+def register_Ns3Ipv4Nat_methods(root_module, cls):
+    cls.add_constructor([])
+    cls.add_method('AddDynamicRule', 'void', [param('const ns3::Ipv4DynamicNatRule &', 'rule')])
+    cls.add_method('AddStaticRule', 'void', [param('const ns3::Ipv4StaticNatRule &', 'rule')])
+    cls.add_method('GetNStaticRules', 'uint32_t', [], is_const=True)
+    cls.add_method('GetNDynamicRules', 'uint32_t', [], is_const=True)
+    cls.add_method('GetNDynamicTuples', 'uint32_t', [], is_const=True)
+    cls.add_method('GetStaticRule', 'ns3::Ipv4StaticNatRule', [param('uint32_t', 'index')], is_const=True)
+    cls.add_method('GetDynamicRule', 'ns3::Ipv4DynamicNatRule', [param('uint32_t', 'index')], is_const=True)
+    cls.add_method('GetDynamicTuple', 'ns3::Ipv4DynamicNatTuple', [param('uint32_t', 'index')], is_const=True)
+    cls.add_method('RemoveStaticRule', 'void', [param('uint32_t', 'index')])
+    cls.add_method('RemoveDynamicRule', 'void', [param('uint32_t', 'index')])
+    cls.add_method('PrintTable', 'void', [param('ns3::Ptr< ns3::OutputStreamWrapper >', 'stream')], is_const=True)
+    cls.add_method('AddAddressPool', 'void', [param('ns3::Ipv4Address', 'globalip'), param('ns3::Ipv4Mask', 'globalmask')])
+    cls.add_method('AddPortPool', 'void', [param('uint16_t', 'strtprt'), param('uint16_t', 'endprt')])
+    cls.add_method('SetInside', 'void', [param('int32_t', 'interfaceIndex')])
+    cls.add_method('SetOutside', 'void', [param('int32_t', 'interfaceIndex')])
+
+def register_Ns3Ipv4StaticNatRule_methods(root_module, cls):
+    cls.add_constructor([param('ns3::Ipv4Address', 'localip'), param('uint16_t', 'locprt'), 
+                         param('ns3::Ipv4Address', 'globalip'), param('uint16_t', 'gloprt'), param('uint16_t', 'protocol')])
+    cls.add_constructor([param('ns3::Ipv4Address', 'localip'), param('ns3::Ipv4Address', 'globalip')])
+    cls.add_method('GetLocalIp', 'ns3::Ipv4Address', [], is_const=True)
+    cls.add_method('GetGlobalIp', 'ns3::Ipv4Address', [], is_const=True)
+    cls.add_method('GetLocalPort', 'uint16_t', [], is_const=True)
+    cls.add_method('GetGlobalPort', 'uint16_t', [], is_const=True)
+    cls.add_method('GetProtocol', 'uint16_t', [], is_const=True)
+
+def register_Ns3Ipv4DynamicNatRule_methods(root_module, cls):
+    cls.add_constructor([param('ns3::Ipv4Address', 'localnet'), param('ns3::Ipv4Mask', 'localmask')])
+    cls.add_method('GetLocalNet', 'ns3::Ipv4Address', [], is_const=True)
+    cls.add_method('GetLocalMask', 'ns3::Ipv4Address', [], is_const=True)
+
+def register_Ns3Ipv4DynamicNatTuple_methods(root_module, cls):
+    cls.add_constructor([param('ns3::Ipv4Address', 'local'), param('ns3::Ipv4Address', 'global'), param('uint16_t', 'port')])
+    cls.add_method('GetLocalAddress', 'ns3::Ipv4Address', [], is_const=True)
+    cls.add_method('GetGlobalAddress', 'ns3::Ipv4Address', [], is_const=True)
+    cls.add_method('GetTranslatedPort', 'ns3::Ipv4Address', [], is_const=True)
 
 def register_functions(root_module):
     module = root_module

@@ -293,7 +293,7 @@ public:
    * \param Ipv4address the addresses to be added in the Dynamic Nat pool
    * \param Ipv4Mask the mask of the pool of network address given
    */
-  void AddAddressPool (Ipv4Address, Ipv4Mask);
+  void AddAddressPool (Ipv4Address globalip, Ipv4Mask globalmask);
 
   /**
    * \brief Add the port pool for Dynamic NAT
@@ -301,7 +301,7 @@ public:
    * \param numbers for the port pool
    * \param port
    */
-  void AddPortPool (uint16_t, uint16_t); //port range
+  void AddPortPool (uint16_t strtprt, uint16_t endprt); //port range
 
   /**
    * \brief Set the inside interface for the node
