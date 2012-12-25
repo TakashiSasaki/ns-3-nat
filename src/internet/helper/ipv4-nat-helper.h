@@ -41,7 +41,7 @@ public:
    * \brief Construct an Ipv4NatHelper from another previously 
    * initialized instance (Copy Constructor).
    */
-  Ipv4NatHelper (const Ipv4NatHelper &);
+  Ipv4NatHelper (const Ipv4NatHelper &o);
 
   /**
    * \param node the node on which the NAT will run
