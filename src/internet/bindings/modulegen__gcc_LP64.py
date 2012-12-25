@@ -136,6 +136,8 @@ def register_types(module):
     module.add_class('Ipv4RoutingTableEntry')
     ## ipv4-static-routing-helper.h (module 'internet'): ns3::Ipv4StaticRoutingHelper [class]
     module.add_class('Ipv4StaticRoutingHelper', parent=root_module['ns3::Ipv4RoutingHelper'])
+    ## ipv4-netfilter.h (module 'internet'): ns3::Ipv4Netfilter [class]
+    module.add_class('Ipv4Netfilter')
     ## ipv6-address.h (module 'network'): ns3::Ipv6Address [class]
     module.add_class('Ipv6Address', import_from_module='ns.network')
     ## ipv6-address.h (module 'network'): ns3::Ipv6Address [class]
@@ -9829,12 +9831,17 @@ def register_Ns3Ipv4_methods(root_module, cls):
                    'void', 
                    [param('ns3::Ptr< ns3::Ipv4RoutingProtocol >', 'routingProtocol')], 
                    is_pure_virtual=True, is_virtual=True)
-    ## ipv4.h (module 'internet'): void ns3::Ipv4::SetNetfilter(ns3::Ptr<ns3::Ip4Netfilter> netfilter) = 0 [member function]
+    ## ipv4.h (module 'internet'): void ns3::Ipv4::SetNetfilter(ns3::Ptr<ns3::Ipv4Netfilter> netfilter) = 0 [member function]
     cls.add_method('SetNetfilter',
                    'void',
                    [param('ns3::Ptr< ns3::Ipv4Netfilter >', 'netfilter')],
                    is_pure_virtual=True, is_virtual=True)
-     ## ipv4.h (module 'internet'): void ns3::Ipv4::SetUp(uint32_t interface) [member function]
+    ## ipv4.h (module 'internet'): ns3::Ptr<ns3::Ipv4Netfilter> ns3::Ipv4::GetNetfilter(void) const = 0 [member function]
+    cls.add_method('GetNetfilter',
+                   'ns3::Ptr< ns3::Ipv4Netfilter >', 
+                   [],
+                   is_pure_virtual=True, is_virtual=True, is_const=True) 
+    ## ipv4.h (module 'internet'): void ns3::Ipv4::SetUp(uint32_t interface) [member function]
     cls.add_method('SetUp', 
                    'void', 
                    [param('uint32_t', 'interface')], 
