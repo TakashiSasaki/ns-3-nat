@@ -1,5 +1,5 @@
 from pybindgen import Module, FileCodeSink, param, retval, cppclass, typehandlers
-
+from pybindgen.typehandlers.base import Parameter
 
 import pybindgen.settings
 import warnings
@@ -924,7 +924,8 @@ def register_Ns3Address_methods(root_module, cls):
     ## address.h (module 'network'): ns3::Address::Address() [constructor]
     cls.add_constructor([])
     ## address.h (module 'network'): ns3::Address::Address(uint8_t type, uint8_t const * buffer, uint8_t len) [constructor]
-    cls.add_constructor([param('uint8_t', 'type'), param('uint8_t const *', 'buffer'), param('uint8_t', 'len')])
+    cls.add_constructor([param('uint8_t', 'type'), param('uint8_t const *', 'buffer', direction=Parameter.DIRECTION_IN), 
+                         param('uint8_t', 'len')])
     ## address.h (module 'network'): ns3::Address::Address(ns3::Address const & address) [copy constructor]
     cls.add_constructor([param('ns3::Address const &', 'address')])
     ## address.h (module 'network'): bool ns3::Address::CheckCompatible(uint8_t type, uint8_t len) const [member function]
@@ -935,20 +936,20 @@ def register_Ns3Address_methods(root_module, cls):
     ## address.h (module 'network'): uint32_t ns3::Address::CopyAllFrom(uint8_t const * buffer, uint8_t len) [member function]
     cls.add_method('CopyAllFrom', 
                    'uint32_t', 
-                   [param('uint8_t const *', 'buffer'), param('uint8_t', 'len')])
+                   [param('uint8_t const *', 'buffer', direction=Parameter.DIRECTION_IN), param('uint8_t', 'len')])
     ## address.h (module 'network'): uint32_t ns3::Address::CopyAllTo(uint8_t * buffer, uint8_t len) const [member function]
     cls.add_method('CopyAllTo', 
                    'uint32_t', 
-                   [param('uint8_t *', 'buffer'), param('uint8_t', 'len')], 
+                   [param('uint8_t *', 'buffer', direction=Parameter.DIRECTION_OUT), param('uint8_t', 'len')], 
                    is_const=True)
     ## address.h (module 'network'): uint32_t ns3::Address::CopyFrom(uint8_t const * buffer, uint8_t len) [member function]
     cls.add_method('CopyFrom', 
                    'uint32_t', 
-                   [param('uint8_t const *', 'buffer'), param('uint8_t', 'len')])
+                   [param('uint8_t const *', 'buffer', direction=Parameter.DIRECTION_IN), param('uint8_t', 'len')])
     ## address.h (module 'network'): uint32_t ns3::Address::CopyTo(uint8_t * buffer) const [member function]
     cls.add_method('CopyTo', 
                    'uint32_t', 
-                   [param('uint8_t *', 'buffer')], 
+                   [param('uint8_t *', 'buffer', direction=Parameter.DIRECTION_OUT)], 
                    is_const=True)
     ## address.h (module 'network'): void ns3::Address::Deserialize(ns3::TagBuffer buffer) [member function]
     cls.add_method('Deserialize', 
