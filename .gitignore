@@ -39,4 +39,6 @@ massif.*
 \#[^\#/]+\#$
 syntax: glob
 *.pyc
+\.*.swp
+/nat.rules
 
