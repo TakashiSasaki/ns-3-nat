@@ -145,6 +145,7 @@ main (int argc, char *argv[])
   // Prepare to run the simulation
   Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
   pointToPoint.EnablePcapAll ("ipv4-nat", false);
+  csma.EnablePcapAll ("ipv4-nat", false);
 
   Simulator::Run ();
   // Now print them out
